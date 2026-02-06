@@ -1,0 +1,268 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+    <title>Presence · Complete Master</title>
+    <script src="presence-content-manager.js"></script>
+    <script src="presence-monitoring.js"></script>
+    <script src="presence-auto-integrate.js"></script>
+    <script src="all-libraries-compact.js"></script>
+    <script crossorigin src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
+    <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
+    <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@300;400;600&display=swap" rel="stylesheet">
+    <style>
+        body { background: #fdfcfb; font-family: -apple-system, sans-serif; overflow-x: hidden; touch-action: manipulation; }
+        .font-serif { font-family: 'Cormorant Garamond', serif; }
+        .aura-field { filter: blur(120px); transition: all 6s ease-in-out; position: fixed; inset: -10%; width: 120%; height: 120%; z-index: -1; opacity: 0.5; }
+        .hide-scrollbar::-webkit-scrollbar { display: none; }
+    </style>
+</head>
+<body>
+    <div id="root"></div>
+
+    <script type="text/babel">
+        const { useState, useEffect, useRef } = React;
+
+        // FULL SOUND MAPPING RESTORED FROM BOTH FILES
+        const MASTER_LIBRARY = {
+            "🌧️ Weather": [
+                { id: 'light-rain', n: 'Light Rain', urls: ['https://cdn.freesound.org/previews/344/344430_5121236-lq.mp3'] },
+                { id: 'heavy-rain', n: 'Heavy Rain', urls: ['https://cdn.freesound.org/previews/243/243627_5121236-lq.mp3'] },
+                { id: 'thunder', n: 'Thunder Storm', urls: ['https://cdn.freesound.org/previews/162/162476_2394245-lq.mp3'] },
+                { id: 'wind-gentle', n: 'Gentle Wind', urls: ['https://cdn.freesound.org/previews/234/234226_1648170-lq.mp3'] },
+                { id: 'snowfall', n: 'Snowfall', urls: ['https://cdn.freesound.org/previews/234/234226_1648170-lq.mp3'] }
+            ],
+            "🌊 Water": [
+                { id: 'ocean-calm', n: 'Ocean Calm', urls: ['https://cdn.freesound.org/previews/180/180493_3283808-lq.mp3'] },
+                { id: 'river', n: 'River Flow', urls: ['https://cdn.freesound.org/previews/255/255537_4486188-lq.mp3'] },
+                { id: 'stream', n: 'Mountain Stream', urls: ['https://cdn.freesound.org/previews/391/391660_7193358-lq.mp3'] },
+                { id: 'waterfall-near', n: 'Waterfall', urls: ['https://cdn.freesound.org/previews/257/257181_4486188-lq.mp3'] },
+                { id: 'lake', n: 'Lake Lapping', urls: ['https://cdn.freesound.org/previews/180/180493_3283808-lq.mp3'] }
+            ],
+            "🌲 Earth": [
+                { id: 'forest', n: 'Forest', urls: ['https://cdn.freesound.org/previews/416/416062_5121236-lq.mp3'] },
+                { id: 'jungle', n: 'Jungle', urls: ['https://cdn.freesound.org/previews/447/447912_5674468-lq.mp3'] },
+                { id: 'desert', n: 'Desert Wind', urls: ['https://cdn.freesound.org/previews/234/234226_1648170-lq.mp3'] },
+                { id: 'cave', n: 'Cave Drips', urls: ['https://cdn.freesound.org/previews/257/257181_4486188-lq.mp3'] }
+            ],
+            "🐦 Life": [
+                { id: 'morning-birds', n: 'Morning Birds', urls: ['https://cdn.freesound.org/previews/447/447912_5674468-lq.mp3'] },
+                { id: 'crickets', n: 'Crickets', urls: ['https://cdn.freesound.org/previews/412/412068_6975646-lq.mp3'] },
+                { id: 'frogs', n: 'Frogs', urls: ['https://cdn.freesound.org/previews/331/331117_3932975-lq.mp3'] }
+            ],
+            "🔥 Fire": [
+                { id: 'campfire', n: 'Campfire', urls: ['https://cdn.freesound.org/previews/320/320321_527080-lq.mp3'] },
+                { id: 'hearth', n: 'Hearth Fire', urls: ['https://cdn.freesound.org/previews/235/235968_1015240-lq.mp3'] }
+            ],
+            "🧘 Purity": [
+                { id: 'white-noise', n: 'White Noise', urls: ['https://cdn.freesound.org/previews/360/360602_5121236-lq.mp3'] },
+                { id: 'pink-noise', n: 'Pink Noise', urls: ['https://cdn.freesound.org/previews/360/360600_5121236-lq.mp3'] },
+                { id: 'brown-noise', n: 'Brown Noise', urls: ['https://cdn.freesound.org/previews/360/360601_5121236-lq.mp3'] },
+                { id: 'vagus-nerve', n: 'Vagus Nerve', urls: ['https://cdn.freesound.org/previews/680/680145_1648170-lq.mp3'], desc: '40Hz grounding' }
+            ],
+            "🏙️ Urban": [
+                { id: 'city-hum', n: 'City Hum', urls: ['https://cdn.freesound.org/previews/268/268903_4548252-lq.mp3'] },
+                { id: 'subway', n: 'Subway Rumble', urls: ['https://cdn.freesound.org/previews/207/207924_624691-lq.mp3'] },
+                { id: 'traffic', n: 'Traffic', urls: ['https://cdn.freesound.org/previews/268/268903_4548252-lq.mp3'] }
+            ],
+            "☕ Indoor": [
+                { id: 'cafe', n: 'Café Murmur', urls: ['https://cdn.freesound.org/previews/547/547662_9879924-lq.mp3'] },
+                { id: 'library', n: 'Library', urls: ['https://cdn.freesound.org/previews/350/350359_6264898-lq.mp3'] },
+                { id: 'museum', n: 'Museum', urls: ['https://cdn.freesound.org/previews/350/350359_6264898-lq.mp3'] }
+            ],
+            "🏠 Domestic": [
+                { id: 'fan', n: 'Ceiling Fan', urls: ['https://cdn.freesound.org/previews/320/320398_527080-lq.mp3'] },
+                { id: 'ac', n: 'Air Conditioner', urls: ['https://cdn.freesound.org/previews/415/415277_5674468-lq.mp3'] },
+                { id: 'clock', n: 'Clock Tick', urls: ['https://cdn.freesound.org/previews/350/350359_6264898-lq.mp3'] }
+            ],
+            "🌙 Night": [
+                { id: 'midnight-forest', n: 'Midnight Forest', urls: ['https://cdn.freesound.org/previews/331/331117_3932975-lq.mp3'] },
+                { id: 'neon-rain', n: 'Neon Rain', urls: ['https://cdn.freesound.org/previews/416/416710_5121236-lq.mp3'] },
+                { id: 'stairwell', n: 'Stairwell', urls: ['https://cdn.freesound.org/previews/268/268903_4548252-lq.mp3'] }
+            ]
+        };
+
+        const AudioEngine = {
+            ctx: null, masterGain: null, filterNode: null, pannerNode: null,
+            activeLayers: [], gainNodes: [], driftInterval: null, timerId: null,
+
+            init() {
+                if (!this.ctx) {
+                    this.ctx = new (window.AudioContext || window.webkitAudioContext)();
+                    this.filterNode = this.ctx.createBiquadFilter();
+                    this.pannerNode = this.ctx.createStereoPanner();
+                    this.masterGain = this.ctx.createGain();
+                    this.filterNode.connect(this.pannerNode);
+                    this.pannerNode.connect(this.masterGain);
+                    this.masterGain.connect(this.ctx.destination);
+                    this.filterNode.type = 'lowpass';
+                    this.filterNode.frequency.value = 20000;
+                    this.masterGain.gain.value = 0.5;
+                }
+                if (this.ctx.state === 'suspended') this.ctx.resume();
+            },
+
+            // DSP Logic from V2
+            updateSignal(mode) {
+                if (!this.filterNode) return;
+                const now = this.ctx.currentTime;
+                if (mode === 'Focus') {
+                    this.filterNode.type = 'highpass';
+                    this.filterNode.frequency.exponentialRampToValueAtTime(400, now + 2);
+                } else if (mode === 'Rest') {
+                    this.filterNode.type = 'lowpass';
+                    this.filterNode.frequency.exponentialRampToValueAtTime(700, now + 2);
+                } else {
+                    this.filterNode.type = 'lowpass';
+                    this.filterNode.frequency.exponentialRampToValueAtTime(20000, now + 2);
+                }
+            },
+
+            // Layered Playback from Original
+            async play(soundId, onLoading) {
+                this.init();
+                this.stop();
+                onLoading(true);
+
+                let sound;
+                for (const cat in MASTER_LIBRARY) {
+                    const found = MASTER_LIBRARY[cat].find(s => s.id === soundId);
+                    if (found) { sound = found; break; }
+                }
+
+                try {
+                    const count = 2; // Layered depth
+                    for(let i=0; i<count; i++) {
+                        const audio = new Audio(sound.urls[0]);
+                        audio.crossOrigin = "anonymous";
+                        audio.loop = true;
+                        await new Promise(r => { audio.oncanplaythrough = r; audio.load(); });
+                        audio.currentTime = Math.random() * 20;
+                        const source = this.ctx.createMediaElementSource(audio);
+                        const gain = this.ctx.createGain();
+                        gain.gain.value = 0;
+                        source.connect(gain);
+                        gain.connect(this.filterNode);
+                        audio.play();
+                        gain.gain.linearRampToValueAtTime(0.35, this.ctx.currentTime + 2);
+                        this.activeLayers.push(audio);
+                        this.gainNodes.push(gain);
+                    }
+                    this.startDrift();
+                    onLoading(false);
+                } catch (e) { console.error(e); onLoading(false); }
+            },
+
+            startDrift() {
+                this.driftInterval = setInterval(() => {
+                    this.pannerNode.pan.linearRampToValueAtTime(Math.random() * 1.4 - 0.7, this.ctx.currentTime + 4);
+                }, 5000);
+            },
+
+            // Timer Logic from V2
+            setTimer(mins, onEnd) {
+                if (this.timerId) clearTimeout(this.timerId);
+                this.timerId = setTimeout(() => {
+                    this.fadeStop();
+                    onEnd();
+                }, mins * 60000);
+            },
+
+            fadeStop() {
+                if (this.masterGain) {
+                    this.masterGain.gain.linearRampToValueAtTime(0, this.ctx.currentTime + 5);
+                    setTimeout(() => this.stop(), 5100);
+                }
+            },
+
+            stop() {
+                clearInterval(this.driftInterval);
+                if (this.timerId) clearTimeout(this.timerId);
+                this.activeLayers.forEach(a => { a.pause(); a.src = ""; });
+                this.activeLayers = [];
+                this.gainNodes = [];
+                if (this.masterGain) this.masterGain.gain.value = 0.5;
+            }
+        };
+
+        const App = () => {
+            const [cat, setCat] = useState("🌧️ Weather");
+            const [playing, setPlaying] = useState(null);
+            const [loading, setLoading] = useState(false);
+            const [signal, setSignal] = useState('Neutral');
+            const [timer, setTimer] = useState(null);
+
+            useEffect(() => { AudioEngine.updateSignal(signal); }, [signal]);
+
+            return (
+                <div className="min-h-screen p-6 md:p-12 max-w-5xl mx-auto pb-40">
+                    <div className={`aura-field ${signal === 'Focus' ? 'bg-amber-100' : signal === 'Rest' ? 'bg-blue-100' : 'bg-indigo-50'}`} />
+                    
+                    <header className="flex flex-col md:flex-row justify-between items-start mb-16 gap-8">
+                        <div>
+                            <h1 className="text-6xl font-serif italic tracking-tighter">presence</h1>
+                            <p className="text-[10px] uppercase tracking-[0.4em] opacity-30 mt-4">Complete Integrated Engine</p>
+                        </div>
+
+                        <div className="flex flex-col gap-4 items-end">
+                            <div className="flex bg-black/5 p-1 rounded-full backdrop-blur-xl border border-black/5">
+                                {['Neutral', 'Focus', 'Rest'].map(m => (
+                                    <button key={m} onClick={() => setSignal(m)} className={`px-6 py-2 rounded-full text-[10px] uppercase tracking-widest transition-all ${signal === m ? 'bg-white shadow-sm font-bold' : 'opacity-30'}`}>{m}</button>
+                                ))}
+                            </div>
+                            {playing && (
+                                <div className="flex gap-2">
+                                    {[15, 30, 60].map(m => (
+                                        <button key={m} onClick={() => { setTimer(m); AudioEngine.setTimer(m, () => {setTimer(null); setPlaying(null);}); }} 
+                                            className={`text-[9px] uppercase px-3 py-1 rounded-md border transition-all ${timer === m ? 'bg-black text-white' : 'opacity-40 border-black/10'}`}>{m}m Timer</button>
+                                    ))}
+                                </div>
+                            )}
+                        </div>
+                    </header>
+
+                    <nav className="flex gap-8 border-b border-black/5 mb-12 overflow-x-auto hide-scrollbar">
+                        {Object.keys(MASTER_LIBRARY).map(c => (
+                            <button key={c} onClick={() => setCat(c)} className={`pb-5 text-[11px] font-bold uppercase tracking-[0.2em] whitespace-nowrap transition-all ${cat === c ? 'border-b-2 border-black opacity-100' : 'opacity-20 hover:opacity-40'}`}>{c}</button>
+                        ))}
+                    </nav>
+
+                    <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4">
+                        {MASTER_LIBRARY[cat].map(s => (
+                            <button key={s.id} onClick={() => { if (playing === s.id) { AudioEngine.stop(); setPlaying(null); setTimer(null); } else { setPlaying(s.id); AudioEngine.play(s.id, setLoading); } }}
+                                className={`group p-6 rounded-[2rem] text-left transition-all duration-500 h-32 flex flex-col justify-between ${playing === s.id ? 'bg-white shadow-2xl scale-[1.02]' : 'bg-white/40 hover:bg-white/60'}`}>
+                                <div className={`w-2 h-2 rounded-full ${playing === s.id ? 'bg-indigo-500 animate-pulse' : 'bg-black/10'}`} />
+                                <div>
+                                    <h3 className="text-sm font-semibold tracking-tight leading-tight">{s.n}</h3>
+                                    <p className="text-[9px] opacity-30 mt-1 uppercase tracking-widest">{s.desc || 'Infinite'}</p>
+                                </div>
+                            </button>
+                        ))}
+                    </div>
+
+                    {(playing || loading) && (
+                        <div className="fixed bottom-10 left-1/2 -translate-x-1/2 w-[90%] max-w-md bg-white/95 backdrop-blur-2xl p-6 rounded-[2.5rem] shadow-2xl border border-white/50 flex justify-between items-center">
+                           <div className="flex items-center gap-4">
+                                <div className="w-10 h-10 rounded-full bg-indigo-50 flex items-center justify-center">
+                                    <div className="w-2 h-2 bg-indigo-500 rounded-full animate-ping" />
+                                </div>
+                                <div>
+                                    <p className="text-[9px] uppercase tracking-widest opacity-40">{loading ? 'Loading...' : 'Layered Soundscape'}</p>
+                                    <p className="font-medium text-sm">{timer ? `${timer}m fade-out set` : 'Infinite · Non-Repeating'}</p>
+                                </div>
+                            </div>
+                            <button onClick={() => { AudioEngine.stop(); setPlaying(null); setTimer(null); }} className="bg-black text-white px-8 py-3 rounded-full text-[10px] font-bold uppercase tracking-widest">Stop</button>
+                        </div>
+                    )}
+                </div>
+            );
+        };
+
+        const root = ReactDOM.createRoot(document.getElementById('root'));
+        root.render(<App />);
+    </script>
+</body>
+</html>

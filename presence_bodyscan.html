@@ -1,0 +1,257 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>presence • body scan</title>
+    <script src="presence-content-manager.js"></script>
+    <script src="presence-monitoring.js"></script>
+    <script src="presence-auto-integrate.js"></script>
+    <script src="all-libraries-compact.js"></script>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@300;400;600&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --dawn-start: #f8f9fa; --dawn-mid: #e9ecef; --dawn-end: #dee2e6;
+            --text-whisper: #6c757d; --text-soft: #495057; --text-present: #212529;
+        }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: linear-gradient(180deg, var(--dawn-start) 0%, var(--dawn-mid) 50%, var(--dawn-end) 100%);
+            min-height: 100vh; color: var(--text-soft);
+        }
+        .font-serif { font-family: 'Cormorant Garamond', serif; }
+        .stat-label { font-size: 0.7rem; letter-spacing: 0.3em; text-transform: uppercase; color: var(--text-whisper); }
+        .body-part {
+            transition: all 0.5s ease;
+            fill: rgba(139, 152, 165, 0.1);
+            stroke: rgba(139, 152, 165, 0.3);
+            stroke-width: 2;
+        }
+        .body-part.active {
+            fill: rgba(139, 152, 165, 0.5);
+            stroke: rgba(139, 152, 165, 0.8);
+            stroke-width: 3;
+        }
+        .pulse {
+            animation: pulse 2s ease-in-out infinite;
+        }
+        @keyframes pulse {
+            0%, 100% { opacity: 0.5; transform: scale(1); }
+            50% { opacity: 1; transform: scale(1.05); }
+        }
+    </style>
+</head>
+<body>
+    <div id="setupView" class="p-8 md:p-16 max-w-3xl mx-auto">
+        <header class="mb-16">
+            <a href="index.html" class="stat-label text-indigo-400 mb-4 block">← Hub</a>
+            <h1 class="font-serif text-7xl tracking-tighter text-gray-900 mb-4">Body Scan</h1>
+            <p class="text-lg text-gray-500 font-light">Progressive awareness practice</p>
+        </header>
+
+        <div class="bg-white/50 backdrop-blur-lg p-10 rounded-[2.5rem] border border-gray-100">
+            <div class="mb-8">
+                <label class="block stat-label mb-4">Duration</label>
+                <div class="grid grid-cols-4 gap-4">
+                    <button onclick="selectDuration(5)" class="duration-btn py-4 rounded-2xl border border-gray-200 hover:border-gray-400 transition-all">5 min</button>
+                    <button onclick="selectDuration(10)" class="duration-btn py-4 rounded-2xl border border-gray-200 hover:border-gray-400 transition-all">10 min</button>
+                    <button onclick="selectDuration(20)" class="duration-btn py-4 rounded-2xl border border-gray-200 hover:border-gray-400 transition-all">20 min</button>
+                    <button onclick="selectDuration(30)" class="duration-btn py-4 rounded-2xl border border-gray-200 hover:border-gray-400 transition-all">30 min</button>
+                </div>
+            </div>
+
+            <div class="mb-8">
+                <label class="block stat-label mb-4">Guidance</label>
+                <div class="grid grid-cols-2 gap-4">
+                    <button onclick="selectGuidance('cued')" class="guidance-btn py-4 rounded-2xl border border-gray-200 hover:border-gray-400 transition-all">
+                        <div class="text-sm">Visual Cues</div>
+                    </button>
+                    <button onclick="selectGuidance('silent')" class="guidance-btn py-4 rounded-2xl border border-gray-200 hover:border-gray-400 transition-all">
+                        <div class="text-sm">Silent Flow</div>
+                    </button>
+                </div>
+            </div>
+
+            <button onclick="startScan()" class="w-full py-5 rounded-full bg-gray-900 text-white text-sm uppercase tracking-widest hover:bg-gray-800 transition-all">
+                Begin Scan
+            </button>
+        </div>
+    </div>
+
+    <div id="scanView" class="hidden flex flex-col items-center justify-center min-h-screen p-8">
+        <button onclick="endScan()" class="stat-label text-indigo-400 mb-8 cursor-pointer">← End Session</button>
+        
+        <div class="mb-8">
+            <svg width="200" height="500" viewBox="0 0 200 500" id="bodySvg">
+                <!-- Head -->
+                <ellipse id="head" class="body-part" cx="100" cy="50" rx="35" ry="45"/>
+                
+                <!-- Neck -->
+                <rect id="neck" class="body-part" x="85" y="90" width="30" height="30"/>
+                
+                <!-- Shoulders -->
+                <rect id="shoulders" class="body-part" x="45" y="115" width="110" height="25"/>
+                
+                <!-- Arms -->
+                <rect id="leftArm" class="body-part" x="25" y="135" width="25" height="120"/>
+                <rect id="rightArm" class="body-part" x="150" y="135" width="25" height="120"/>
+                
+                <!-- Torso -->
+                <rect id="chest" class="body-part" x="60" y="135" width="80" height="60"/>
+                <rect id="abdomen" class="body-part" x="65" y="190" width="70" height="50"/>
+                
+                <!-- Hips -->
+                <rect id="hips" class="body-part" x="65" y="235" width="70" height="30"/>
+                
+                <!-- Legs -->
+                <rect id="leftLeg" class="body-part" x="65" y="260" width="30" height="150"/>
+                <rect id="rightLeg" class="body-part" x="105" y="260" width="30" height="150"/>
+                
+                <!-- Feet -->
+                <ellipse id="leftFoot" class="body-part" cx="80" cy="435" rx="20" ry="30"/>
+                <ellipse id="rightFoot" class="body-part" cx="120" cy="435" rx="20" ry="30"/>
+            </svg>
+        </div>
+
+        <div class="text-center max-w-md">
+            <div class="text-3xl font-light text-gray-900 mb-3" id="bodyPartLabel">Preparing...</div>
+            <div class="stat-label mb-6" id="instructionText">Find a comfortable position</div>
+            <div class="text-sm text-gray-500" id="timeRemaining">--:--</div>
+        </div>
+    </div>
+
+    <script>
+        let scanDuration = 10;
+        let scanGuidance = 'cued';
+        let currentPartIndex = 0;
+        let scanInterval = null;
+        let timeInterval = null;
+        let startTime = null;
+
+        const bodyParts = [
+            { id: 'leftFoot', label: 'Left Foot', instruction: 'Notice any sensations in your left foot' },
+            { id: 'rightFoot', label: 'Right Foot', instruction: 'Shift attention to your right foot' },
+            { id: 'leftLeg', label: 'Left Leg', instruction: 'Scan up through your left leg' },
+            { id: 'rightLeg', label: 'Right Leg', instruction: 'Move awareness to your right leg' },
+            { id: 'hips', label: 'Hips & Pelvis', instruction: 'Feel the weight of your hips' },
+            { id: 'abdomen', label: 'Abdomen', instruction: 'Notice your belly rising and falling' },
+            { id: 'chest', label: 'Chest', instruction: 'Observe your chest expanding' },
+            { id: 'shoulders', label: 'Shoulders', instruction: 'Release any tension in your shoulders' },
+            { id: 'leftArm', label: 'Left Arm', instruction: 'Scan down your left arm' },
+            { id: 'rightArm', label: 'Right Arm', instruction: 'Bring attention to your right arm' },
+            { id: 'neck', label: 'Neck', instruction: 'Soften the muscles in your neck' },
+            { id: 'head', label: 'Head & Face', instruction: 'Relax your jaw, eyes, and forehead' }
+        ];
+
+        function selectDuration(mins) {
+            scanDuration = mins;
+            document.querySelectorAll('.duration-btn').forEach(btn => {
+                btn.style.background = 'white';
+                btn.style.borderColor = 'rgb(229, 231, 235)';
+            });
+            event.target.style.background = 'rgb(17, 24, 39)';
+            event.target.style.color = 'white';
+        }
+
+        function selectGuidance(type) {
+            scanGuidance = type;
+            document.querySelectorAll('.guidance-btn').forEach(btn => {
+                btn.style.background = 'white';
+                btn.style.borderColor = 'rgb(229, 231, 235)';
+            });
+            event.target.closest('button').style.background = 'rgb(17, 24, 39)';
+            event.target.closest('button').style.color = 'white';
+        }
+
+        function startScan() {
+            document.getElementById('setupView').classList.add('hidden');
+            document.getElementById('scanView').classList.remove('hidden');
+            
+            startTime = Date.now();
+            currentPartIndex = 0;
+
+            setTimeout(() => {
+                nextBodyPart();
+                
+                const timePerPart = (scanDuration * 60 * 1000) / bodyParts.length;
+                scanInterval = setInterval(nextBodyPart, timePerPart);
+                
+                timeInterval = setInterval(updateTimeRemaining, 1000);
+            }, 3000);
+        }
+
+        function nextBodyPart() {
+            if (currentPartIndex >= bodyParts.length) {
+                completeScan();
+                return;
+            }
+
+            // Clear previous
+            document.querySelectorAll('.body-part').forEach(part => {
+                part.classList.remove('active', 'pulse');
+            });
+
+            const part = bodyParts[currentPartIndex];
+            const element = document.getElementById(part.id);
+            
+            element.classList.add('active', 'pulse');
+            
+            if (scanGuidance === 'cued') {
+                document.getElementById('bodyPartLabel').textContent = part.label;
+                document.getElementById('instructionText').textContent = part.instruction;
+            } else {
+                document.getElementById('bodyPartLabel').textContent = part.label;
+                document.getElementById('instructionText').textContent = '...';
+            }
+
+            currentPartIndex++;
+        }
+
+        function updateTimeRemaining() {
+            const elapsed = Date.now() - startTime;
+            const remaining = (scanDuration * 60 * 1000) - elapsed;
+            
+            if (remaining <= 0) {
+                document.getElementById('timeRemaining').textContent = '0:00';
+                return;
+            }
+
+            const minutes = Math.floor(remaining / 60000);
+            const seconds = Math.floor((remaining % 60000) / 1000);
+            document.getElementById('timeRemaining').textContent = `${minutes}:${seconds.toString().padStart(2, '0')}`;
+        }
+
+        function completeScan() {
+            clearInterval(scanInterval);
+            clearInterval(timeInterval);
+            
+            document.getElementById('bodyPartLabel').textContent = 'Complete';
+            document.getElementById('instructionText').textContent = 'Rest in whole-body awareness';
+            
+            document.querySelectorAll('.body-part').forEach(part => {
+                part.classList.remove('pulse');
+                part.classList.add('active');
+            });
+
+            // Track practice time
+            const totalMins = parseInt(localStorage.getItem('totalPracticeMinutes') || '0');
+            localStorage.setItem('totalPracticeMinutes', totalMins + scanDuration);
+        }
+
+        function endScan() {
+            clearInterval(scanInterval);
+            clearInterval(timeInterval);
+            
+            document.getElementById('setupView').classList.remove('hidden');
+            document.getElementById('scanView').classList.add('hidden');
+            
+            document.querySelectorAll('.body-part').forEach(part => {
+                part.classList.remove('active', 'pulse');
+            });
+            
+            currentPartIndex = 0;
+        }
+    </script>
+</body>
+</html>

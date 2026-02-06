@@ -1,0 +1,392 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="theme-color" content="#1a1a2e">
+    <title>presence • sleep</title>
+    <script src="presence-content-manager.js"></script>
+    <script src="presence-monitoring.js"></script>
+    <script src="presence-auto-integrate.js"></script>
+    <script src="sleep-library.js"></script>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@300;400;600&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --night-dark: #0f0f1e;
+            --night-mid: #1a1a2e;
+            --night-light: #252538;
+            --moon-glow: #b8c5d6;
+            --star-light: #e8eef5;
+        }
+        * { -webkit-tap-highlight-color: transparent; }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: linear-gradient(180deg, var(--night-dark) 0%, var(--night-mid) 50%, var(--night-light) 100%);
+            min-height: 100vh;
+            color: var(--moon-glow);
+            padding: env(safe-area-inset-top) env(safe-area-inset-right) env(safe-area-inset-bottom) env(safe-area-inset-left);
+        }
+        .font-serif { font-family: 'Cormorant Garamond', serif; }
+        .stat-label { font-size: 0.7rem; letter-spacing: 0.3em; text-transform: uppercase; color: rgba(184, 197, 214, 0.5); }
+        .sleep-card {
+            background: rgba(37, 37, 56, 0.5);
+            border: 1px solid rgba(184, 197, 214, 0.1);
+            backdrop-filter: blur(10px);
+            transition: all 0.3s;
+        }
+        @media (hover: hover) {
+            .sleep-card:hover {
+                background: rgba(37, 37, 56, 0.8);
+                border-color: rgba(184, 197, 214, 0.3);
+            }
+        }
+        .stars {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            z-index: 0;
+        }
+        .star {
+            position: absolute;
+            width: 2px;
+            height: 2px;
+            background: var(--star-light);
+            border-radius: 50%;
+            animation: twinkle 3s infinite;
+        }
+        @keyframes twinkle {
+            0%, 100% { opacity: 0.3; }
+            50% { opacity: 1; }
+        }
+        .moon {
+            width: 80px;
+            height: 80px;
+            border-radius: 50%;
+            background: var(--moon-glow);
+            box-shadow: 0 0 40px rgba(184, 197, 214, 0.5);
+            opacity: 0.8;
+        }
+        .breathing-circle {
+            width: 200px;
+            height: 200px;
+            border-radius: 50%;
+            background: radial-gradient(circle, rgba(184, 197, 214, 0.2), rgba(184, 197, 214, 0.05));
+            border: 2px solid rgba(184, 197, 214, 0.3);
+            transition: all 4s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+        .breathing-circle.inhale {
+            transform: scale(1.3);
+            opacity: 0.8;
+        }
+        .breathing-circle.exhale {
+            transform: scale(0.7);
+            opacity: 0.4;
+        }
+    </style>
+</head>
+<body class="p-4 sm:p-8 md:p-16 relative">
+    <!-- Starfield -->
+    <div class="stars" id="starfield"></div>
+
+    <div class="max-w-4xl mx-auto relative z-10">
+        <!-- Library View -->
+        <div id="libraryView">
+            <header class="mb-12 text-center">
+                <a href="index.html" class="stat-label mb-4 block" style="color: var(--moon-glow);">← Hub</a>
+                <div class="moon mx-auto mb-6"></div>
+                <h1 class="font-serif text-5xl sm:text-7xl tracking-tighter mb-4" style="color: var(--star-light);">Sleep</h1>
+                <p class="text-base text-moon-glow">Guided rest for peaceful nights</p>
+            </header>
+
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-12">
+                <div class="sleep-card p-8 rounded-3xl cursor-pointer" onclick="startSleepMeditation()">
+                    <div class="stat-label mb-3">Meditation</div>
+                    <h3 class="text-3xl font-serif mb-3" style="color: var(--star-light);">Sleep Preparation</h3>
+                    <p class="text-sm mb-4" style="color: var(--moon-glow);">Guided meditation to prepare for sleep</p>
+                    <div class="text-xs stat-label">20 minutes</div>
+                </div>
+
+                <div class="sleep-card p-8 rounded-3xl cursor-pointer" onclick="startBreathing()">
+                    <div class="stat-label mb-3">Breathwork</div>
+                    <h3 class="text-3xl font-serif mb-3" style="color: var(--star-light);">4-7-8 Breathing</h3>
+                    <p class="text-sm mb-4" style="color: var(--moon-glow);">Natural tranquilizer for quick sleep</p>
+                    <div class="text-xs stat-label">5 minutes</div>
+                </div>
+
+                <div class="sleep-card p-8 rounded-3xl cursor-pointer" onclick="startSleepStory('forest')">
+                    <div class="stat-label mb-3">Sleep Story</div>
+                    <h3 class="text-3xl font-serif mb-3" style="color: var(--star-light);">Forest Walk</h3>
+                    <p class="text-sm mb-4" style="color: var(--moon-glow);">Peaceful journey through twilight woods</p>
+                    <div class="text-xs stat-label">15 minutes</div>
+                </div>
+
+                <div class="sleep-card p-8 rounded-3xl cursor-pointer" onclick="startSleepStory('ocean')">
+                    <div class="stat-label mb-3">Sleep Story</div>
+                    <h3 class="text-3xl font-serif mb-3" style="color: var(--star-light);">Ocean Waves</h3>
+                    <p class="text-sm mb-4" style="color: var(--moon-glow);">Drift away by the gentle sea</p>
+                    <div class="text-xs stat-label">15 minutes</div>
+                </div>
+            </div>
+
+            <div class="sleep-card p-6 rounded-2xl text-center">
+                <div class="stat-label mb-3">Sleep Timer</div>
+                <p class="text-sm mb-4" style="color: var(--moon-glow);">Auto-stop after you fall asleep</p>
+                <select id="sleepTimer" class="bg-transparent border border-moon-glow/30 rounded-lg px-4 py-2 text-moon-glow">
+                    <option value="15">15 minutes</option>
+                    <option value="30" selected>30 minutes</option>
+                    <option value="45">45 minutes</option>
+                    <option value="60">60 minutes</option>
+                    <option value="0">No timer</option>
+                </select>
+            </div>
+        </div>
+
+        <!-- Player View -->
+        <div id="playerView" class="hidden text-center">
+            <button onclick="exitPlayer()" class="stat-label mb-12 cursor-pointer">← Back</button>
+            
+            <div id="breathingView" class="hidden">
+                <h2 class="font-serif text-4xl mb-8" style="color: var(--star-light);">4-7-8 Breathing</h2>
+                <div class="breathing-circle mx-auto mb-8 flex items-center justify-center" id="breathCircle">
+                    <div id="breathInstruction" class="text-2xl font-serif"></div>
+                </div>
+                <div id="breathCounter" class="text-sm stat-label mb-8">Round 1 of 8</div>
+            </div>
+
+            <div id="meditationView" class="hidden">
+                <h2 class="font-serif text-4xl mb-8" style="color: var(--star-light);">Sleep Meditation</h2>
+                <div class="max-w-2xl mx-auto">
+                    <div id="meditationText" class="text-lg font-serif leading-relaxed mb-8" style="color: var(--moon-glow);"></div>
+                    <div class="stat-label" id="meditationProgress">Starting...</div>
+                </div>
+            </div>
+
+            <div id="storyView" class="hidden">
+                <h2 id="storyTitle" class="font-serif text-4xl mb-8" style="color: var(--star-light);">Sleep Story</h2>
+                <div class="max-w-2xl mx-auto">
+                    <p id="storyText" class="text-base font-serif leading-relaxed mb-8" style="color: var(--moon-glow);"></p>
+                    <div class="stat-label" id="storyProgress">Beginning...</div>
+                </div>
+            </div>
+
+            <button id="stopBtn" onclick="stopAndExit()" class="mt-8 px-8 py-3 rounded-full border border-moon-glow/30 text-xs uppercase tracking-widest hover:bg-moon-glow/10 transition-all">
+                Stop
+            </button>
+        </div>
+    </div>
+
+    <script>
+        // Generate starfield
+        const starfield = document.getElementById('starfield');
+        for (let i = 0; i < 100; i++) {
+            const star = document.createElement('div');
+            star.className = 'star';
+            star.style.left = Math.random() * 100 + '%';
+            star.style.top = Math.random() * 100 + '%';
+            star.style.animationDelay = Math.random() * 3 + 's';
+            starfield.appendChild(star);
+        }
+
+        let synth = window.speechSynthesis;
+        let isPlaying = false;
+        let sleepTimer = null;
+
+        const SLEEP_MEDITATION = [
+            { time: 0, text: "Welcome. It's time to prepare for sleep. Lie down in bed and get comfortable." },
+            { time: 15, text: "Close your eyes. Take a deep breath in... and sigh it out." },
+            { time: 30, text: "With each exhale, your body becomes heavier, sinking into the bed beneath you." },
+            { time: 50, text: "Notice your feet. They can completely relax now." },
+            { time: 70, text: "Let your legs become heavy and still." },
+            { time: 90, text: "Your hips and pelvis releasing all tension." },
+            { time: 110, text: "Your belly softens with each breath." },
+            { time: 130, text: "Chest rises and falls like gentle waves." },
+            { time: 150, text: "Shoulders drop away from your ears." },
+            { time: 170, text: "Arms become heavy. Fingers soft." },
+            { time: 190, text: "Relax your jaw. Soften your eyes." },
+            { time: 210, text: "Your entire body is now deeply relaxed." },
+            { time: 240, text: "If thoughts come, that's okay. Just notice them and let them drift away." },
+            { time: 270, text: "You are safe. You are held. Sleep will come when it's ready." },
+            { time: 360, text: "Continue breathing... relaxing... letting go." },
+            { time: 600, text: "Good night. Sleep well." }
+        ];
+
+        const SLEEP_STORIES = {
+            forest: [
+                { time: 0, text: "You're walking through a peaceful forest at twilight. The air is cool and fresh." },
+                { time: 20, text: "Tall trees surround you, their leaves rustling gently in the evening breeze." },
+                { time: 40, text: "Soft moss cushions each step. Your pace is slow, unhurried." },
+                { time: 60, text: "Ahead, you see a clearing where the last light of day filters through the canopy." },
+                { time: 85, text: "The forest floor is carpeted with fallen leaves in shades of amber and gold." },
+                { time: 110, text: "You find a smooth, flat rock beside a quiet stream. You sit down to rest." },
+                { time: 140, text: "The water moves gently over smooth stones, creating a peaceful melody." },
+                { time: 170, text: "The sky above turns deeper shades of blue and purple. Stars begin to appear." },
+                { time: 200, text: "You feel completely safe here. The forest holds you in its quiet embrace." },
+                { time: 240, text: "Your breathing matches the rhythm of the stream. Slow. Easy. Natural." },
+                { time: 280, text: "The last birds of the day call softly to each other." },
+                { time: 320, text: "Fireflies begin their gentle dance between the trees." },
+                { time: 360, text: "You lie back on the soft moss, gazing up at the emerging stars." },
+                { time: 400, text: "The forest settles into its nighttime stillness." },
+                { time: 450, text: "You close your eyes, surrounded by peace." },
+                { time: 500, text: "And you drift into restful sleep." }
+            ],
+            ocean: [
+                { time: 0, text: "You're lying on a warm beach as evening approaches. The sand beneath you is soft and welcoming." },
+                { time: 25, text: "Gentle waves roll onto the shore, each one arriving with perfect rhythm." },
+                { time: 50, text: "The sound of the ocean is steady and soothing. In... and out. In... and out." },
+                { time: 80, text: "The sky above transforms from blue to shades of pink and orange." },
+                { time: 110, text: "A warm breeze carries the scent of salt air. It's peaceful. Safe." },
+                { time: 145, text: "You can hear seabirds in the distance, their calls growing softer as the day ends." },
+                { time: 180, text: "Each wave that reaches the shore seems to wash away any remaining tension." },
+                { time: 220, text: "The rhythm of the waves matches your breathing. Slow. Deep. Calming." },
+                { time: 260, text: "The sun touches the horizon, painting the water with golden light." },
+                { time: 300, text: "Your body feels heavy and relaxed, cradled by the soft sand." },
+                { time: 340, text: "The waves continue their eternal dance. Arriving. Retreating. Arriving." },
+                { time: 380, text: "Stars begin to emerge in the darkening sky." },
+                { time: 420, text: "The ocean's voice becomes a lullaby, ancient and timeless." },
+                { time: 470, text: "You let yourself drift with that rhythm." },
+                { time: 520, text: "Like a boat on gentle water, you float into peaceful sleep." }
+            ]
+        };
+
+        function startBreathing() {
+            showPlayerView('breathingView');
+            let round = 1;
+            const totalRounds = 8;
+
+            function doCycle() {
+                if (!isPlaying || round > totalRounds) {
+                    if (round > totalRounds) stopAndExit();
+                    return;
+                }
+
+                const circle = document.getElementById('breathCircle');
+                const instruction = document.getElementById('breathInstruction');
+                const counter = document.getElementById('breathCounter');
+
+                counter.textContent = `Round ${round} of ${totalRounds}`;
+
+                // Inhale (4 seconds)
+                circle.classList.remove('exhale');
+                circle.classList.add('inhale');
+                instruction.textContent = 'Breathe In';
+                speak('Breathe in');
+
+                setTimeout(() => {
+                    // Hold (7 seconds)
+                    instruction.textContent = 'Hold';
+                    speak('Hold');
+
+                    setTimeout(() => {
+                        // Exhale (8 seconds)
+                        circle.classList.remove('inhale');
+                        circle.classList.add('exhale');
+                        instruction.textContent = 'Breathe Out';
+                        speak('Breathe out');
+
+                        setTimeout(() => {
+                            round++;
+                            doCycle();
+                        }, 8000);
+                    }, 7000);
+                }, 4000);
+            }
+
+            doCycle();
+            setupSleepTimer();
+        }
+
+        function startSleepMeditation() {
+            showPlayerView('meditationView');
+            playScript(SLEEP_MEDITATION, 'meditationText', 'meditationProgress');
+            setupSleepTimer();
+        }
+
+        function startSleepStory(type) {
+            showPlayerView('storyView');
+            const story = SLEEP_STORIES[type];
+            document.getElementById('storyTitle').textContent = type === 'forest' ? 'Forest Walk' : 'Ocean Waves';
+            playScript(story, 'storyText', 'storyProgress');
+            setupSleepTimer();
+        }
+
+        function showPlayerView(viewId) {
+            isPlaying = true;
+            document.getElementById('libraryView').classList.add('hidden');
+            document.getElementById('playerView').classList.remove('hidden');
+            
+            // Hide all sub-views
+            ['breathingView', 'meditationView', 'storyView'].forEach(id => {
+                document.getElementById(id).classList.add('hidden');
+            });
+            
+            // Show selected view
+            document.getElementById(viewId).classList.remove('hidden');
+        }
+
+        function playScript(script, textId, progressId) {
+            let index = 0;
+            const startTime = Date.now();
+
+            function playNext() {
+                if (!isPlaying) return;
+
+                const elapsed = Math.floor((Date.now() - startTime) / 1000);
+                
+                while (index < script.length && script[index].time <= elapsed) {
+                    const segment = script[index];
+                    document.getElementById(textId).textContent = segment.text;
+                    speak(segment.text);
+                    index++;
+                }
+
+                if (index < script.length) {
+                    const remaining = script[script.length - 1].time - elapsed;
+                    document.getElementById(progressId).textContent = `${Math.floor(remaining / 60)} minutes remaining`;
+                    setTimeout(playNext, 1000);
+                } else {
+                    stopAndExit();
+                }
+            }
+
+            playNext();
+        }
+
+        function speak(text) {
+            if (synth.speaking) synth.cancel();
+            const utterance = new SpeechSynthesisUtterance(text);
+            utterance.rate = 0.8; // Slow for sleep
+            utterance.pitch = 0.9;
+            utterance.volume = 0.7;
+            synth.speak(utterance);
+        }
+
+        function setupSleepTimer() {
+            const minutes = parseInt(document.getElementById('sleepTimer').value);
+            if (minutes > 0) {
+                sleepTimer = setTimeout(() => {
+                    stopAndExit();
+                }, minutes * 60 * 1000);
+            }
+        }
+
+        function exitPlayer() {
+            isPlaying = false;
+            if (synth.speaking) synth.cancel();
+            if (sleepTimer) clearTimeout(sleepTimer);
+            
+            document.getElementById('libraryView').classList.remove('hidden');
+            document.getElementById('playerView').classList.add('hidden');
+        }
+
+        function stopAndExit() {
+            exitPlayer();
+        }
+    </script>
+</body>
+</html>

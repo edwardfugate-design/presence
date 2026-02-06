@@ -1,0 +1,459 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="theme-color" content="#f8f9fa">
+    <title>presence • settings</title>
+    <script src="presence-content-manager.js"></script>
+    <script src="presence-monitoring.js"></script>
+    <script src="presence-auto-integrate.js"></script>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@300;400;600&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --dawn-start: #f8f9fa; --dawn-mid: #e9ecef; --dawn-end: #dee2e6;
+            --text-whisper: #6c757d; --text-soft: #495057; --text-present: #212529;
+            --accent-focus: #6366f1;
+        }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: linear-gradient(180deg, var(--dawn-start) 0%, var(--dawn-mid) 50%, var(--dawn-end) 100%);
+            min-height: 100vh;
+            color: var(--text-soft);
+            padding: env(safe-area-inset-top) env(safe-area-inset-right) env(safe-area-inset-bottom) env(safe-area-inset-left);
+        }
+        .font-serif { font-family: 'Cormorant Garamond', serif; }
+        .stat-label { font-size: 0.7rem; letter-spacing: 0.3em; text-transform: uppercase; color: var(--text-whisper); }
+        .setting-card {
+            background: rgba(255,255,255,0.4); border: 1px solid rgba(0,0,0,0.05);
+            backdrop-filter: blur(10px);
+        }
+        .toggle-switch {
+            position: relative;
+            width: 52px;
+            height: 28px;
+            background: rgba(0,0,0,0.1);
+            border-radius: 14px;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+        .toggle-switch.active {
+            background: var(--accent-focus);
+        }
+        .toggle-knob {
+            position: absolute;
+            top: 2px;
+            left: 2px;
+            width: 24px;
+            height: 24px;
+            background: white;
+            border-radius: 50%;
+            transition: all 0.3s;
+        }
+        .toggle-switch.active .toggle-knob {
+            left: 26px;
+        }
+    </style>
+</head>
+<body class="p-4 sm:p-8 md:p-16">
+    <div class="max-w-4xl mx-auto">
+        <header class="mb-8 sm:mb-12">
+            <a href="index.html" class="stat-label mb-4 block" style="color: var(--accent-focus);">← Hub</a>
+            <h1 class="font-serif text-5xl sm:text-7xl tracking-tighter text-gray-900 mb-4">Settings</h1>
+            <p class="text-base text-gray-500 font-light">Manage your data, notifications, and preferences</p>
+        </header>
+
+        <!-- Notifications -->
+        <div class="setting-card p-6 sm:p-8 rounded-2xl mb-6">
+            <h2 class="text-2xl font-serif mb-6 text-gray-900">Notifications</h2>
+            
+            <div class="space-y-4">
+                <div class="flex items-center justify-between">
+                    <div>
+                        <div class="text-sm font-medium mb-1">Daily Practice Reminder</div>
+                        <div class="text-xs text-gray-500">Get reminded to practice each day</div>
+                    </div>
+                    <div class="toggle-switch" id="dailyToggle" onclick="toggleDaily()">
+                        <div class="toggle-knob"></div>
+                    </div>
+                </div>
+
+                <div id="dailyTimeSelector" class="hidden pl-4 border-l-2 border-gray-200">
+                    <label class="block text-xs mb-2 text-gray-600">Reminder Time</label>
+                    <input type="time" id="reminderTime" value="09:00" class="px-4 py-2 rounded-lg border border-gray-200 bg-white text-sm">
+                </div>
+
+                <div class="flex items-center justify-between">
+                    <div>
+                        <div class="text-sm font-medium mb-1">Streak Protection</div>
+                        <div class="text-xs text-gray-500">Get notified before losing your streak</div>
+                    </div>
+                    <div class="toggle-switch" id="streakToggle" onclick="toggleStreak()">
+                        <div class="toggle-knob"></div>
+                    </div>
+                </div>
+
+                <div class="flex items-center justify-between">
+                    <div>
+                        <div class="text-sm font-medium mb-1">Milestone Celebrations</div>
+                        <div class="text-xs text-gray-500">Get notified of practice milestones</div>
+                    </div>
+                    <div class="toggle-switch active" id="milestoneToggle" onclick="toggleMilestone()">
+                        <div class="toggle-knob"></div>
+                    </div>
+                </div>
+
+                <button onclick="requestNotificationPermission()" class="w-full mt-4 py-3 rounded-full bg-gray-900 text-white text-xs uppercase tracking-widest hover:bg-gray-800 transition-all">
+                    Enable Browser Notifications
+                </button>
+                <div id="notificationStatus" class="text-xs text-center text-gray-500 mt-2"></div>
+            </div>
+        </div>
+
+        <!-- Data Management -->
+        <div class="setting-card p-6 sm:p-8 rounded-2xl mb-6">
+            <h2 class="text-2xl font-serif mb-6 text-gray-900">Data Management</h2>
+            
+            <div class="space-y-4">
+                <div class="flex items-center justify-between p-4 bg-white/50 rounded-xl">
+                    <div>
+                        <div class="text-sm font-medium mb-1">Total Data Size</div>
+                        <div class="text-xs text-gray-500" id="dataSize">Calculating...</div>
+                    </div>
+                    <div class="text-2xl font-light text-gray-900" id="dataSizeKB">0 KB</div>
+                </div>
+
+                <button onclick="exportAllData()" class="w-full py-3 rounded-full border border-gray-300 text-gray-900 text-xs uppercase tracking-widest hover:border-gray-500 transition-all">
+                    Export All Data (JSON)
+                </button>
+
+                <button onclick="exportJournalMarkdown()" class="w-full py-3 rounded-full border border-gray-300 text-gray-900 text-xs uppercase tracking-widest hover:border-gray-500 transition-all">
+                    Export Journal (Markdown)
+                </button>
+
+                <button onclick="exportJournalPDF()" class="w-full py-3 rounded-full border border-gray-300 text-gray-900 text-xs uppercase tracking-widest hover:border-gray-500 transition-all">
+                    Export Journal (PDF)
+                </button>
+
+                <div class="border-t border-gray-200 pt-4">
+                    <label class="block text-xs mb-2 text-gray-600">Import Data</label>
+                    <input type="file" id="importFile" accept=".json" class="block w-full text-sm">
+                    <button onclick="importData()" class="w-full mt-2 py-3 rounded-full bg-indigo-500 text-white text-xs uppercase tracking-widest hover:bg-indigo-600 transition-all">
+                        Import JSON Data
+                    </button>
+                </div>
+
+                <button onclick="clearAllData()" class="w-full py-3 rounded-full border-2 border-red-300 text-red-600 text-xs uppercase tracking-widest hover:bg-red-50 transition-all">
+                    Clear All Data (Irreversible)
+                </button>
+            </div>
+        </div>
+
+        <!-- Voice Settings -->
+        <div class="setting-card p-6 sm:p-8 rounded-2xl mb-6">
+            <h2 class="text-2xl font-serif mb-6 text-gray-900">Voice Guidance</h2>
+            
+            <div class="space-y-4">
+                <div>
+                    <label class="block text-xs mb-2 text-gray-600">Voice Selection</label>
+                    <select id="voiceSelect" class="w-full px-4 py-3 rounded-lg border border-gray-200 bg-white text-sm">
+                        <option>Loading voices...</option>
+                    </select>
+                </div>
+
+                <div>
+                    <label class="block text-xs mb-2 text-gray-600">Speech Rate</label>
+                    <input type="range" id="speechRate" min="0.5" max="1.5" step="0.1" value="1" class="w-full" oninput="updateRateDisplay()">
+                    <div class="flex justify-between text-xs text-gray-500 mt-1">
+                        <span>Slower</span>
+                        <span id="rateDisplay">1.0x</span>
+                        <span>Faster</span>
+                    </div>
+                </div>
+
+                <button onclick="testVoice()" class="w-full py-3 rounded-full bg-gray-900 text-white text-xs uppercase tracking-widest hover:bg-gray-800 transition-all">
+                    Test Voice
+                </button>
+            </div>
+        </div>
+
+        <!-- About -->
+        <div class="setting-card p-6 sm:p-8 rounded-2xl">
+            <h2 class="text-2xl font-serif mb-6 text-gray-900">About</h2>
+            
+            <div class="space-y-3 text-sm text-gray-600">
+                <p><strong>Presence Suite</strong> v2.5</p>
+                <p>A complete mindfulness platform with 14 interconnected modules.</p>
+                <p>All data stored locally on your device. No tracking. No accounts. Completely private.</p>
+                <p class="pt-4 border-t border-gray-200">
+                    Built with care for modern contemplative practice.
+                </p>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Load voices
+        function loadVoices() {
+            const voices = speechSynthesis.getVoices();
+            const select = document.getElementById('voiceSelect');
+            
+            if (voices.length > 0) {
+                select.innerHTML = voices
+                    .map((voice, i) => `<option value="${i}">${voice.name} (${voice.lang})</option>`)
+                    .join('');
+                
+                // Load saved preference
+                const savedVoice = localStorage.getItem('preferredVoice');
+                if (savedVoice) select.value = savedVoice;
+            } else {
+                setTimeout(loadVoices, 100);
+            }
+        }
+
+        speechSynthesis.onvoiceschanged = loadVoices;
+        loadVoices();
+
+        // Save voice preference
+        document.getElementById('voiceSelect')?.addEventListener('change', (e) => {
+            localStorage.setItem('preferredVoice', e.target.value);
+        });
+
+        // Update rate display
+        function updateRateDisplay() {
+            const rate = document.getElementById('speechRate').value;
+            document.getElementById('rateDisplay').textContent = `${rate}x`;
+            localStorage.setItem('speechRate', rate);
+        }
+
+        // Test voice
+        function testVoice() {
+            const text = "This is a test of your selected voice settings.";
+            const utterance = new SpeechSynthesisUtterance(text);
+            const voiceIndex = document.getElementById('voiceSelect').value;
+            const voices = speechSynthesis.getVoices();
+            
+            if (voices[voiceIndex]) {
+                utterance.voice = voices[voiceIndex];
+            }
+            utterance.rate = parseFloat(document.getElementById('speechRate').value);
+            
+            speechSynthesis.speak(utterance);
+        }
+
+        // Calculate data size
+        function calculateDataSize() {
+            let totalSize = 0;
+            for (let key in localStorage) {
+                if (localStorage.hasOwnProperty(key)) {
+                    totalSize += localStorage[key].length + key.length;
+                }
+            }
+            
+            const kb = (totalSize / 1024).toFixed(2);
+            document.getElementById('dataSizeKB').textContent = `${kb} KB`;
+            document.getElementById('dataSize').textContent = `${Object.keys(localStorage).length} items stored`;
+        }
+
+        // Export all data
+        function exportAllData() {
+            const data = {};
+            for (let key in localStorage) {
+                if (localStorage.hasOwnProperty(key)) {
+                    try {
+                        data[key] = JSON.parse(localStorage[key]);
+                    } catch (e) {
+                        data[key] = localStorage[key];
+                    }
+                }
+            }
+            
+            const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
+            downloadFile(blob, `presence-backup-${Date.now()}.json`);
+        }
+
+        // Export journal as markdown
+        function exportJournalMarkdown() {
+            const journal = JSON.parse(localStorage.getItem('presence_journal') || '[]');
+            
+            let markdown = '# Presence Journal\n\n';
+            markdown += `Exported: ${new Date().toLocaleDateString()}\n\n---\n\n`;
+            
+            journal.forEach(entry => {
+                const date = new Date(entry.timestamp);
+                markdown += `## ${date.toLocaleDateString()} - ${date.toLocaleTimeString()}\n\n`;
+                markdown += `**Mood:** ${'⭐'.repeat(entry.mood)}\n`;
+                markdown += `**Presence Level:** ${entry.presence}/10\n`;
+                markdown += `**Source:** ${entry.source}\n\n`;
+                markdown += `${entry.notes}\n\n---\n\n`;
+            });
+            
+            const blob = new Blob([markdown], { type: 'text/markdown' });
+            downloadFile(blob, `presence-journal-${Date.now()}.md`);
+        }
+
+        // Export journal as PDF (simplified HTML version)
+        function exportJournalPDF() {
+            const journal = JSON.parse(localStorage.getItem('presence_journal') || '[]');
+            
+            let html = `<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>Presence Journal</title>
+    <script src="presence-content-manager.js"></script>
+    <script src="presence-monitoring.js"></script>
+    <script src="presence-auto-integrate.js"></script>
+    <style>
+        body { font-family: serif; max-width: 800px; margin: 40px auto; line-height: 1.6; }
+        h1 { border-bottom: 2px solid #333; padding-bottom: 10px; }
+        .entry { margin: 30px 0; padding: 20px; border-left: 3px solid #999; }
+        .meta { color: #666; font-size: 14px; margin-bottom: 10px; }
+    </style>
+</head>
+<body>
+    <h1>Presence Journal</h1>
+    <p>Exported: ${new Date().toLocaleDateString()}</p>
+`;
+            
+            journal.forEach(entry => {
+                const date = new Date(entry.timestamp);
+                html += `<div class="entry">`;
+                html += `<h2>${date.toLocaleDateString()} - ${date.toLocaleTimeString()}</h2>`;
+                html += `<div class="meta">Mood: ${'⭐'.repeat(entry.mood)} | Presence: ${entry.presence}/10 | ${entry.source}</div>`;
+                html += `<p>${entry.notes}</p>`;
+                html += `</div>`;
+            });
+            
+            html += `</body></html>`;
+            
+            const blob = new Blob([html], { type: 'text/html' });
+            downloadFile(blob, `presence-journal-${Date.now()}.html`);
+        }
+
+        // Import data
+        function importData() {
+            const file = document.getElementById('importFile').files[0];
+            if (!file) {
+                alert('Please select a file first');
+                return;
+            }
+            
+            const reader = new FileReader();
+            reader.onload = (e) => {
+                try {
+                    const data = JSON.parse(e.target.result);
+                    
+                    if (confirm('This will overwrite your current data. Continue?')) {
+                        for (let key in data) {
+                            localStorage.setItem(key, typeof data[key] === 'string' ? data[key] : JSON.stringify(data[key]));
+                        }
+                        alert('Data imported successfully!');
+                        calculateDataSize();
+                    }
+                } catch (error) {
+                    alert('Error importing data: ' + error.message);
+                }
+            };
+            reader.readAsText(file);
+        }
+
+        // Clear all data
+        function clearAllData() {
+            if (confirm('This will delete ALL your data permanently. Are you absolutely sure?')) {
+                if (confirm('Last chance - this cannot be undone!')) {
+                    localStorage.clear();
+                    alert('All data cleared');
+                    calculateDataSize();
+                }
+            }
+        }
+
+        // Download helper
+        function downloadFile(blob, filename) {
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = filename;
+            a.click();
+            URL.revokeObjectURL(url);
+        }
+
+        // Toggle functions
+        function toggleDaily() {
+            const toggle = document.getElementById('dailyToggle');
+            const selector = document.getElementById('dailyTimeSelector');
+            toggle.classList.toggle('active');
+            
+            if (toggle.classList.contains('active')) {
+                selector.classList.remove('hidden');
+                localStorage.setItem('dailyReminder', 'true');
+            } else {
+                selector.classList.add('hidden');
+                localStorage.setItem('dailyReminder', 'false');
+            }
+        }
+
+        function toggleStreak() {
+            const toggle = document.getElementById('streakToggle');
+            toggle.classList.toggle('active');
+            localStorage.setItem('streakReminder', toggle.classList.contains('active'));
+        }
+
+        function toggleMilestone() {
+            const toggle = document.getElementById('milestoneToggle');
+            toggle.classList.toggle('active');
+            localStorage.setItem('milestoneNotifications', toggle.classList.contains('active'));
+        }
+
+        // Request notification permission
+        async function requestNotificationPermission() {
+            if (!('Notification' in window)) {
+                document.getElementById('notificationStatus').textContent = 'Notifications not supported in this browser';
+                return;
+            }
+            
+            const permission = await Notification.requestPermission();
+            
+            if (permission === 'granted') {
+                document.getElementById('notificationStatus').textContent = '✓ Notifications enabled';
+                new Notification('Presence', {
+                    body: 'Notifications enabled! You\'ll receive gentle reminders.',
+                    icon: '/icon.png'
+                });
+            } else {
+                document.getElementById('notificationStatus').textContent = 'Notifications denied';
+            }
+        }
+
+        // Check notification permission on load
+        if ('Notification' in window) {
+            document.getElementById('notificationStatus').textContent = 
+                Notification.permission === 'granted' ? '✓ Notifications enabled' : 
+                Notification.permission === 'denied' ? 'Notifications blocked' : 
+                'Click to enable notifications';
+        }
+
+        // Load saved settings
+        if (localStorage.getItem('dailyReminder') === 'true') {
+            document.getElementById('dailyToggle').classList.add('active');
+            document.getElementById('dailyTimeSelector').classList.remove('hidden');
+        }
+
+        if (localStorage.getItem('streakReminder') === 'true') {
+            document.getElementById('streakToggle').classList.add('active');
+        }
+
+        const savedRate = localStorage.getItem('speechRate');
+        if (savedRate) {
+            document.getElementById('speechRate').value = savedRate;
+            updateRateDisplay();
+        }
+
+        // Initialize
+        calculateDataSize();
+    </script>
+</body>
+</html>

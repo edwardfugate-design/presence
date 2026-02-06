@@ -1,0 +1,656 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="theme-color" content="#f8f9fa">
+    <title>presence • alignment lab</title>
+    <script src="presence-content-manager.js"></script>
+    <script src="presence-monitoring.js"></script>
+    <script src="presence-auto-integrate.js"></script>
+    <script src="all-libraries-compact.js"></script>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script crossorigin src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
+    <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
+    <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@300;400;500;700&family=Newsreader:wght@300;400;600&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            /* Zen Color Palette - Unified */
+            --dawn-start: #f8f9fa;
+            --dawn-mid: #e9ecef;
+            --dawn-end: #dee2e6;
+            --text-whisper: #6c757d;
+            --text-soft: #495057;
+            --text-present: #212529;
+            --accent-calm: #8b98a5;
+            --accent-focus: #6366f1;
+            --accent-success: #84cc16;
+            --accent-warning: #f59e0b;
+            --accent-alert: #ef4444;
+            --surface-primary: rgba(255, 255, 255, 0.4);
+            --surface-hover: rgba(255, 255, 255, 0.7);
+            --border-subtle: rgba(0, 0, 0, 0.05);
+        }
+        * {
+            -webkit-tap-highlight-color: transparent;
+            box-sizing: border-box;
+        }
+        body {
+            font-family: 'JetBrains Mono', monospace;
+            background: linear-gradient(180deg, var(--dawn-start) 0%, var(--dawn-mid) 50%, var(--dawn-end) 100%);
+            color: var(--text-present);
+            margin: 0;
+            padding: env(safe-area-inset-top) env(safe-area-inset-right) env(safe-area-inset-bottom) env(safe-area-inset-left);
+            min-height: 100vh;
+            min-height: -webkit-fill-available;
+            overflow-x: hidden;
+        }
+        html { height: -webkit-fill-available; }
+        
+        .font-serif { font-family: 'Newsreader', serif; }
+        
+        .bio-card {
+            background: var(--surface-primary);
+            border: 1px solid var(--border-subtle);
+            backdrop-filter: blur(10px);
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+        
+        @media (hover: hover) {
+            .bio-card:hover {
+                border-color: rgba(99, 102, 241, 0.3);
+                transform: translateY(-2px);
+                box-shadow: 0 8px 32px rgba(99, 102, 241, 0.1);
+            }
+        }
+        
+        .bio-card:active {
+            transform: scale(0.99);
+        }
+        
+        .metric-display {
+            font-family: 'JetBrains Mono', monospace;
+            font-weight: 300;
+            letter-spacing: -0.02em;
+        }
+        
+        .angle-arc {
+            stroke: var(--accent-success);
+            fill: none;
+            stroke-width: 3;
+            stroke-linecap: round;
+        }
+        
+        .muscle-highlight {
+            transition: all 0.3s;
+            cursor: pointer;
+        }
+        
+        .muscle-highlight:hover {
+            filter: brightness(1.2);
+        }
+        
+        .muscle-active {
+            opacity: 0.7;
+        }
+        
+        .muscle-inactive {
+            fill: rgba(139, 152, 165, 0.1);
+        }
+        
+        .skeleton-joint {
+            fill: var(--accent-focus);
+        }
+        
+        .alignment-warning {
+            animation: pulse-warning 2s ease-in-out infinite;
+        }
+        
+        @keyframes pulse-warning {
+            0%, 100% { opacity: 0.3; }
+            50% { opacity: 1; }
+        }
+        
+        .biometric-gauge {
+            stroke-dasharray: 283;
+            stroke-dashoffset: 283;
+            transition: stroke-dashoffset 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+            transform-origin: center;
+        }
+        
+        .stat-label {
+            font-size: 0.65rem;
+            letter-spacing: 0.15em;
+            text-transform: uppercase;
+            color: var(--text-whisper);
+        }
+        
+        input[type="range"] {
+            -webkit-appearance: none;
+            appearance: none;
+            width: 100%;
+            height: 2px;
+            background: rgba(0, 0, 0, 0.1);
+            outline: none;
+        }
+        
+        input[type="range"]::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            appearance: none;
+            width: 16px;
+            height: 16px;
+            background: var(--text-present);
+            cursor: pointer;
+            border-radius: 50%;
+        }
+        
+        input[type="range"]::-moz-range-thumb {
+            width: 16px;
+            height: 16px;
+            background: var(--text-present);
+            cursor: pointer;
+            border-radius: 50%;
+            border: none;
+        }
+        
+        .pose-skeleton {
+            stroke: rgba(73, 80, 87, 0.3);
+            stroke-width: 2;
+            fill: none;
+        }
+        
+        @media (max-width: 640px) {
+            .mobile-text-lg { font-size: 1rem !important; }
+            .mobile-text-xl { font-size: 1.25rem !important; }
+        }
+    </style>
+</head>
+<body>
+    <div id="root"></div>
+
+    <script type="text/babel">
+        const { useState, useEffect, useRef } = React;
+
+        // Anatomical data for major muscle groups - Updated with Zen colors
+        const MUSCLE_GROUPS = {
+            quadriceps: { name: 'Quadriceps', color: '#84cc16', poses: ['warrior', 'chair', 'lunge'] },
+            hamstrings: { name: 'Hamstrings', color: '#6366f1', poses: ['forward-fold', 'pyramid', 'downdog'] },
+            glutes: { name: 'Gluteus Maximus', color: '#f59e0b', poses: ['warrior', 'bridge', 'chair'] },
+            core: { name: 'Core (Rectus Abdominis)', color: '#ef4444', poses: ['plank', 'boat', 'side-plank'] },
+            shoulders: { name: 'Deltoids', color: '#8b98a5', poses: ['downdog', 'plank', 'side-plank'] },
+            back: { name: 'Erector Spinae', color: '#6366f1', poses: ['warrior', 'bridge', 'cobra'] },
+            calves: { name: 'Gastrocnemius', color: '#f59e0b', poses: ['warrior', 'chair', 'tree'] },
+            hip_flexors: { name: 'Iliopsoas', color: '#84cc16', poses: ['lunge', 'warrior', 'tree'] }
+        };
+
+        // Alignment checkpoints with biomechanical angles
+        const POSES = {
+            warrior1: {
+                name: "Warrior I",
+                checkpoints: [
+                    { joint: 'front_knee', ideal: 90, range: [85, 95], label: 'Front Knee Angle' },
+                    { joint: 'hip_alignment', ideal: 0, range: [-5, 5], label: 'Hip Square to Front' },
+                    { joint: 'back_leg', ideal: 180, range: [170, 180], label: 'Back Leg Extension' },
+                    { joint: 'spine', ideal: 0, range: [-10, 10], label: 'Spine Neutral' }
+                ],
+                muscles: ['quadriceps', 'glutes', 'hip_flexors', 'core'],
+                difficulty: 'intermediate'
+            },
+            downdog: {
+                name: "Downward Dog",
+                checkpoints: [
+                    { joint: 'shoulder', ideal: 180, range: [160, 180], label: 'Shoulder Flexion' },
+                    { joint: 'spine', ideal: 0, range: [-5, 5], label: 'Spine Lengthening' },
+                    { joint: 'hip', ideal: 90, range: [70, 110], label: 'Hip Angle' },
+                    { joint: 'heel', ideal: 0, range: [0, 20], label: 'Heel to Ground' }
+                ],
+                muscles: ['hamstrings', 'shoulders', 'back', 'calves'],
+                difficulty: 'beginner'
+            },
+            plank: {
+                name: "Plank",
+                checkpoints: [
+                    { joint: 'shoulder', ideal: 90, range: [85, 95], label: 'Shoulder Stack' },
+                    { joint: 'hip', ideal: 180, range: [170, 180], label: 'Hip Neutral' },
+                    { joint: 'spine', ideal: 0, range: [-5, 5], label: 'Spine Alignment' },
+                    { joint: 'head', ideal: 0, range: [-10, 10], label: 'Neck Neutral' }
+                ],
+                muscles: ['core', 'shoulders', 'quadriceps', 'glutes'],
+                difficulty: 'beginner'
+            },
+            tree: {
+                name: "Tree Pose",
+                checkpoints: [
+                    { joint: 'standing_leg', ideal: 180, range: [175, 180], label: 'Standing Leg Extension' },
+                    { joint: 'hip_rotation', ideal: 90, range: [45, 90], label: 'External Hip Rotation' },
+                    { joint: 'pelvis', ideal: 0, range: [-5, 5], label: 'Pelvis Level' },
+                    { joint: 'spine', ideal: 0, range: [-5, 5], label: 'Spine Vertical' }
+                ],
+                muscles: ['glutes', 'hip_flexors', 'calves', 'core'],
+                difficulty: 'beginner'
+            }
+        };
+
+        function AlignmentLab() {
+            const [selectedPose, setSelectedPose] = useState('warrior1');
+            const [angles, setAngles] = useState({});
+            const [activeMuscles, setActiveMuscles] = useState([]);
+            const [view, setView] = useState('analysis'); // 'analysis', 'anatomy', 'biometrics'
+
+            useEffect(() => {
+                // Initialize angles with ideal values
+                const pose = POSES[selectedPose];
+                const initialAngles = {};
+                pose.checkpoints.forEach(cp => {
+                    initialAngles[cp.joint] = cp.ideal;
+                });
+                setAngles(initialAngles);
+                setActiveMuscles(pose.muscles);
+            }, [selectedPose]);
+
+            const updateAngle = (joint, value) => {
+                setAngles({ ...angles, [joint]: parseFloat(value) });
+            };
+
+            const getAlignmentStatus = (joint) => {
+                const pose = POSES[selectedPose];
+                const checkpoint = pose.checkpoints.find(cp => cp.joint === joint);
+                const angle = angles[joint] || checkpoint.ideal;
+                
+                if (angle >= checkpoint.range[0] && angle <= checkpoint.range[1]) {
+                    return 'optimal';
+                } else if (Math.abs(angle - checkpoint.ideal) <= 15) {
+                    return 'acceptable';
+                } else {
+                    return 'misaligned';
+                }
+            };
+
+            const getStatusColor = (status) => {
+                switch(status) {
+                    case 'optimal': return '#84cc16';      // accent-success (lime)
+                    case 'acceptable': return '#6366f1';   // accent-focus (indigo)
+                    case 'misaligned': return '#ef4444';   // accent-alert (red)
+                    default: return '#6c757d';             // text-whisper
+                }
+            };
+
+            return (
+                <div className="min-h-screen p-4 sm:p-8">
+                    <div className="max-w-7xl mx-auto">
+                        {/* Header */}
+                        <header className="mb-8 sm:mb-12">
+                            <a href="index.html" className="text-xs uppercase tracking-widest mb-4 block hover:text-[var(--text-present)] transition-colors" style={{ color: 'var(--accent-focus)' }}>
+                                ← Hub
+                            </a>
+                            <h1 className="text-4xl sm:text-6xl font-light mb-2" style={{ color: 'var(--text-present)' }}>Alignment Lab</h1>
+                            <p className="text-sm" style={{ color: 'var(--text-soft)' }}>Biomechanical Analysis & Anatomical Mapping</p>
+                        </header>
+
+                        {/* View Switcher */}
+                        <div className="flex gap-2 mb-8 overflow-x-auto pb-2">
+                            {['analysis', 'anatomy', 'biometrics'].map(v => (
+                                <button
+                                    key={v}
+                                    onClick={() => setView(v)}
+                                    className={`px-6 py-3 rounded-lg text-xs uppercase tracking-widest transition-all min-h-[44px]`}
+                                    style={view === v 
+                                        ? { background: 'var(--accent-focus)', color: 'white' }
+                                        : { background: 'var(--surface-primary)', color: 'var(--text-soft)', border: '1px solid var(--border-subtle)' }
+                                    }
+                                >
+                                    {v}
+                                </button>
+                            ))}
+                        </div>
+
+                        {/* Pose Selector */}
+                        <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 mb-8">
+                            {Object.entries(POSES).map(([key, pose]) => (
+                                <button
+                                    key={key}
+                                    onClick={() => setSelectedPose(key)}
+                                    className="bio-card p-4 rounded-xl text-left transition-all min-h-[44px]"
+                                    style={selectedPose === key 
+                                        ? { borderColor: 'var(--accent-focus)', borderWidth: '2px' }
+                                        : {}
+                                    }
+                                >
+                                    <div className="stat-label mb-2">{pose.difficulty}</div>
+                                    <div className="text-sm font-medium">{pose.name}</div>
+                                </button>
+                            ))}
+                        </div>
+
+                        {/* Main Content */}
+                        {view === 'analysis' && (
+                            <AnalysisView 
+                                pose={POSES[selectedPose]} 
+                                angles={angles} 
+                                updateAngle={updateAngle}
+                                getAlignmentStatus={getAlignmentStatus}
+                                getStatusColor={getStatusColor}
+                            />
+                        )}
+
+                        {view === 'anatomy' && (
+                            <AnatomyView 
+                                activeMuscles={activeMuscles}
+                                pose={POSES[selectedPose]}
+                            />
+                        )}
+
+                        {view === 'biometrics' && (
+                            <BiometricsView 
+                                pose={POSES[selectedPose]}
+                                angles={angles}
+                                getAlignmentStatus={getAlignmentStatus}
+                            />
+                        )}
+                    </div>
+                </div>
+            );
+        }
+
+        function AnalysisView({ pose, angles, updateAngle, getAlignmentStatus, getStatusColor }) {
+            return (
+                <div className="grid lg:grid-cols-2 gap-6">
+                    {/* Skeleton Visualization */}
+                    <div className="bio-card p-6 sm:p-8 rounded-2xl">
+                        <div className="stat-label mb-6">Skeletal Alignment</div>
+                        <SkeletonDiagram pose={pose} angles={angles} getStatusColor={getStatusColor} />
+                    </div>
+
+                    {/* Alignment Controls */}
+                    <div className="space-y-4">
+                        <div className="bio-card p-6 sm:p-8 rounded-2xl">
+                            <div className="stat-label mb-6">Joint Angles (degrees)</div>
+                            <div className="space-y-6">
+                                {pose.checkpoints.map(checkpoint => {
+                                    const status = getAlignmentStatus(checkpoint.joint);
+                                    const currentAngle = angles[checkpoint.joint] || checkpoint.ideal;
+                                    
+                                    return (
+                                        <div key={checkpoint.joint}>
+                                            <div className="flex justify-between mb-2">
+                                                <span className="text-xs text-[var(--text-secondary)]">{checkpoint.label}</span>
+                                                <div className="flex items-center gap-3">
+                                                    <span 
+                                                        className="metric-display text-2xl"
+                                                        style={{ color: getStatusColor(status) }}
+                                                    >
+                                                        {currentAngle}°
+                                                    </span>
+                                                    <span className="text-xs text-[var(--text-tertiary)]">
+                                                        ({checkpoint.ideal}°)
+                                                    </span>
+                                                </div>
+                                            </div>
+                                            <input
+                                                type="range"
+                                                min="0"
+                                                max="180"
+                                                value={currentAngle}
+                                                onChange={(e) => updateAngle(checkpoint.joint, e.target.value)}
+                                                className="w-full"
+                                            />
+                                            <div className="flex justify-between text-xs text-[var(--text-tertiary)] mt-1">
+                                                <span>Optimal: {checkpoint.range[0]}-{checkpoint.range[1]}°</span>
+                                                <span className="uppercase tracking-wider" style={{ color: getStatusColor(status) }}>
+                                                    {status}
+                                                </span>
+                                            </div>
+                                        </div>
+                                    );
+                                })}
+                            </div>
+                        </div>
+
+                        {/* Quick Stats */}
+                        <div className="bio-card p-6 rounded-2xl">
+                            <div className="stat-label mb-4">Alignment Score</div>
+                            <div className="grid grid-cols-3 gap-4 text-center">
+                                <div>
+                                    <div className="text-3xl metric-display" style={{ color: '#84cc16' }}>
+                                        {pose.checkpoints.filter(cp => getAlignmentStatus(cp.joint) === 'optimal').length}
+                                    </div>
+                                    <div className="text-xs mt-1" style={{ color: 'var(--text-whisper)' }}>Optimal</div>
+                                </div>
+                                <div>
+                                    <div className="text-3xl metric-display" style={{ color: '#6366f1' }}>
+                                        {pose.checkpoints.filter(cp => getAlignmentStatus(cp.joint) === 'acceptable').length}
+                                    </div>
+                                    <div className="text-xs mt-1" style={{ color: 'var(--text-whisper)' }}>Acceptable</div>
+                                </div>
+                                <div>
+                                    <div className="text-3xl metric-display" style={{ color: '#ef4444' }}>
+                                        {pose.checkpoints.filter(cp => getAlignmentStatus(cp.joint) === 'misaligned').length}
+                                    </div>
+                                    <div className="text-xs mt-1" style={{ color: 'var(--text-whisper)' }}>Misaligned</div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            );
+        }
+
+        function SkeletonDiagram({ pose, angles, getStatusColor }) {
+            return (
+                <div className="relative w-full aspect-square max-w-md mx-auto">
+                    <svg viewBox="0 0 400 600" className="w-full h-full">
+                        {/* Simplified stick figure with joint highlights */}
+                        <g id="skeleton">
+                            {/* Head */}
+                            <circle cx="200" cy="80" r="30" className="pose-skeleton" />
+                            
+                            {/* Spine */}
+                            <line x1="200" y1="110" x2="200" y2="300" className="pose-skeleton" />
+                            
+                            {/* Arms */}
+                            <line x1="200" y1="150" x2="140" y2="220" className="pose-skeleton" />
+                            <line x1="200" y1="150" x2="260" y2="220" className="pose-skeleton" />
+                            <line x1="140" y1="220" x2="120" y2="300" className="pose-skeleton" />
+                            <line x1="260" y1="220" x2="280" y2="300" className="pose-skeleton" />
+                            
+                            {/* Legs */}
+                            <line x1="200" y1="300" x2="160" y2="440" className="pose-skeleton" />
+                            <line x1="200" y1="300" x2="240" y2="440" className="pose-skeleton" />
+                            <line x1="160" y1="440" x2="150" y2="550" className="pose-skeleton" />
+                            <line x1="240" y1="440" x2="250" y2="550" className="pose-skeleton" />
+                            
+                            {/* Joints */}
+                            <circle cx="200" cy="150" r="8" className="skeleton-joint" /> {/* Shoulders */}
+                            <circle cx="140" cy="220" r="6" className="skeleton-joint" /> {/* Elbows */}
+                            <circle cx="260" cy="220" r="6" className="skeleton-joint" />
+                            <circle cx="200" cy="300" r="8" className="skeleton-joint" /> {/* Hips */}
+                            <circle cx="160" cy="440" r="6" className="skeleton-joint" /> {/* Knees */}
+                            <circle cx="240" cy="440" r="6" className="skeleton-joint" />
+                            
+                            {/* Angle arc visualization (example for knee) */}
+                            {pose.checkpoints.map((cp, idx) => {
+                                const status = cp.joint;
+                                const y = 150 + (idx * 100);
+                                return (
+                                    <g key={cp.joint}>
+                                        <path 
+                                            d={`M ${320 + Math.cos(0) * 30} ${y + Math.sin(0) * 30} A 30 30 0 0 1 ${320 + Math.cos(Math.PI/2) * 30} ${y + Math.sin(Math.PI/2) * 30}`}
+                                            className="angle-arc"
+                                            style={{ stroke: getStatusColor(status) }}
+                                        />
+                                        <text x="360" y={y + 5} fill={getStatusColor(status)} fontSize="12" fontFamily="JetBrains Mono">
+                                            {angles[cp.joint] || cp.ideal}°
+                                        </text>
+                                    </g>
+                                );
+                            })}
+                        </g>
+                    </svg>
+                </div>
+            );
+        }
+
+        function AnatomyView({ activeMuscles, pose }) {
+            const [selectedMuscle, setSelectedMuscle] = useState(null);
+
+            return (
+                <div className="grid lg:grid-cols-2 gap-6">
+                    {/* Muscle Diagram */}
+                    <div className="bio-card p-6 sm:p-8 rounded-2xl">
+                        <div className="stat-label mb-6">Active Muscle Groups</div>
+                        <div className="relative w-full aspect-[3/4] max-w-md mx-auto">
+                            <svg viewBox="0 0 300 500" className="w-full h-full">
+                                {/* Simplified muscle group visualization */}
+                                {Object.entries(MUSCLE_GROUPS).map(([key, muscle]) => {
+                                    const isActive = activeMuscles.includes(key);
+                                    const positions = {
+                                        quadriceps: { x: 150, y: 320, width: 40, height: 80 },
+                                        hamstrings: { x: 150, y: 320, width: 35, height: 75 },
+                                        glutes: { x: 150, y: 270, width: 50, height: 40 },
+                                        core: { x: 150, y: 220, width: 60, height: 60 },
+                                        shoulders: { x: 150, y: 140, width: 80, height: 30 },
+                                        back: { x: 150, y: 180, width: 55, height: 70 },
+                                        calves: { x: 150, y: 410, width: 30, height: 60 },
+                                        hip_flexors: { x: 150, y: 280, width: 45, height: 35 }
+                                    };
+                                    
+                                    const pos = positions[key];
+                                    
+                                    return (
+                                        <ellipse
+                                            key={key}
+                                            cx={pos.x}
+                                            cy={pos.y}
+                                            rx={pos.width}
+                                            ry={pos.height}
+                                            className={`muscle-highlight ${isActive ? 'muscle-active' : 'muscle-inactive'}`}
+                                            onClick={() => setSelectedMuscle(key)}
+                                            style={{ fill: isActive ? muscle.color : 'rgba(255,255,255,0.05)' }}
+                                        />
+                                    );
+                                })}
+                            </svg>
+                        </div>
+                    </div>
+
+                    {/* Muscle Info */}
+                    <div className="space-y-4">
+                        <div className="bio-card p-6 sm:p-8 rounded-2xl">
+                            <div className="stat-label mb-6">Muscle Activation Map</div>
+                            <div className="space-y-4">
+                                {activeMuscles.map(muscleKey => {
+                                    const muscle = MUSCLE_GROUPS[muscleKey];
+                                    return (
+                                        <div 
+                                            key={muscleKey}
+                                            className="flex items-center justify-between p-4 rounded-lg"
+                                            style={{ 
+                                                background: `linear-gradient(90deg, ${muscle.color}22 0%, transparent 100%)`
+                                            }}
+                                        >
+                                            <div className="flex items-center gap-4">
+                                                <div 
+                                                    className="w-3 h-3 rounded-full"
+                                                    style={{ 
+                                                        background: muscle.color,
+                                                        boxShadow: `0 0 12px ${muscle.color}`
+                                                    }}
+                                                />
+                                                <span className="text-sm">{muscle.name}</span>
+                                            </div>
+                                            <div className="text-xs uppercase tracking-wider" style={{ color: 'var(--text-whisper)' }}>
+                                                Active
+                                            </div>
+                                        </div>
+                                    );
+                                })}
+                            </div>
+                        </div>
+
+                        <div className="bio-card p-6 rounded-2xl">
+                            <div className="stat-label mb-4">Biomechanical Focus</div>
+                            <p className="text-sm leading-relaxed" style={{ color: 'var(--text-soft)' }}>
+                                {pose.name} primarily engages {activeMuscles.length} major muscle groups. 
+                                Proper alignment ensures balanced activation and reduces injury risk.
+                            </p>
+                        </div>
+                    </div>
+                </div>
+            );
+        }
+
+        function BiometricsView({ pose, angles, getAlignmentStatus }) {
+            const canvasRef = useRef(null);
+
+            useEffect(() => {
+                const canvas = canvasRef.current;
+                if (!canvas) return;
+                
+                const ctx = canvas.getContext('2d');
+                const width = canvas.width = canvas.offsetWidth * 2;
+                const height = canvas.height = canvas.offsetHeight * 2;
+                ctx.scale(2, 2);
+
+                // Draw biometric gauges
+                pose.checkpoints.forEach((cp, idx) => {
+                    const x = (idx % 2) * 200 + 100;
+                    const y = Math.floor(idx / 2) * 150 + 100;
+                    
+                    drawGauge(ctx, x, y, angles[cp.joint] || cp.ideal, cp.ideal, cp.range, getAlignmentStatus(cp.joint));
+                });
+            }, [angles, pose, getAlignmentStatus]);
+
+            function drawGauge(ctx, x, y, current, ideal, range, status) {
+                const radius = 40;
+                
+                // Background arc
+                ctx.beginPath();
+                ctx.arc(x, y, radius, 0, Math.PI * 2);
+                ctx.strokeStyle = 'rgba(0, 0, 0, 0.05)';
+                ctx.lineWidth = 8;
+                ctx.stroke();
+                
+                // Status arc - Zen colors
+                const percentage = (current - range[0]) / (range[1] - range[0]);
+                const color = status === 'optimal' ? '#84cc16' : status === 'acceptable' ? '#6366f1' : '#ef4444';
+                
+                ctx.beginPath();
+                ctx.arc(x, y, radius, -Math.PI/2, -Math.PI/2 + (Math.PI * 2 * percentage));
+                ctx.strokeStyle = color;
+                ctx.lineWidth = 8;
+                ctx.stroke();
+                
+                // Center text
+                ctx.fillStyle = color;
+                ctx.font = '20px JetBrains Mono';
+                ctx.textAlign = 'center';
+                ctx.fillText(`${current}°`, x, y + 7);
+            }
+
+            return (
+                <div className="bio-card p-6 sm:p-8 rounded-2xl">
+                    <div className="stat-label mb-6">Real-time Biometric Gauges</div>
+                    <canvas 
+                        ref={canvasRef}
+                        className="w-full h-[400px] sm:h-[600px]"
+                    />
+                </div>
+            );
+        }
+
+        ReactDOM.createRoot(document.getElementById('root')).render(<AlignmentLab />);
+
+        // Mobile optimizations
+        function setVH() {
+            let vh = window.innerHeight * 0.01;
+            document.documentElement.style.setProperty('--vh', `${vh}px`);
+        }
+        setVH();
+        window.addEventListener('resize', setVH);
+        window.addEventListener('orientationchange', setVH);
+    </script>
+</body>
+</html>

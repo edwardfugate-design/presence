@@ -1,0 +1,2799 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>presence</title>
+    <script src="presence-content-manager.js"></script>
+    <script src="presence-monitoring.js"></script>
+    <script src="presence-auto-integrate.js"></script>
+    <script src="meditation-library.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        :root {
+            --dawn-start: #f8f9fa;
+            --dawn-mid: #e9ecef;
+            --dawn-end: #dee2e6;
+            --text-whisper: #6c757d;
+            --text-soft: #495057;
+            --text-present: #212529;
+            --breath-in: rgba(139, 152, 165, 0.1);
+            --breath-out: rgba(139, 152, 165, 0.05);
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen', sans-serif;
+            background: linear-gradient(180deg, var(--dawn-start) 0%, var(--dawn-mid) 50%, var(--dawn-end) 100%);
+            background-size: 400% 400%;
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: var(--text-soft);
+            overflow-x: hidden;
+            animation: skyShift 180s ease-in-out infinite;
+            padding: 20px;
+        }
+
+        @keyframes skyShift {
+            0%, 100% { background-position: 0% 50%; }
+            50% { background-position: 100% 50%; }
+        }
+
+        .container {
+            width: 100%;
+            max-width: 480px;
+            text-align: center;
+        }
+
+        .title {
+            font-size: 1.5rem;
+            font-weight: 300;
+            letter-spacing: 4px;
+            text-transform: lowercase;
+            color: var(--text-soft);
+            margin-bottom: 30px;
+        }
+
+        .subtitle {
+            font-size: 0.85rem;
+            font-weight: 300;
+            line-height: 1.8;
+            color: var(--text-whisper);
+            margin-bottom: 60px;
+        }
+
+        .breath-circle {
+            width: 220px;
+            height: 220px;
+            border-radius: 50%;
+            background: var(--breath-out);
+            margin: 0 auto 40px auto;
+            transition: all 4s cubic-bezier(0.4, 0, 0.2, 1);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            border: 3px solid rgba(139, 152, 165, 0.3);
+            position: relative;
+            cursor: pointer;
+        }
+
+        .breath-circle:hover:not(.breathing) {
+            transform: scale(1.05);
+            border-color: rgba(139, 152, 165, 0.5);
+            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.15);
+            transition: all 0.3s ease;
+        }
+
+        .breath-circle.breathing {
+            border-color: rgba(139, 152, 165, 0.4);
+        }
+
+        .breath-circle.inhale {
+            transform: scale(1.35);
+            background: var(--breath-in);
+            border-color: rgba(139, 152, 165, 0.25);
+        }
+
+        .breath-count {
+            font-size: 2rem;
+            color: var(--text-soft);
+            letter-spacing: 2px;
+            font-weight: 200;
+            margin-bottom: 8px;
+        }
+
+        .breath-label {
+            font-size: 0.75rem;
+            color: var(--text-whisper);
+            letter-spacing: 3px;
+            text-transform: lowercase;
+            font-weight: 300;
+        }
+
+        .breath-description {
+            font-size: 0.75rem;
+            color: var(--text-whisper);
+            line-height: 1.6;
+            margin: 15px 0 5px 0;
+            font-weight: 300;
+            max-width: 400px;
+            margin-left: auto;
+            margin-right: auto;
+        }
+
+        .timer-display {
+            font-size: 1.8rem;
+            color: var(--text-soft);
+            letter-spacing: 4px;
+            margin: 30px 0;
+            font-weight: 200;
+        }
+
+        .breath-info {
+            margin: 20px 0 10px 0;
+        }
+
+        .breath-path {
+            font-size: 0.65rem;
+            color: var(--text-whisper);
+            letter-spacing: 1.5px;
+            text-transform: lowercase;
+            margin-bottom: 6px;
+        }
+
+        .breath-technique {
+            font-size: 0.8rem;
+            color: var(--text-soft);
+            letter-spacing: 0.5px;
+            font-weight: 300;
+        }
+
+        .nav {
+            display: flex;
+            justify-content: center;
+            gap: 0;
+            margin: 50px 0 30px 0;
+            flex-wrap: wrap;
+        }
+
+        .nav-item {
+            font-size: 0.7rem;
+            color: var(--text-whisper);
+            letter-spacing: 1px;
+            text-transform: lowercase;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            padding: 8px 12px;
+            font-weight: 300;
+            border-bottom: 2px solid transparent;
+        }
+
+        .nav-item:hover {
+            color: var(--text-soft);
+        }
+
+        .nav-item.active {
+            color: var(--text-soft);
+            border-bottom-color: var(--text-soft);
+        }
+
+        .nav-buttons {
+            display: flex;
+            justify-content: center;
+            gap: 10px;
+            margin: 30px 0 40px 0;
+            flex-wrap: wrap;
+        }
+
+        .nav-btn {
+            padding: 12px 24px;
+            font-size: 0.75rem;
+            color: var(--text-soft);
+            background: rgba(255, 255, 255, 0.4);
+            border: 2px solid rgba(139, 152, 165, 0.2);
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            letter-spacing: 1px;
+            text-transform: lowercase;
+            font-weight: 400;
+            font-family: inherit;
+            box-shadow: 0 2px 6px rgba(0, 0, 0, 0.08);
+        }
+
+        .nav-btn:hover {
+            background: rgba(255, 255, 255, 0.6);
+            border-color: rgba(139, 152, 165, 0.35);
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.12);
+        }
+
+        .nav-btn.active {
+            background: rgba(139, 152, 165, 0.35);
+            border-color: var(--text-soft);
+            color: var(--text-present);
+            font-weight: 500;
+            box-shadow: 0 3px 8px rgba(0, 0, 0, 0.15);
+        }
+
+        .screen {
+            display: none;
+            animation: fadeIn 0.5s ease;
+            min-height: 300px;
+        }
+
+        .screen.active {
+            display: block;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .control-group {
+            margin: 25px 0;
+        }
+
+        .control-label {
+            font-size: 0.65rem;
+            color: var(--text-whisper);
+            letter-spacing: 1.5px;
+            text-transform: lowercase;
+            display: block;
+            margin-bottom: 10px;
+        }
+
+        select {
+            width: 100%;
+            padding: 12px 16px;
+            background: rgba(255, 255, 255, 0.3);
+            border: 1px solid rgba(139, 152, 165, 0.15);
+            border-radius: 4px;
+            color: var(--text-soft);
+            font-size: 0.8rem;
+            font-family: inherit;
+            cursor: pointer;
+            font-weight: 300;
+            transition: all 0.3s ease;
+        }
+
+        select:focus {
+            outline: none;
+            border-color: rgba(139, 152, 165, 0.3);
+            background: rgba(255, 255, 255, 0.4);
+        }
+
+        .preset-group {
+            display: flex;
+            justify-content: center;
+            gap: 8px;
+            margin: 15px 0;
+            flex-wrap: wrap;
+        }
+
+        .preset-btn {
+            padding: 8px 16px;
+            font-size: 0.7rem;
+            color: var(--text-soft);
+            background: rgba(255, 255, 255, 0.25);
+            border: 1px solid rgba(139, 152, 165, 0.15);
+            border-radius: 4px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            letter-spacing: 1px;
+            text-transform: lowercase;
+            font-weight: 300;
+        }
+
+        .preset-btn:hover {
+            background: rgba(255, 255, 255, 0.4);
+        }
+
+        .preset-btn.active {
+            background: rgba(139, 152, 165, 0.2);
+            border-color: rgba(139, 152, 165, 0.3);
+        }
+
+        .button-controls {
+            background: rgba(255, 255, 255, 0.3);
+            border: 1px solid rgba(139, 152, 165, 0.15);
+            border-radius: 8px;
+            padding: 20px;
+            margin-bottom: 30px;
+        }
+
+        .button-group {
+            margin-bottom: 15px;
+        }
+
+        .button-group:last-child {
+            margin-bottom: 0;
+        }
+
+        .button-group-label {
+            font-size: 0.65rem;
+            color: var(--text-whisper);
+            letter-spacing: 1.5px;
+            text-transform: lowercase;
+            display: block;
+            margin-bottom: 10px;
+            text-align: left;
+        }
+
+        .button-row {
+            display: flex;
+            gap: 8px;
+            flex-wrap: wrap;
+            justify-content: center;
+        }
+
+        .choice-btn {
+            padding: 10px 20px;
+            font-size: 0.75rem;
+            color: var(--text-soft);
+            background: rgba(255, 255, 255, 0.5);
+            border: 2px solid rgba(139, 152, 165, 0.2);
+            border-radius: 6px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            letter-spacing: 1px;
+            text-transform: lowercase;
+            font-weight: 400;
+            font-family: inherit;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+        }
+
+        .choice-btn:hover {
+            background: rgba(255, 255, 255, 0.7);
+            border-color: rgba(139, 152, 165, 0.3);
+            transform: translateY(-1px);
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+        }
+
+        .choice-btn.active {
+            background: rgba(139, 152, 165, 0.3);
+            border-color: var(--text-soft);
+            color: var(--text-present);
+            font-weight: 500;
+        }
+
+        .breathe-btn {
+            padding: 14px 40px;
+            font-size: 0.85rem;
+            color: white;
+            background: linear-gradient(135deg, rgba(139, 152, 165, 0.7), rgba(139, 152, 165, 0.9));
+            border: 2px solid rgba(139, 152, 165, 0.4);
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            letter-spacing: 2px;
+            text-transform: lowercase;
+            font-weight: 500;
+            font-family: inherit;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+            width: 100%;
+        }
+
+        .breathe-btn:hover {
+            background: linear-gradient(135deg, rgba(139, 152, 165, 0.8), rgba(139, 152, 165, 1));
+            transform: translateY(-2px);
+            box-shadow: 0 6px 16px rgba(0, 0, 0, 0.2);
+        }
+
+        .breathe-btn:active {
+            transform: translateY(0);
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+        }
+
+        .info-box {
+            background: rgba(255, 255, 255, 0.25);
+            border-radius: 6px;
+            padding: 20px;
+            margin: 20px 0;
+            font-size: 0.8rem;
+            line-height: 1.7;
+            color: var(--text-soft);
+            text-align: left;
+            font-weight: 300;
+        }
+
+        .category-tag {
+            font-size: 0.65rem;
+            color: var(--text-whisper);
+            letter-spacing: 1px;
+            margin-top: 8px;
+            display: block;
+        }
+
+        .level-tag {
+            display: inline-block;
+            font-size: 0.6rem;
+            padding: 3px 10px;
+            border-radius: 10px;
+            letter-spacing: 1px;
+            text-transform: lowercase;
+            margin-left: 10px;
+            font-weight: 400;
+        }
+
+        .level-beginner {
+            background: rgba(100, 200, 100, 0.15);
+            color: rgba(60, 140, 60, 0.9);
+            border: 1px solid rgba(100, 200, 100, 0.25);
+        }
+
+        .level-intermediate {
+            background: rgba(200, 170, 100, 0.15);
+            color: rgba(140, 110, 60, 0.9);
+            border: 1px solid rgba(200, 170, 100, 0.25);
+        }
+
+        .level-advanced {
+            background: rgba(200, 100, 100, 0.15);
+            color: rgba(140, 60, 60, 0.9);
+            border: 1px solid rgba(200, 100, 100, 0.25);
+        }
+
+        .action-btn {
+            display: inline-block;
+            padding: 12px 28px;
+            margin: 8px 4px;
+            color: var(--text-soft);
+            font-size: 0.8rem;
+            letter-spacing: 1.5px;
+            text-transform: lowercase;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            border: 1px solid rgba(139, 152, 165, 0.2);
+            border-radius: 4px;
+            background: rgba(255, 255, 255, 0.25);
+            font-weight: 300;
+        }
+
+        .action-btn:hover {
+            background: rgba(255, 255, 255, 0.4);
+            border-color: rgba(139, 152, 165, 0.3);
+        }
+
+        .action-btn.primary {
+            background: rgba(139, 152, 165, 0.15);
+            border-color: rgba(139, 152, 165, 0.25);
+        }
+
+        .sangha-map {
+            width: 100%;
+            height: 180px;
+            position: relative;
+            background: rgba(139, 152, 165, 0.05);
+            border-radius: 6px;
+            overflow: hidden;
+            margin: 20px 0;
+        }
+
+        .meditator-dot {
+            position: absolute;
+            width: 3px;
+            height: 3px;
+            background: var(--text-whisper);
+            border-radius: 50%;
+            opacity: 0;
+            animation: fadeInDot 2s ease-in forwards;
+        }
+
+        @keyframes fadeInDot {
+            to { opacity: 0.5; }
+        }
+
+        .sangha-count {
+            font-size: 0.7rem;
+            color: var(--text-whisper);
+            letter-spacing: 1px;
+            margin-top: 12px;
+        }
+
+        .koan-text {
+            font-size: 1rem;
+            color: var(--text-present);
+            line-height: 1.9;
+            font-style: italic;
+            margin: 30px 0;
+            font-weight: 300;
+        }
+
+        .koan-journal {
+            width: 100%;
+            min-height: 140px;
+            background: rgba(255, 255, 255, 0.3);
+            border: 1px solid rgba(139, 152, 165, 0.15);
+            border-radius: 6px;
+            padding: 16px;
+            font-size: 0.85rem;
+            color: var(--text-soft);
+            font-family: inherit;
+            resize: vertical;
+            transition: all 0.3s ease;
+            font-weight: 300;
+        }
+
+        .koan-journal:focus {
+            outline: none;
+            border-color: rgba(139, 152, 165, 0.3);
+            background: rgba(255, 255, 255, 0.4);
+        }
+
+        .koan-journal::placeholder {
+            color: var(--text-whisper);
+            font-style: italic;
+        }
+
+        .pace-indicator {
+            width: 100%;
+            height: 40px;
+            background: rgba(139, 152, 165, 0.08);
+            border-radius: 20px;
+            position: relative;
+            overflow: hidden;
+            margin: 25px 0;
+        }
+
+        .pace-fill {
+            height: 100%;
+            background: linear-gradient(90deg, rgba(139, 152, 165, 0.25), rgba(139, 152, 165, 0.4));
+            border-radius: 20px;
+            width: 50%;
+            transition: all 0.5s ease;
+        }
+
+        .pace-feedback {
+            font-size: 0.75rem;
+            color: var(--text-whisper);
+            margin-top: 10px;
+            letter-spacing: 1px;
+        }
+
+        .zen-input {
+            width: 100%;
+            padding: 14px;
+            background: rgba(255, 255, 255, 0.3);
+            border: 1px solid rgba(139, 152, 165, 0.15);
+            border-radius: 6px;
+            font-size: 0.85rem;
+            color: var(--text-soft);
+            font-family: inherit;
+            margin-bottom: 15px;
+            font-weight: 300;
+        }
+
+        .zen-input:focus {
+            outline: none;
+            border-color: rgba(139, 152, 165, 0.3);
+            background: rgba(255, 255, 255, 0.4);
+        }
+
+        .zen-response {
+            padding: 22px;
+            background: rgba(255, 255, 255, 0.25);
+            border-radius: 6px;
+            font-size: 0.9rem;
+            color: var(--text-soft);
+            line-height: 1.8;
+            min-height: 120px;
+            font-style: italic;
+            font-weight: 300;
+        }
+
+        .bell-notification {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background: rgba(255, 255, 255, 0.95);
+            padding: 50px 60px;
+            border-radius: 8px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.1);
+            z-index: 1000;
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.5s ease;
+            text-align: center;
+        }
+
+        .bell-notification.show {
+            opacity: 1;
+            pointer-events: auto;
+        }
+
+        .bell-text {
+            font-size: 0.95rem;
+            color: var(--text-soft);
+            letter-spacing: 1.5px;
+            text-transform: lowercase;
+            line-height: 2;
+            font-weight: 300;
+        }
+
+        .stats-hidden {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            font-size: 0.65rem;
+            color: var(--text-whisper);
+            opacity: 0;
+            transition: opacity 0.3s ease;
+            letter-spacing: 1px;
+        }
+
+        .stats-hidden.revealed {
+            opacity: 0.4;
+        }
+
+        .path-list {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+
+        .path-item {
+            background: rgba(255, 255, 255, 0.25);
+            border: 1px solid rgba(139, 152, 165, 0.15);
+            border-radius: 6px;
+            padding: 16px 20px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-align: left;
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+
+        .path-emoji {
+            font-size: 1.8rem;
+            line-height: 1;
+            flex-shrink: 0;
+        }
+
+        .path-item > div:not(.path-emoji) {
+            flex: 1;
+        }
+
+        .path-item:hover {
+            background: rgba(255, 255, 255, 0.4);
+            border-color: rgba(139, 152, 165, 0.25);
+            transform: translateX(4px);
+        }
+
+        .path-name {
+            font-size: 0.85rem;
+            color: var(--text-soft);
+            letter-spacing: 0.5px;
+            margin-bottom: 4px;
+            font-weight: 400;
+        }
+
+        .path-technique {
+            font-size: 0.7rem;
+            color: var(--text-whisper);
+            letter-spacing: 0.5px;
+            font-weight: 300;
+        }
+
+        @media (max-width: 600px) {
+            .title {
+                font-size: 1.2rem;
+            }
+
+            .breath-circle {
+                width: 180px;
+                height: 180px;
+            }
+
+            .nav {
+                gap: 0;
+            }
+
+            .nav-item {
+                font-size: 0.65rem;
+                padding: 8px 8px;
+            }
+
+            .preset-group {
+                gap: 6px;
+            }
+
+            .preset-btn {
+                padding: 6px 10px;
+                font-size: 0.65rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="stats-hidden" id="hiddenStats">
+        total hours of presence: <span id="totalHours">0.0</span>
+    </div>
+
+    <div class="bell-notification" id="bellNotification">
+        <div class="bell-text">
+            stop. breathe. notice.<br>
+            this moment is enough.
+        </div>
+    </div>
+
+    <div class="container">
+        <div class="title">presence</div>
+        <div class="subtitle">you have arrived at this moment. there is nowhere else to be.</div>
+
+        <!-- Navigation Buttons -->
+        <div class="nav-buttons">
+            <button class="nav-btn active" onclick="showScreen('breathe')">breathe</button>
+            <button class="nav-btn" onclick="showScreen('frequency')">frequency</button>
+            <button class="nav-btn" onclick="showScreen('sangha')">sangha</button>
+            <button class="nav-btn" onclick="showScreen('reflect')">reflect</button>
+            <button class="nav-btn" onclick="showScreen('walk')">walk</button>
+            <button class="nav-btn" onclick="showScreen('ask')">ask</button>
+            <button class="nav-btn" onclick="showScreen('bell')">bell</button>
+        </div>
+
+        <!-- Breathe Screen -->
+        <div class="screen active" id="breatheScreen">
+            <!-- Path and Technique Selection -->
+            <div class="button-controls" style="background: rgba(255, 255, 255, 0.3); border: 1px solid rgba(139, 152, 165, 0.15); border-radius: 8px; padding: 20px; margin-bottom: 30px;">
+                <!-- Step 1: Choose Path -->
+                <div class="button-group" style="margin-bottom: 15px;">
+                    <div class="button-group-label" style="font-size: 0.65rem; color: var(--text-whisper); letter-spacing: 1.5px; text-transform: lowercase; display: block; margin-bottom: 10px; text-align: left;">1. choose your path</div>
+                    <div class="button-row" style="display: flex; gap: 8px; flex-wrap: wrap; justify-content: center;">
+                        <button class="choice-btn" onclick="selectBreathPath('mindfulness')">🌿 mindfulness</button>
+                        <button class="choice-btn" onclick="selectBreathPath('heart')">💗 loving-kindness</button>
+                        <button class="choice-btn" onclick="selectBreathPath('foundational')">🌬️ foundational</button>
+                        <button class="choice-btn" onclick="selectBreathPath('energizing')">⚡ energizing</button>
+                        <button class="choice-btn" onclick="selectBreathPath('cooling')">❄️ cooling</button>
+                        <button class="choice-btn" onclick="selectBreathPath('balancing')">⚖️ balancing</button>
+                        <button class="choice-btn" onclick="selectBreathPath('advanced')">🔥 advanced</button>
+                        <button class="choice-btn" onclick="selectBreathPath('somatic')">🧘 somatic</button>
+                        <button class="choice-btn" onclick="selectBreathPath('concentration')">🎯 concentration</button>
+                        <button class="choice-btn" onclick="selectBreathPath('visualization')">🌅 visualization</button>
+                        <button class="choice-btn" onclick="selectBreathPath('devotional')">🕉️ devotional</button>
+                        <button class="choice-btn" onclick="selectBreathPath('zen')">🪷 zen</button>
+                        <button class="choice-btn" onclick="selectBreathPath('nondual')">∞ non-dual</button>
+                        <button class="choice-btn" onclick="selectBreathPath('movement')">🚶 movement</button>
+                        <button class="choice-btn" onclick="selectBreathPath('insight')">✨ insight</button>
+                    </div>
+                </div>
+
+                <!-- Step 2: Choose Technique (filtered by path) -->
+                <div class="button-group">
+                    <div class="button-group-label" style="font-size: 0.65rem; color: var(--text-whisper); letter-spacing: 1.5px; text-transform: lowercase; display: block; margin-bottom: 10px; text-align: left;">2. choose breath type</div>
+                    <select id="techniqueSelect" onchange="changeTechnique()" style="width: 100%; padding: 10px 16px; background: rgba(255, 255, 255, 0.5); border: 2px solid rgba(139, 152, 165, 0.2); border-radius: 6px; color: var(--text-soft); font-size: 0.75rem; font-family: inherit; cursor: pointer; font-weight: 400;"></select>
+                </div>
+
+                <!-- Step 3: Instructions -->
+                <div class="button-group">
+                    <div class="button-group-label" style="font-size: 0.65rem; color: var(--text-whisper); letter-spacing: 1.5px; text-transform: lowercase; text-align: center; margin-bottom: 0;">3. tap circle to breathe</div>
+                </div>
+            </div>
+
+            <div class="breath-circle" id="breathCircle" onclick="toggleBreathing()" style="cursor: pointer;">
+                <div class="breath-count" id="breathCount"></div>
+                <div class="breath-label" id="breathLabel">tap to begin</div>
+            </div>
+
+            <div class="breath-description" id="breathDescription">
+                select a path and technique to begin.
+            </div>
+
+            <div class="timer-display" id="timerDisplay">—</div>
+
+            <div class="preset-group">
+                <div class="preset-btn" onclick="setSessionLength(5)">5 min</div>
+                <div class="preset-btn" onclick="setSessionLength(10)">10 min</div>
+                <div class="preset-btn" onclick="setSessionLength(20)">20 min</div>
+                <div class="preset-btn" onclick="setSessionLength(30)">30 min</div>
+                <div class="preset-btn" onclick="setSessionLength(60)">60 min</div>
+                <div class="preset-btn" onclick="setSessionLength(-1)">random</div>
+                <div class="preset-btn" onclick="setSessionLength(0)">open</div>
+            </div>
+        </div>
+
+        <!-- Path Screen -->
+        <div class="screen" id="pathScreen">
+            <div class="subtitle" style="margin-bottom: 30px;">
+                choose your path.<br>
+                each tradition offers its own door to stillness.
+            </div>
+
+            <div class="path-list">
+                <div class="path-item" onclick="selectPath('mindfulness')">
+                    <div class="path-emoji">🌿</div>
+                    <div class="path-name">mindfulness</div>
+                    <div class="path-technique">awareness of the present moment</div>
+                </div>
+                <div class="path-item" onclick="selectPath('heart')">
+                    <div class="path-emoji">💗</div>
+                    <div class="path-name">loving-kindness</div>
+                    <div class="path-technique">cultivate compassion for all beings</div>
+                </div>
+                <div class="path-item" onclick="selectPath('insight')">
+                    <div class="path-emoji">✨</div>
+                    <div class="path-name">body scan</div>
+                    <div class="path-technique">gentle attention through the body</div>
+                </div>
+                <div class="path-item" onclick="selectPath('foundational')">
+                    <div class="path-emoji">🌬️</div>
+                    <div class="path-name">breath focus</div>
+                    <div class="path-technique">anchor in the rhythm of breathing</div>
+                </div>
+                <div class="path-item" onclick="selectPath('visualization')">
+                    <div class="path-emoji">🌅</div>
+                    <div class="path-name">visualization</div>
+                    <div class="path-technique">journey through inner landscapes</div>
+                </div>
+                <div class="path-item" onclick="selectPath('devotional')">
+                    <div class="path-emoji">🕉️</div>
+                    <div class="path-name">mantra</div>
+                    <div class="path-technique">sacred sounds and repetition</div>
+                </div>
+                <div class="path-item" onclick="selectPath('zen')">
+                    <div class="path-emoji">🪷</div>
+                    <div class="path-name">zen / zazen</div>
+                    <div class="path-technique">just sitting, nothing else</div>
+                </div>
+                <div class="path-item" onclick="selectPath('nondual')">
+                    <div class="path-emoji">∞</div>
+                    <div class="path-name">transcendental</div>
+                    <div class="path-technique">beyond thought into pure being</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Technique Screen -->
+        <div class="screen" id="techniqueScreen">
+            <div class="control-group">
+                <span class="control-label">practice technique</span>
+                <select id="techniqueSelect" onchange="changeTechnique()"></select>
+            </div>
+
+            <div class="info-box" id="techniqueInfo">
+                select a technique to see its description.
+            </div>
+        </div>
+
+        <!-- Frequency Screen -->
+        <div class="screen" id="frequencyScreen">
+            <div class="control-group">
+                <span class="control-label">solfeggio frequency</span>
+                <select id="freqSelect">
+                    <option value="396">396 Hz — release fear & guilt</option>
+                    <option value="417">417 Hz — change & transition</option>
+                    <option value="528" selected>528 Hz — coherence & repair</option>
+                    <option value="639">639 Hz — connection & harmony</option>
+                    <option value="741">741 Hz — clarity & intuition</option>
+                    <option value="852">852 Hz — inner order</option>
+                    <option value="963">963 Hz — unity consciousness</option>
+                </select>
+            </div>
+
+            <div class="info-box">
+                ancient sound frequencies used for healing and meditation. the bell will ring at the start and end of your session, and randomly during the day to call you back to presence.
+            </div>
+        </div>
+
+        <!-- Sangha Screen -->
+        <div class="screen" id="sanghaScreen">
+            <div class="subtitle" style="margin-bottom: 30px;">
+                you are not alone in this practice.<br>
+                each dot is someone sitting right now.
+            </div>
+
+            <div class="sangha-map" id="sanghaMap"></div>
+            <div class="sangha-count" id="sanghaCount">— beings currently sitting</div>
+
+            <div style="margin-top: 25px;">
+                <div class="action-btn" onclick="joinSangha()">join the hall</div>
+                <div class="action-btn" onclick="leaveSangha()">leave quietly</div>
+            </div>
+        </div>
+
+        <!-- Reflect Screen (Koan) -->
+        <div class="screen" id="reflectScreen">
+            <div class="koan-text" id="koanText"></div>
+            <textarea class="koan-journal" id="koanJournal" 
+                      placeholder="there is no answer. only sitting with the question..."></textarea>
+
+            <div style="margin-top: 20px;">
+                <div class="action-btn" onclick="saveKoanReflection()">save reflection</div>
+                <div class="action-btn" onclick="newKoan()">new koan</div>
+            </div>
+        </div>
+
+        <!-- Walk Screen -->
+        <div class="screen" id="walkScreen">
+            <div class="subtitle" style="margin-bottom: 30px;">
+                feel each step.<br>
+                if you rush, the guidance fades.
+            </div>
+
+            <div class="pace-indicator">
+                <div class="pace-fill" id="paceFill"></div>
+            </div>
+            <div class="pace-feedback" id="paceFeedback">walk at your natural pace</div>
+
+            <div style="margin-top: 25px;">
+                <div class="action-btn primary" onclick="startWalking()">begin walking</div>
+                <div class="action-btn" onclick="stopWalking()">stop</div>
+            </div>
+        </div>
+
+        <!-- Ask Screen (Zen Master) -->
+        <div class="screen" id="askScreen">
+            <div class="subtitle" style="margin-bottom: 30px;">
+                speak what troubles you.<br>
+                receive not comfort, but inquiry.
+            </div>
+
+            <input type="text" class="zen-input" id="zenInput" 
+                   placeholder="i am feeling...">
+            <div class="action-btn" onclick="askZenMaster()">ask</div>
+            
+            <div class="zen-response" id="zenResponse">
+                the master waits in silence...
+            </div>
+        </div>
+
+        <!-- Bell Screen -->
+        <div class="screen" id="bellScreen">
+            <div class="control-group">
+                <span class="control-label">mindfulness bells</span>
+                <select id="bellToggle" onchange="toggleBells()">
+                    <option value="enabled">enabled — random reminders</option>
+                    <option value="disabled">disabled — silent practice</option>
+                </select>
+            </div>
+
+            <div class="info-box">
+                when enabled, a bell will sound randomly throughout your day (every 30-180 minutes) to gently call you back to the present moment.
+            </div>
+
+            <div style="margin-top: 25px;">
+                <div class="action-btn" onclick="ringBell()">ring bell now</div>
+                <div class="action-btn" onclick="enableHaptics()">enable haptics</div>
+                <div class="action-btn" onclick="shareApp()">share</div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let breathingActive = false;
+        let breathingInterval = null;
+        let sessionTimer = null;
+        let sessionStartTime = null;
+        let currentTechnique = 'natural_breath';
+        let hapticsEnabled = false;
+        let totalPracticeMinutes = parseFloat(localStorage.getItem('totalPracticeMinutes') || '0');
+        let sanghaActive = false;
+        let walkingActive = false;
+        let bellsEnabled = localStorage.getItem('bellsEnabled') !== 'false';
+        let sessionLength = 0;
+
+        // Map each path to its default technique
+        const pathTechniques = {
+            mindfulness: 'mindful_breath',
+            heart: 'metta',
+            insight: 'body_scan',
+            foundational: 'natural_breath',
+            visualization: 'inner_light',
+            devotional: 'contemplative_prayer',
+            zen: 'shikantaza',
+            nondual: 'open_presence'
+        };
+
+        // Map categories to display names
+        const categoryNames = {
+            mindfulness: 'mindfulness',
+            heart: 'loving-kindness',
+            insight: 'vipassana insight',
+            foundational: 'foundational pranayama',
+            energizing: 'energizing practices',
+            cooling: 'cooling & calming',
+            balancing: 'balancing practices',
+            advanced: 'advanced pranayama',
+            somatic: 'somatic & nervous system',
+            concentration: 'concentration (dharana)',
+            visualization: 'visualization & imagery',
+            devotional: 'devotional & prayer',
+            zen: 'zen meditation',
+            nondual: 'non-dual awareness',
+            movement: 'movement meditation'
+        };
+
+        const techniques = {
+            natural_breath: {
+                name: "natural breath awareness",
+                description: "simply observe the breath as it is. no control, no manipulation. foundation of all breath practices.",
+                short: "observe breath without controlling it",
+                category: "foundational",
+                level: "beginner",
+                pattern: [
+                    { phase: 'observe inhale', duration: 4000, haptic: null },
+                    { phase: 'observe exhale', duration: 4000, haptic: null }
+                ]
+            },
+            dirgha: {
+                name: "dirgha pranayama",
+                description: "fill belly, ribs, chest in sequence. complete yogic breath. deep nourishment.",
+                short: "three-part breath: belly, ribs, chest",
+                category: "foundational",
+                level: "intermediate",
+                pattern: [
+                    { phase: 'belly fills', duration: 2000, haptic: 'light' },
+                    { phase: 'ribs expand', duration: 2000, haptic: 'light' },
+                    { phase: 'chest rises', duration: 2000, haptic: 'light' },
+                    { phase: 'chest releases', duration: 2000, haptic: 'light' },
+                    { phase: 'ribs soften', duration: 2000, haptic: 'light' },
+                    { phase: 'belly empties', duration: 2000, haptic: 'light' }
+                ]
+            },
+            sama_vritti: {
+                name: "sama vritti",
+                description: "equal count for inhale and exhale. balance and steadiness. calms fluctuations.",
+                short: "equal breathing: 4 in, 4 out",
+                category: "foundational",
+                level: "beginner",
+                pattern: [
+                    { phase: 'inhale (4)', duration: 4000, haptic: 'light' },
+                    { phase: 'exhale (4)', duration: 4000, haptic: 'light' }
+                ]
+            },
+            resonant: {
+                name: "resonant breathing",
+                description: "5-6 breaths per minute. optimal heart rate variability. deep coherence.",
+                short: "5-6 breaths per minute for coherence",
+                category: "foundational",
+                level: "beginner",
+                pattern: [
+                    { phase: 'inhale (5)', duration: 5000, haptic: 'light' },
+                    { phase: 'exhale (5)', duration: 5000, haptic: 'light' }
+                ]
+            },
+            coherent: {
+                name: "coherent breathing",
+                description: "5 breaths per minute. optimal coherence between heart and brain. deep peace.",
+                short: "heart-brain coherence: 6 in, 6 out",
+                category: "balancing",
+                level: "intermediate",
+                pattern: [
+                    { phase: 'inhale (6)', duration: 6000, haptic: 'light' },
+                    { phase: 'exhale (6)', duration: 6000, haptic: 'light' }
+                ]
+            },
+            extended_exhale: {
+                name: "extended exhale",
+                description: "longer exhale than inhale. activates parasympathetic. deeply calming.",
+                short: "calming breath: 4 in, 7 out",
+                category: "cooling",
+                level: "beginner",
+                pattern: [
+                    { phase: 'inhale (4)', duration: 4000, haptic: 'light' },
+                    { phase: 'exhale (7)', duration: 7000, haptic: 'medium' }
+                ]
+            },
+            kapalabhati: {
+                name: "kapalabhati",
+                description: "forceful exhales, passive inhales. purifies frontal brain. energizing.",
+                short: "skull shining breath: forceful exhales",
+                category: "energizing",
+                level: "advanced",
+                pattern: [
+                    { phase: 'forceful exhale', duration: 500, haptic: 'heavy' },
+                    { phase: 'passive inhale', duration: 500, haptic: null },
+                    { phase: 'deep inhale (3)', duration: 3000, haptic: 'medium' },
+                    { phase: 'hold (5)', duration: 5000, haptic: 'light' },
+                    { phase: 'slow exhale (4)', duration: 4000, haptic: 'medium' }
+                ]
+            },
+            bhastrika: {
+                name: "bhastrika",
+                description: "equal powerful inhales and exhales. like pumping bellows. increases vitality.",
+                short: "bellows breath: powerful pumping",
+                category: "energizing",
+                level: "advanced",
+                pattern: [
+                    { phase: 'powerful inhale', duration: 800, haptic: 'heavy' },
+                    { phase: 'powerful exhale', duration: 800, haptic: 'heavy' },
+                    { phase: 'deep inhale (4)', duration: 4000, haptic: 'medium' },
+                    { phase: 'hold (8)', duration: 8000, haptic: 'light' },
+                    { phase: 'slow exhale (6)', duration: 6000, haptic: 'medium' }
+                ]
+            },
+            nadi: {
+                name: "nadi shodhana",
+                description: "alternate nostril breathing. balances ida and pingala. preparation for meditation.",
+                short: "alternate nostril: left, hold, right",
+                category: "balancing",
+                level: "intermediate",
+                pattern: [
+                    { phase: 'inhale left (4)', duration: 4000, haptic: 'light' },
+                    { phase: 'hold (4)', duration: 4000, haptic: 'light' },
+                    { phase: 'exhale right (4)', duration: 4000, haptic: 'light' },
+                    { phase: 'inhale right (4)', duration: 4000, haptic: 'light' },
+                    { phase: 'hold (4)', duration: 4000, haptic: 'light' },
+                    { phase: 'exhale left (4)', duration: 4000, haptic: 'light' }
+                ]
+            },
+            anapanasati: {
+                name: "anapanasati",
+                description: "mindfulness of breathing. buddha's core instruction. awareness at nose tip.",
+                short: "awareness at the nose tip",
+                category: "concentration",
+                level: "intermediate",
+                pattern: [
+                    { phase: 'aware of inhale', duration: 4000, haptic: null },
+                    { phase: 'aware of exhale', duration: 5000, haptic: null }
+                ]
+            },
+            body_scan: {
+                name: "body scanning",
+                description: "systematic attention through body. sensations arising and passing.",
+                short: "move awareness through the body",
+                category: "insight",
+                level: "beginner",
+                pattern: [
+                    { phase: 'scan feet', duration: 5000, haptic: 'light' },
+                    { phase: 'scan legs', duration: 5000, haptic: 'light' },
+                    { phase: 'scan torso', duration: 5000, haptic: 'light' },
+                    { phase: 'scan arms', duration: 5000, haptic: 'light' },
+                    { phase: 'scan head', duration: 5000, haptic: 'light' }
+                ]
+            },
+            noting: {
+                name: "noting practice",
+                description: "mental label. 'thinking', 'feeling', 'hearing'. bare attention without story.",
+                short: "label each experience as it arises",
+                category: "insight",
+                pattern: [
+                    { phase: 'note phenomena', duration: 5000, haptic: null }
+                ]
+            },
+            metta: {
+                name: "metta",
+                description: "loving-kindness. may all beings be happy. radiating goodwill.",
+                short: "send loving-kindness to all beings",
+                category: "heart",
+                level: "beginner",
+                pattern: [
+                    { phase: 'to self', duration: 6000, haptic: 'light' },
+                    { phase: 'to loved ones', duration: 6000, haptic: 'light' },
+                    { phase: 'to neutral', duration: 6000, haptic: 'light' },
+                    { phase: 'to difficult', duration: 6000, haptic: 'light' },
+                    { phase: 'to all beings', duration: 8000, haptic: null }
+                ]
+            },
+            karuna: {
+                name: "karuna",
+                description: "compassion. may suffering be relieved. tenderness toward pain.",
+                short: "compassion for all suffering",
+                category: "heart",
+                pattern: [
+                    { phase: 'meet suffering', duration: 8000, haptic: 'medium' },
+                    { phase: 'offer compassion', duration: 8000, haptic: 'light' }
+                ]
+            },
+            zazen: {
+                name: "zazen",
+                description: "seated zen. just sitting. awareness of breath and posture. no goal.",
+                short: "just sit with breath and posture",
+                category: "zen",
+                pattern: [
+                    { phase: 'sit', duration: 10000, haptic: null }
+                ]
+            },
+            shikantaza: {
+                name: "shikantaza",
+                description: "just sitting. objectless meditation. not concentrating on anything. pure presence.",
+                short: "pure presence without object",
+                category: "zen",
+                level: "intermediate",
+                pattern: [
+                    { phase: 'just this', duration: 15000, haptic: null }
+                ]
+            },
+            atma_vichara: {
+                name: "atma vichara",
+                description: "self-inquiry. who am i? ramana maharshi's core practice.",
+                short: "inquire: who am i?",
+                category: "nondual",
+                pattern: [
+                    { phase: 'ask: who am i?', duration: 15000, haptic: null }
+                ]
+            },
+            witness: {
+                name: "witness consciousness",
+                description: "awareness watching thoughts, feelings, sensations. the one who observes.",
+                short: "rest as the witnessing awareness",
+                category: "nondual",
+                pattern: [
+                    { phase: 'rest as witness', duration: 12000, haptic: null }
+                ]
+            },
+            open_presence: {
+                name: "open presence",
+                description: "spacious awareness. no object. like sky. thoughts like clouds passing.",
+                short: "spacious awareness like open sky",
+                category: "nondual",
+                level: "advanced",
+                pattern: [
+                    { phase: 'vast openness', duration: 15000, haptic: null }
+                ]
+            },
+            mindful_breath: {
+                name: "mindfulness of breath",
+                description: "present moment awareness of breathing. secular adaptation of anapanasati.",
+                short: "present moment breath awareness",
+                category: "mindfulness",
+                level: "beginner",
+                pattern: [
+                    { phase: 'notice breath', duration: 5000, haptic: null }
+                ]
+            },
+            open_monitoring: {
+                name: "open monitoring",
+                description: "panoramic awareness. nothing excluded. choiceless attention.",
+                short: "choiceless panoramic awareness",
+                category: "mindfulness",
+                pattern: [
+                    { phase: 'open awareness', duration: 12000, haptic: null }
+                ]
+            },
+            pendulation: {
+                name: "pendulation",
+                description: "moving attention between ease and difficulty. building capacity for both.",
+                short: "oscillate between ease and challenge",
+                category: "somatic",
+                level: "intermediate",
+                pattern: [
+                    { phase: 'resource (ease)', duration: 6000, haptic: 'light' },
+                    { phase: 'challenge', duration: 4000, haptic: 'medium' },
+                    { phase: 'resource (ease)', duration: 6000, haptic: 'light' }
+                ]
+            },
+            walking_med: {
+                name: "walking meditation",
+                description: "mindful walking. feeling feet on ground. each step a meditation.",
+                short: "awareness of each step",
+                category: "movement",
+                level: "beginner",
+                pattern: [
+                    { phase: 'lift foot', duration: 2000, haptic: 'light' },
+                    { phase: 'move foot', duration: 2000, haptic: 'light' },
+                    { phase: 'place foot', duration: 2000, haptic: 'medium' }
+                ]
+            },
+            contemplative_prayer: {
+                name: "contemplative prayer",
+                description: "silent communion. listening to god. christian meditation tradition.",
+                short: "silent listening for the divine",
+                category: "devotional",
+                level: "beginner",
+                pattern: [
+                    { phase: 'silent listening', duration: 15000, haptic: null }
+                ]
+            },
+            inner_light: {
+                name: "inner light visualization",
+                description: "visualize a warm, healing light at your heart center. let it expand with each breath.",
+                short: "light expanding from the heart",
+                category: "visualization",
+                level: "beginner",
+                pattern: [
+                    { phase: 'see the light', duration: 3000, haptic: null },
+                    { phase: 'light grows brighter', duration: 4000, haptic: 'light' },
+                    { phase: 'light fills you', duration: 5000, haptic: 'medium' },
+                    { phase: 'rest in radiance', duration: 4000, haptic: null }
+                ]
+            },
+            sacred_space: {
+                name: "sacred space journey",
+                description: "imagine a peaceful sanctuary. enter fully. notice every detail with vivid presence.",
+                short: "journey to your inner sanctuary",
+                category: "visualization",
+                level: "beginner",
+                pattern: [
+                    { phase: 'arrive at the gate', duration: 4000, haptic: null },
+                    { phase: 'step inside', duration: 3000, haptic: 'light' },
+                    { phase: 'explore the space', duration: 8000, haptic: null },
+                    { phase: 'rest in safety', duration: 6000, haptic: null }
+                ]
+            },
+            mountain_meditation: {
+                name: "mountain meditation",
+                description: "become the mountain. unmoved by storms. deeply rooted. ancient and still.",
+                short: "embody the stillness of a mountain",
+                category: "visualization",
+                level: "intermediate",
+                pattern: [
+                    { phase: 'see the mountain', duration: 4000, haptic: null },
+                    { phase: 'become the mountain', duration: 6000, haptic: 'medium' },
+                    { phase: 'unchanging presence', duration: 10000, haptic: null }
+                ]
+            },
+            healing_colors: {
+                name: "healing colors",
+                description: "breathe in vibrant healing colors. exhale what no longer serves. chromotherapy meditation.",
+                short: "breathe in color, release tension",
+                category: "visualization",
+                level: "beginner",
+                pattern: [
+                    { phase: 'breathe in violet', duration: 4000, haptic: 'light' },
+                    { phase: 'exhale gray', duration: 4000, haptic: null },
+                    { phase: 'breathe in gold', duration: 4000, haptic: 'light' },
+                    { phase: 'exhale shadows', duration: 4000, haptic: null },
+                    { phase: 'breathe in emerald', duration: 4000, haptic: 'light' },
+                    { phase: 'exhale all weight', duration: 4000, haptic: null }
+                ]
+            },
+            // ADDITIONAL YOGIC PRANAYAMA
+            conscious_nasal: {
+                name: "conscious nasal breathing",
+                description: "awareness of breath flowing through both nostrils. gentle, steady, natural.",
+                short: "aware breathing through the nose",
+                category: "foundational",
+                level: "beginner",
+                pattern: [
+                    { phase: 'inhale through nose', duration: 4000, haptic: 'light' },
+                    { phase: 'exhale through nose', duration: 4000, haptic: 'light' }
+                ]
+            },
+            surya_bhedana: {
+                name: "surya bhedana",
+                description: "right nostril breathing. solar energy activation. heating and energizing.",
+                short: "solar breath: inhale right nostril",
+                category: "energizing",
+                level: "intermediate",
+                pattern: [
+                    { phase: 'inhale right (4)', duration: 4000, haptic: 'light' },
+                    { phase: 'hold (8)', duration: 8000, haptic: 'medium' },
+                    { phase: 'exhale left (4)', duration: 4000, haptic: 'light' }
+                ]
+            },
+            breath_of_fire: {
+                name: "breath of fire",
+                description: "rapid rhythmic breathing. kundalini practice. powerful energizer.",
+                short: "rapid belly pumping breath",
+                category: "energizing",
+                level: "advanced",
+                pattern: [
+                    { phase: 'rapid pump', duration: 300, haptic: 'heavy' },
+                    { phase: 'rapid pump', duration: 300, haptic: 'heavy' },
+                    { phase: 'rapid pump', duration: 300, haptic: 'heavy' },
+                    { phase: 'deep inhale', duration: 3000, haptic: 'medium' },
+                    { phase: 'hold (10)', duration: 10000, haptic: 'light' },
+                    { phase: 'slow release', duration: 5000, haptic: 'medium' }
+                ]
+            },
+            chandra_bhedana: {
+                name: "chandra bhedana",
+                description: "left nostril breathing. lunar energy. cooling and calming practice.",
+                short: "lunar breath: inhale left nostril",
+                category: "cooling",
+                level: "intermediate",
+                pattern: [
+                    { phase: 'inhale left (4)', duration: 4000, haptic: 'light' },
+                    { phase: 'hold (8)', duration: 8000, haptic: 'medium' },
+                    { phase: 'exhale right (4)', duration: 4000, haptic: 'light' }
+                ]
+            },
+            sheetali: {
+                name: "sheetali pranayama",
+                description: "cooling tongue breath. curl tongue into tube. reduces heat and anger.",
+                short: "cooling breath through curled tongue",
+                category: "cooling",
+                level: "beginner",
+                pattern: [
+                    { phase: 'inhale through tongue', duration: 4000, haptic: 'light' },
+                    { phase: 'hold (4)', duration: 4000, haptic: 'light' },
+                    { phase: 'exhale through nose', duration: 6000, haptic: 'medium' }
+                ]
+            },
+            sitkari: {
+                name: "sitkari pranayama",
+                description: "hissing breath through teeth. cooling. reduces mental heat and agitation.",
+                short: "cooling hissing breath",
+                category: "cooling",
+                level: "beginner",
+                pattern: [
+                    { phase: 'inhale through teeth', duration: 4000, haptic: 'light' },
+                    { phase: 'hold (4)', duration: 4000, haptic: 'light' },
+                    { phase: 'exhale through nose', duration: 6000, haptic: 'medium' }
+                ]
+            },
+            anuloma_viloma: {
+                name: "anuloma viloma",
+                description: "alternate nostril with ratios. advanced balancing. 1:2 or 1:4 patterns.",
+                short: "ratio alternate nostril breathing",
+                category: "balancing",
+                level: "advanced",
+                pattern: [
+                    { phase: 'inhale left (4)', duration: 4000, haptic: 'light' },
+                    { phase: 'hold (16)', duration: 16000, haptic: 'medium' },
+                    { phase: 'exhale right (8)', duration: 8000, haptic: 'medium' },
+                    { phase: 'inhale right (4)', duration: 4000, haptic: 'light' },
+                    { phase: 'hold (16)', duration: 16000, haptic: 'medium' },
+                    { phase: 'exhale left (8)', duration: 8000, haptic: 'medium' }
+                ]
+            },
+            ratio_breathing: {
+                name: "ratio breathing",
+                description: "specific count ratios. 4:6, 5:7, or custom. trains breath control.",
+                short: "inhale:exhale ratio practice",
+                category: "balancing",
+                level: "intermediate",
+                pattern: [
+                    { phase: 'inhale (5)', duration: 5000, haptic: 'light' },
+                    { phase: 'exhale (7)', duration: 7000, haptic: 'medium' }
+                ]
+            },
+            kumbhaka: {
+                name: "kumbhaka pranayama",
+                description: "breath retention practice. internal and external holds. advanced energy work.",
+                short: "retention: hold after inhale and exhale",
+                category: "advanced",
+                level: "advanced",
+                pattern: [
+                    { phase: 'inhale (4)', duration: 4000, haptic: 'light' },
+                    { phase: 'hold in (8)', duration: 8000, haptic: 'medium' },
+                    { phase: 'exhale (4)', duration: 4000, haptic: 'light' },
+                    { phase: 'hold out (8)', duration: 8000, haptic: 'medium' }
+                ]
+            },
+            kevala_kumbhaka: {
+                name: "kevala kumbhaka",
+                description: "spontaneous breath suspension. advanced state. breath becomes still naturally.",
+                short: "spontaneous breathless state",
+                category: "advanced",
+                level: "advanced",
+                pattern: [
+                    { phase: 'observe natural pause', duration: 20000, haptic: null }
+                ]
+            },
+            bandha_breathing: {
+                name: "bandha-integrated pranayama",
+                description: "breath with energy locks. mula, uddiyana, jalandhara. advanced yogic technique.",
+                short: "breath with root, belly, throat locks",
+                category: "advanced",
+                level: "advanced",
+                pattern: [
+                    { phase: 'inhale (4)', duration: 4000, haptic: 'light' },
+                    { phase: 'apply locks', duration: 2000, haptic: 'heavy' },
+                    { phase: 'hold (10)', duration: 10000, haptic: 'medium' },
+                    { phase: 'release locks', duration: 2000, haptic: 'light' },
+                    { phase: 'exhale (6)', duration: 6000, haptic: 'medium' }
+                ]
+            },
+            mudra_mantra_breath: {
+                name: "mudra & mantra pranayama",
+                description: "breath combined with hand gestures and sacred sounds. full yogic integration.",
+                short: "breath, gesture, and sound unified",
+                category: "advanced",
+                level: "advanced",
+                pattern: [
+                    { phase: 'inhale with mudra', duration: 5000, haptic: 'light' },
+                    { phase: 'hold with mantra', duration: 8000, haptic: 'medium' },
+                    { phase: 'exhale releasing', duration: 6000, haptic: 'medium' }
+                ]
+            },
+            trauma_informed_breath: {
+                name: "trauma-informed breathing",
+                description: "gentle, choice-based breath awareness. honor nervous system limits. safety first.",
+                short: "gentle breath with full consent",
+                category: "somatic",
+                level: "beginner",
+                pattern: [
+                    { phase: 'notice if safe', duration: 3000, haptic: null },
+                    { phase: 'gentle inhale', duration: 4000, haptic: null },
+                    { phase: 'gentle exhale', duration: 5000, haptic: null },
+                    { phase: 'pause when needed', duration: 3000, haptic: null }
+                ]
+            },
+            titrated_expansion: {
+                name: "titrated breath expansion",
+                description: "slowly expand breath capacity. go to edge, back off. build window of tolerance.",
+                short: "gradual breath expansion",
+                category: "somatic",
+                level: "intermediate",
+                pattern: [
+                    { phase: 'comfortable breath', duration: 4000, haptic: 'light' },
+                    { phase: 'slightly fuller', duration: 5000, haptic: 'light' },
+                    { phase: 'notice sensation', duration: 3000, haptic: null },
+                    { phase: 'return to comfort', duration: 4000, haptic: null }
+                ]
+            },
+            orienting_breath: {
+                name: "orienting breath",
+                description: "breathe while scanning environment. grounds nervous system. restores safety.",
+                short: "breath while noticing surroundings",
+                category: "somatic",
+                level: "beginner",
+                pattern: [
+                    { phase: 'look around slowly', duration: 5000, haptic: null },
+                    { phase: 'notice safe things', duration: 4000, haptic: null },
+                    { phase: 'breathe naturally', duration: 4000, haptic: 'light' },
+                    { phase: 'feel ground beneath', duration: 4000, haptic: 'medium' }
+                ]
+            },
+            choice_pacing: {
+                name: "choice-based pacing",
+                description: "you choose breath length. full autonomy. builds agency and safety.",
+                short: "breath at your chosen pace",
+                category: "somatic",
+                level: "beginner",
+                pattern: [
+                    { phase: 'your pace inhale', duration: 4000, haptic: null },
+                    { phase: 'your pace exhale', duration: 5000, haptic: null },
+                    { phase: 'pause as you wish', duration: 2000, haptic: null }
+                ]
+            },
+            // YOGIC & CLASSICAL MEDITATION
+            trataka: {
+                name: "trataka",
+                description: "steady gazing meditation. candle flame or object. develops concentration and inner vision.",
+                short: "steady unblinking gaze",
+                category: "concentration",
+                level: "intermediate",
+                pattern: [
+                    { phase: 'gaze steadily', duration: 30000, haptic: null },
+                    { phase: 'close eyes', duration: 15000, haptic: null },
+                    { phase: 'see inner light', duration: 15000, haptic: null }
+                ]
+            },
+            japa_meditation: {
+                name: "japa (mantra repetition)",
+                description: "continuous repetition of sacred sound. with mala beads. focuses wandering mind.",
+                short: "repetitive mantra with beads",
+                category: "devotional",
+                level: "beginner",
+                pattern: [
+                    { phase: 'repeat mantra', duration: 60000, haptic: null }
+                ]
+            },
+            ajapa_japa: {
+                name: "ajapa japa",
+                description: "spontaneous mantra arising. effortless repetition. so'ham or hamsa with breath.",
+                short: "spontaneous mantra flow",
+                category: "devotional",
+                level: "intermediate",
+                pattern: [
+                    { phase: 'so (inhale)', duration: 4000, haptic: null },
+                    { phase: 'ham (exhale)', duration: 5000, haptic: null }
+                ]
+            },
+            chakra_meditation: {
+                name: "chakra meditation",
+                description: "move awareness through energy centers. root to crown. activates subtle body.",
+                short: "journey through seven chakras",
+                category: "visualization",
+                level: "intermediate",
+                pattern: [
+                    { phase: 'root (muladhara)', duration: 8000, haptic: 'heavy' },
+                    { phase: 'sacral (svadhisthana)', duration: 8000, haptic: 'medium' },
+                    { phase: 'solar (manipura)', duration: 8000, haptic: 'medium' },
+                    { phase: 'heart (anahata)', duration: 8000, haptic: 'light' },
+                    { phase: 'throat (vishuddha)', duration: 8000, haptic: 'light' },
+                    { phase: 'third eye (ajna)', duration: 8000, haptic: 'light' },
+                    { phase: 'crown (sahasrara)', duration: 8000, haptic: null }
+                ]
+            },
+            nada_yoga: {
+                name: "nada yoga",
+                description: "meditation on inner sound. listen to the unstruck sound. leads to absorption.",
+                short: "listening to inner vibration",
+                category: "concentration",
+                level: "advanced",
+                pattern: [
+                    { phase: 'listen inward', duration: 60000, haptic: null }
+                ]
+            },
+            vedic_mantra: {
+                name: "vedic mantra meditation",
+                description: "ancient sanskrit mantras. om, gayatri, mahamrityunjaya. vibrational healing.",
+                short: "sacred vedic sound meditation",
+                category: "devotional",
+                level: "intermediate",
+                pattern: [
+                    { phase: 'om (3x)', duration: 15000, haptic: 'medium' },
+                    { phase: 'silent vibration', duration: 10000, haptic: null }
+                ]
+            },
+            bija_mantra: {
+                name: "bija mantra",
+                description: "seed syllables. lam, vam, ram, yam, ham, om. activate energy centers.",
+                short: "chakra seed sounds",
+                category: "devotional",
+                level: "intermediate",
+                pattern: [
+                    { phase: 'lam (root)', duration: 6000, haptic: 'heavy' },
+                    { phase: 'vam (sacral)', duration: 6000, haptic: 'medium' },
+                    { phase: 'ram (solar)', duration: 6000, haptic: 'medium' },
+                    { phase: 'yam (heart)', duration: 6000, haptic: 'light' },
+                    { phase: 'ham (throat)', duration: 6000, haptic: 'light' },
+                    { phase: 'om (third eye)', duration: 6000, haptic: null }
+                ]
+            },
+            mala_practice: {
+                name: "mala-based practice",
+                description: "108 repetitions with beads. traditional counting method. builds devotion.",
+                short: "108 bead mantra meditation",
+                category: "devotional",
+                level: "beginner",
+                pattern: [
+                    { phase: 'count each bead', duration: 120000, haptic: null }
+                ]
+            },
+            silent_mantra: {
+                name: "silent mantra repetition",
+                description: "mental repetition only. no vocalization. deepens internalization.",
+                short: "inward mantra practice",
+                category: "devotional",
+                level: "beginner",
+                pattern: [
+                    { phase: 'silent repetition', duration: 60000, haptic: null }
+                ]
+            },
+            kundalini_meditation: {
+                name: "kundalini meditation",
+                description: "awaken dormant energy. visualize ascending through sushumna. advanced practice.",
+                short: "energy rising through spine",
+                category: "visualization",
+                level: "advanced",
+                pattern: [
+                    { phase: 'awaken at base', duration: 10000, haptic: 'heavy' },
+                    { phase: 'rise through spine', duration: 20000, haptic: 'medium' },
+                    { phase: 'crown opening', duration: 15000, haptic: 'light' },
+                    { phase: 'rest in light', duration: 10000, haptic: null }
+                ]
+            },
+            chakra_visualization: {
+                name: "chakra visualization",
+                description: "see each center as lotus. colors, petals, symbols. tantric imagery.",
+                short: "visualize lotus at each chakra",
+                category: "visualization",
+                level: "intermediate",
+                pattern: [
+                    { phase: 'red lotus (root)', duration: 8000, haptic: null },
+                    { phase: 'orange lotus (sacral)', duration: 8000, haptic: null },
+                    { phase: 'yellow lotus (solar)', duration: 8000, haptic: null },
+                    { phase: 'green lotus (heart)', duration: 8000, haptic: null },
+                    { phase: 'blue lotus (throat)', duration: 8000, haptic: null },
+                    { phase: 'indigo lotus (third eye)', duration: 8000, haptic: null },
+                    { phase: 'violet lotus (crown)', duration: 8000, haptic: null }
+                ]
+            },
+            yantra_meditation: {
+                name: "yantra meditation",
+                description: "sacred geometry contemplation. sri yantra or mandala. cosmic patterns.",
+                short: "geometric mandala gazing",
+                category: "concentration",
+                level: "intermediate",
+                pattern: [
+                    { phase: 'gaze at center', duration: 30000, haptic: null },
+                    { phase: 'absorb pattern', duration: 20000, haptic: null },
+                    { phase: 'close eyes, see it', duration: 20000, haptic: null }
+                ]
+            },
+            deity_meditation: {
+                name: "deity visualization",
+                description: "visualize chosen deity. see details clearly. merge with divine qualities.",
+                short: "embody divine qualities",
+                category: "visualization",
+                level: "advanced",
+                pattern: [
+                    { phase: 'see deity clearly', duration: 15000, haptic: null },
+                    { phase: 'receive blessing', duration: 10000, haptic: 'light' },
+                    { phase: 'dissolve into light', duration: 10000, haptic: null },
+                    { phase: 'merge as one', duration: 15000, haptic: null }
+                ]
+            },
+            mudra_meditation: {
+                name: "mudra-based meditation",
+                description: "hand gestures with awareness. chin, jnana, dhyana mudra. channels energy.",
+                short: "meditate with hand seals",
+                category: "concentration",
+                level: "beginner",
+                pattern: [
+                    { phase: 'form mudra', duration: 3000, haptic: 'light' },
+                    { phase: 'rest in gesture', duration: 60000, haptic: null }
+                ]
+            },
+            // ADDITIONAL BUDDHIST PRACTICES
+            kasina: {
+                name: "kasina meditation",
+                description: "elemental focus. earth, water, fire, air. develop absorption states.",
+                short: "elemental object concentration",
+                category: "concentration",
+                level: "intermediate",
+                pattern: [
+                    { phase: 'observe element', duration: 45000, haptic: null },
+                    { phase: 'absorb fully', duration: 30000, haptic: null }
+                ]
+            },
+            single_point: {
+                name: "single object attention",
+                description: "one-pointed focus. any object. build samadhi. unwavering attention.",
+                short: "unmoving focus on one thing",
+                category: "concentration",
+                level: "intermediate",
+                pattern: [
+                    { phase: 'place attention', duration: 60000, haptic: null }
+                ]
+            },
+            sensation_observation: {
+                name: "sensation observation",
+                description: "notice raw sensation. before labels. vedana. pleasant, unpleasant, neutral.",
+                short: "observe bare sensations",
+                category: "insight",
+                level: "beginner",
+                pattern: [
+                    { phase: 'feel sensation', duration: 10000, haptic: null },
+                    { phase: 'notice quality', duration: 5000, haptic: null },
+                    { phase: 'let it be', duration: 5000, haptic: null }
+                ]
+            },
+            impermanence: {
+                name: "impermanence contemplation",
+                description: "anicca. everything changes. observe arising and passing. insight into flux.",
+                short: "see everything changing",
+                category: "insight",
+                level: "intermediate",
+                pattern: [
+                    { phase: 'observe arising', duration: 8000, haptic: null },
+                    { phase: 'observe passing', duration: 8000, haptic: null },
+                    { phase: 'see impermanence', duration: 10000, haptic: null }
+                ]
+            },
+            dependent_origination: {
+                name: "dependent origination inquiry",
+                description: "contemplate conditionality. this arises because that arose. chain of causation.",
+                short: "investigate cause and effect",
+                category: "insight",
+                level: "advanced",
+                pattern: [
+                    { phase: 'this because that', duration: 60000, haptic: null }
+                ]
+            },
+            mudita: {
+                name: "mudita (sympathetic joy)",
+                description: "rejoice in others' happiness. antidote to envy. gladden the heart.",
+                short: "joy in others' joy",
+                category: "heart",
+                level: "beginner",
+                pattern: [
+                    { phase: 'think of happy person', duration: 8000, haptic: null },
+                    { phase: 'feel their joy', duration: 10000, haptic: 'light' },
+                    { phase: 'rejoice with them', duration: 12000, haptic: 'light' },
+                    { phase: 'radiate joy outward', duration: 10000, haptic: 'medium' }
+                ]
+            },
+            upekkha: {
+                name: "upekkha (equanimity)",
+                description: "balanced mind. neither pushing away nor grasping. wise neutrality.",
+                short: "even-minded presence",
+                category: "heart",
+                level: "intermediate",
+                pattern: [
+                    { phase: 'notice all as passing', duration: 15000, haptic: null },
+                    { phase: 'rest in balance', duration: 20000, haptic: null },
+                    { phase: 'neither for nor against', duration: 15000, haptic: null }
+                ]
+            },
+            koan_practice: {
+                name: "koan contemplation",
+                description: "meditate on paradox. mu. original face. what is this? break conceptual mind.",
+                short: "sit with the unsolvable",
+                category: "zen",
+                level: "advanced",
+                pattern: [
+                    { phase: 'hold the question', duration: 60000, haptic: null }
+                ]
+            },
+            kinhin: {
+                name: "kinhin (walking zen)",
+                description: "formal zen walking. very slow. between zazen periods. continuous practice.",
+                short: "zen walking between sits",
+                category: "zen",
+                level: "beginner",
+                pattern: [
+                    { phase: 'step mindfully', duration: 4000, haptic: 'medium' },
+                    { phase: 'pause', duration: 2000, haptic: null },
+                    { phase: 'step mindfully', duration: 4000, haptic: 'medium' },
+                    { phase: 'pause', duration: 2000, haptic: null }
+                ]
+            },
+            // ADDITIONAL NON-DUAL PRACTICES
+            neti_neti: {
+                name: "neti neti contemplation",
+                description: "not this, not this. negation practice. find what cannot be negated.",
+                short: "not this, not this inquiry",
+                category: "nondual",
+                level: "advanced",
+                pattern: [
+                    { phase: 'not the body', duration: 10000, haptic: null },
+                    { phase: 'not the mind', duration: 10000, haptic: null },
+                    { phase: 'not thoughts', duration: 10000, haptic: null },
+                    { phase: 'what remains?', duration: 20000, haptic: null }
+                ]
+            },
+            awareness_of_awareness: {
+                name: "awareness of awareness",
+                description: "turn attention back on itself. know the knower. consciousness recognizing itself.",
+                short: "awareness knowing itself",
+                category: "nondual",
+                level: "advanced",
+                pattern: [
+                    { phase: 'rest as awareness', duration: 60000, haptic: null }
+                ]
+            },
+            rigpa: {
+                name: "rigpa recognition",
+                description: "dzogchen. recognize pristine awareness. innate wakefulness. natural state.",
+                short: "primordial awareness",
+                category: "nondual",
+                level: "advanced",
+                pattern: [
+                    { phase: 'recognize awareness', duration: 30000, haptic: null },
+                    { phase: 'rest in rigpa', duration: 40000, haptic: null }
+                ]
+            },
+            sky_gazing: {
+                name: "sky-gazing practice",
+                description: "gaze into open sky. spacious mind. boundless awareness. dzogchen method.",
+                short: "merge mind with sky",
+                category: "nondual",
+                level: "intermediate",
+                pattern: [
+                    { phase: 'gaze into vastness', duration: 60000, haptic: null }
+                ]
+            },
+            effortless_rest: {
+                name: "effortless resting awareness",
+                description: "mahamudra. relaxed vigilance. undistracted non-meditation.",
+                short: "rest without effort",
+                category: "nondual",
+                level: "advanced",
+                pattern: [
+                    { phase: 'simply rest', duration: 60000, haptic: null }
+                ]
+            },
+            // MODERN & SECULAR PRACTICES
+            mindful_body: {
+                name: "mindfulness of body",
+                description: "continuous body awareness. posture, movement, sensations. embodied presence.",
+                short: "sustained body attention",
+                category: "mindfulness",
+                level: "beginner",
+                pattern: [
+                    { phase: 'scan whole body', duration: 30000, haptic: null },
+                    { phase: 'rest in feeling', duration: 20000, haptic: null }
+                ]
+            },
+            mindful_thoughts: {
+                name: "mindfulness of thoughts",
+                description: "observe thinking as process. thoughts as events. not identifying.",
+                short: "watch thoughts arising",
+                category: "mindfulness",
+                level: "intermediate",
+                pattern: [
+                    { phase: 'notice thought', duration: 5000, haptic: null },
+                    { phase: 'see it as thought', duration: 3000, haptic: null },
+                    { phase: 'let it pass', duration: 4000, haptic: null }
+                ]
+            },
+            mindful_emotions: {
+                name: "mindfulness of emotions",
+                description: "feel emotion in body. name it. allow it. emotions as weather.",
+                short: "befriend emotional states",
+                category: "mindfulness",
+                level: "beginner",
+                pattern: [
+                    { phase: 'feel emotion', duration: 8000, haptic: 'medium' },
+                    { phase: 'locate in body', duration: 6000, haptic: 'medium' },
+                    { phase: 'name gently', duration: 4000, haptic: null },
+                    { phase: 'let it move', duration: 8000, haptic: 'light' }
+                ]
+            },
+            body_tracking: {
+                name: "body-based tracking",
+                description: "somatic experiencing. track sensations moment-to-moment. nervous system healing.",
+                short: "follow body's sensations",
+                category: "somatic",
+                level: "intermediate",
+                pattern: [
+                    { phase: 'notice sensation', duration: 8000, haptic: null },
+                    { phase: 'track movement', duration: 10000, haptic: null },
+                    { phase: 'sense completion', duration: 6000, haptic: null }
+                ]
+            },
+            felt_sense: {
+                name: "felt sense inquiry (focusing)",
+                description: "eugene gendlin's focusing. bodily knowing. feel into the unclear.",
+                short: "body's wisdom emerges",
+                category: "somatic",
+                level: "intermediate",
+                pattern: [
+                    { phase: 'sense unclear feeling', duration: 15000, haptic: null },
+                    { phase: 'ask: what is this?', duration: 10000, haptic: null },
+                    { phase: 'receive felt shift', duration: 15000, haptic: 'light' }
+                ]
+            },
+            interoception: {
+                name: "interoceptive awareness",
+                description: "sense inner body states. heartbeat, temperature, gut feelings. internal sensing.",
+                short: "feel body from inside",
+                category: "somatic",
+                level: "beginner",
+                pattern: [
+                    { phase: 'feel heartbeat', duration: 10000, haptic: 'light' },
+                    { phase: 'sense temperature', duration: 8000, haptic: null },
+                    { phase: 'notice gut feelings', duration: 10000, haptic: null }
+                ]
+            },
+            polyvagal: {
+                name: "polyvagal-informed practice",
+                description: "work with nervous system states. ventral, dorsal, sympathetic. regulate safely.",
+                short: "nervous system regulation",
+                category: "somatic",
+                level: "intermediate",
+                pattern: [
+                    { phase: 'notice state', duration: 8000, haptic: null },
+                    { phase: 'gentle ventralizing', duration: 15000, haptic: 'light' },
+                    { phase: 'rest in safety', duration: 12000, haptic: null }
+                ]
+            },
+            guided_relaxation: {
+                name: "guided relaxation",
+                description: "progressive muscle relaxation. tense and release. systematic unwinding.",
+                short: "guided body relaxation",
+                category: "visualization",
+                level: "beginner",
+                pattern: [
+                    { phase: 'tense muscles', duration: 4000, haptic: 'heavy' },
+                    { phase: 'release fully', duration: 6000, haptic: 'light' },
+                    { phase: 'feel relaxation', duration: 5000, haptic: null }
+                ]
+            },
+            yoga_nidra: {
+                name: "yoga nidra",
+                description: "yogic sleep. conscious deep rest. systematic rotation of awareness.",
+                short: "deep conscious rest state",
+                category: "visualization",
+                level: "beginner",
+                pattern: [
+                    { phase: 'body rotation', duration: 120000, haptic: null },
+                    { phase: 'breath awareness', duration: 60000, haptic: null },
+                    { phase: 'visualization', duration: 60000, haptic: null }
+                ]
+            },
+            safe_place: {
+                name: "safe-place imagery",
+                description: "visualize place of complete safety. return when needed. resource building.",
+                short: "your sanctuary visualization",
+                category: "visualization",
+                level: "beginner",
+                pattern: [
+                    { phase: 'see safe place', duration: 15000, haptic: null },
+                    { phase: 'notice all details', duration: 15000, haptic: null },
+                    { phase: 'feel deep safety', duration: 20000, haptic: 'light' }
+                ]
+            },
+            symbolic_journey: {
+                name: "symbolic journeying",
+                description: "guided imagery with symbols. inner wisdom journey. active imagination.",
+                short: "journey through inner landscape",
+                category: "visualization",
+                level: "intermediate",
+                pattern: [
+                    { phase: 'enter inner world', duration: 20000, haptic: null },
+                    { phase: 'meet symbol/guide', duration: 25000, haptic: 'light' },
+                    { phase: 'receive teaching', duration: 25000, haptic: null },
+                    { phase: 'return renewed', duration: 15000, haptic: 'light' }
+                ]
+            },
+            // MOVEMENT-INTEGRATED PRACTICES
+            qigong_breath: {
+                name: "qigong breath-movement",
+                description: "coordinate breath with flowing movement. cultivate qi. moving meditation.",
+                short: "breath synchronized with flow",
+                category: "movement",
+                level: "beginner",
+                pattern: [
+                    { phase: 'inhale, arms rise', duration: 5000, haptic: 'light' },
+                    { phase: 'exhale, arms descend', duration: 6000, haptic: 'medium' },
+                    { phase: 'gather energy', duration: 4000, haptic: 'light' }
+                ]
+            },
+            tai_chi_meditation: {
+                name: "tai chi meditation",
+                description: "slow martial forms. meditation in motion. embodied awareness flowing.",
+                short: "meditative martial flow",
+                category: "movement",
+                level: "intermediate",
+                pattern: [
+                    { phase: 'shift weight slowly', duration: 8000, haptic: 'medium' },
+                    { phase: 'turn with breath', duration: 8000, haptic: 'light' },
+                    { phase: 'flow continues', duration: 10000, haptic: 'light' }
+                ]
+            },
+            asana_meditation: {
+                name: "asana-as-meditation",
+                description: "hold yoga poses meditatively. not exercise. internal awareness in form.",
+                short: "meditate within the pose",
+                category: "movement",
+                level: "intermediate",
+                pattern: [
+                    { phase: 'enter pose mindfully', duration: 10000, haptic: 'medium' },
+                    { phase: 'breathe in stillness', duration: 60000, haptic: null },
+                    { phase: 'release with awareness', duration: 10000, haptic: 'light' }
+                ]
+            },
+            vinyasa_breath: {
+                name: "breath-synchronized vinyasa",
+                description: "one breath, one movement. flowing sequence. moving meditation.",
+                short: "breath-movement synchrony",
+                category: "movement",
+                level: "intermediate",
+                pattern: [
+                    { phase: 'inhale, extend', duration: 4000, haptic: 'light' },
+                    { phase: 'exhale, fold', duration: 5000, haptic: 'medium' },
+                    { phase: 'inhale, rise', duration: 4000, haptic: 'light' },
+                    { phase: 'exhale, release', duration: 5000, haptic: 'medium' }
+                ]
+            },
+            // DEVOTIONAL & PRAYER PRACTICES
+            bhakti_meditation: {
+                name: "bhakti meditation",
+                description: "devotional love. merge with divine. surrender through adoration.",
+                short: "love-filled divine communion",
+                category: "devotional",
+                level: "beginner",
+                pattern: [
+                    { phase: 'open heart', duration: 10000, haptic: 'light' },
+                    { phase: 'offer devotion', duration: 30000, haptic: 'medium' },
+                    { phase: 'receive grace', duration: 20000, haptic: 'light' }
+                ]
+            },
+            centering_prayer: {
+                name: "centering prayer",
+                description: "christian contemplative method. sacred word. consent to god's presence.",
+                short: "resting in divine presence",
+                category: "devotional",
+                level: "beginner",
+                pattern: [
+                    { phase: 'sacred word', duration: 3000, haptic: null },
+                    { phase: 'silent communion', duration: 60000, haptic: null },
+                    { phase: 'return with word', duration: 3000, haptic: null }
+                ]
+            },
+            rosary_meditation: {
+                name: "rosary meditation",
+                description: "repetitive prayer with beads. hail mary, our father. contemplative rhythm.",
+                short: "meditative prayer beads",
+                category: "devotional",
+                level: "beginner",
+                pattern: [
+                    { phase: 'count each prayer', duration: 120000, haptic: null }
+                ]
+            },
+            lectio_divina: {
+                name: "lectio divina",
+                description: "divine reading. read, meditate, pray, contemplate. monastic practice.",
+                short: "contemplative scripture reading",
+                category: "devotional",
+                level: "beginner",
+                pattern: [
+                    { phase: 'read sacred text', duration: 15000, haptic: null },
+                    { phase: 'meditate on word', duration: 20000, haptic: null },
+                    { phase: 'pray from heart', duration: 15000, haptic: 'light' },
+                    { phase: 'rest in silence', duration: 20000, haptic: null }
+                ]
+            },
+            // CONTEMPORARY HYBRID PRACTICES
+            holotropic_style: {
+                name: "holotropic-style breathwork",
+                description: "intense continuous breathing. altered states. emotional release. requires guidance.",
+                short: "deep continuous breathing",
+                category: "energizing",
+                level: "advanced",
+                pattern: [
+                    { phase: 'deep rapid breath', duration: 1000, haptic: 'heavy' },
+                    { phase: 'deep rapid breath', duration: 1000, haptic: 'heavy' },
+                    { phase: 'continue deeply', duration: 60000, haptic: 'medium' }
+                ]
+            },
+            flow_state: {
+                name: "athletic flow-state meditation",
+                description: "meditation through peak performance. runner's high. zone state awareness.",
+                short: "mindful peak performance",
+                category: "movement",
+                level: "intermediate",
+                pattern: [
+                    { phase: 'enter rhythm', duration: 20000, haptic: 'medium' },
+                    { phase: 'dissolve into flow', duration: 60000, haptic: 'light' },
+                    { phase: 'effortless action', duration: 60000, haptic: null }
+                ]
+            },
+            creative_meditation: {
+                name: "creative meditation",
+                description: "mindfulness in artistic process. painting, writing, music as meditation.",
+                short: "meditate through creating",
+                category: "mindfulness",
+                level: "beginner",
+                pattern: [
+                    { phase: 'enter creative flow', duration: 120000, haptic: null }
+                ]
+            },
+            nature_meditation: {
+                name: "nature-based meditation",
+                description: "meditate outdoors. forest bathing. merge with natural world.",
+                short: "communion with nature",
+                category: "mindfulness",
+                level: "beginner",
+                pattern: [
+                    { phase: 'observe surroundings', duration: 20000, haptic: null },
+                    { phase: 'hear all sounds', duration: 20000, haptic: null },
+                    { phase: 'feel the earth', duration: 15000, haptic: 'medium' },
+                    { phase: 'merge with nature', duration: 30000, haptic: null }
+                ]
+            },
+            // TIBETAN ADVANCED ⚠️
+            tummo: {
+                name: "tummo (inner fire) ⚠️",
+                description: "advanced tibetan practice. generate inner heat. kundalini-like. requires teacher.",
+                short: "⚠️ inner heat generation - needs guidance",
+                category: "advanced",
+                level: "advanced",
+                pattern: [
+                    { phase: 'vase breathing', duration: 8000, haptic: 'heavy' },
+                    { phase: 'hold with locks', duration: 15000, haptic: 'heavy' },
+                    { phase: 'visualize fire', duration: 12000, haptic: 'medium' },
+                    { phase: 'heat rises', duration: 15000, haptic: 'medium' },
+                    { phase: 'bliss spreads', duration: 20000, haptic: 'light' }
+                ]
+            },
+            tsa_lung: {
+                name: "tsa lung (channels & winds) ⚠️",
+                description: "work with energy channels. breath and movement. complex tibetan yogic practice.",
+                short: "⚠️ energy channel work - needs teacher",
+                category: "advanced",
+                level: "advanced",
+                pattern: [
+                    { phase: 'channel breathing', duration: 10000, haptic: 'medium' },
+                    { phase: 'hold at chakra', duration: 12000, haptic: 'heavy' },
+                    { phase: 'expel stale winds', duration: 6000, haptic: 'heavy' },
+                    { phase: 'pure winds remain', duration: 12000, haptic: 'light' }
+                ]
+            },
+            phowa: {
+                name: "phowa (consciousness transference) ⚠️",
+                description: "tibetan death practice. transfer consciousness. only with qualified teacher.",
+                short: "⚠️ consciousness ejection - teacher required",
+                category: "advanced",
+                level: "advanced",
+                pattern: [
+                    { phase: 'visualize central channel', duration: 20000, haptic: null },
+                    { phase: 'consciousness at heart', duration: 15000, haptic: 'medium' },
+                    { phase: 'eject to crown', duration: 5000, haptic: 'heavy' },
+                    { phase: 'merge with buddha', duration: 20000, haptic: 'light' }
+                ]
+            },
+            trul_khor: {
+                name: "trul khor (magical wheel) ⚠️",
+                description: "tibetan yantra yoga. dynamic movements with breath. advanced practice.",
+                short: "⚠️ tibetan yantra yoga - needs training",
+                category: "advanced",
+                level: "advanced",
+                pattern: [
+                    { phase: 'dynamic movement', duration: 6000, haptic: 'heavy' },
+                    { phase: 'hold with kumbhaka', duration: 12000, haptic: 'heavy' },
+                    { phase: 'explosive release', duration: 2000, haptic: 'heavy' },
+                    { phase: 'rest in space', duration: 10000, haptic: null }
+                ]
+            }
+        };
+
+        const koans = [
+            "what was your original face before your parents were born? before the universe itself took form?",
+            "if you meet the buddha on the road, kill him. if you meet the patriarchs, kill them. only then will you be free.",
+            "a monk asked zhaozhou: does a dog have buddha nature? zhaozhou answered: mu. what does this mean?",
+            "what is the sound of one hand clapping? do not answer with words. show me.",
+            "the ten thousand things return to the one. to what does the one return? sit with this until the question dissolves.",
+            "a finger points at the moon. but the foolish look at the finger. where is the moon when you close your eyes?",
+            "a monk said: i have nothing. the master replied: then throw it away. what must be discarded to have nothing?",
+            "when you can do nothing, what will you do? when thinking ceases, who are you?",
+            "form is precisely emptiness; emptiness precisely form. yet you cling to form and flee from emptiness. why?",
+            "the great way is not difficult for those who have no preferences. but who is the one who has no preferences?",
+            "before enlightenment: chop wood, carry water. after enlightenment: chop wood, carry water. what has changed?",
+            "sitting quietly, doing nothing, spring comes, grass grows by itself. why do you interfere with the way of things?",
+            "the wild geese do not intend to cast their reflection. the water has no mind to receive their image. can you be like this?",
+            "a monk asked: what is buddha? the master replied: dried shit stick. why would he say such a thing?",
+            "when hungry, eat. when tired, sleep. yet you complicate even this. what burdens do you carry?",
+            "the coin lost in the river is gone. the coin lost in the river is gone. why do you keep reaching into the water?",
+            "bodhidharma sat facing the wall for nine years. what did he see? what did he not see?",
+            "a monk asked: does an enlightened person fall under the law of cause and effect? answer carefully - your response creates your world.",
+            "the ancestor said: not thinking good, not thinking evil, at this very moment, what is your original face?",
+            "when deluded, one is used by the sutras. when enlightened, one uses the sutras. which are you?",
+            "this very mind is buddha. not mind, not buddha. which is the true teaching?",
+            "three pounds of flax. a bundle of straw. the cypress tree in the garden. where is the dharma hidden?",
+            "you bring me the four seas in a bottle, and i will teach you zen. otherwise, practice another sixty years.",
+            "the great death - have you died yet? if not, do not speak of zen.",
+            "mountains are mountains, waters are waters. then mountains are not mountains, waters are not waters. finally, mountains are mountains, waters are waters. where are you?",
+            "your treasure house has been open from the beginning. why do you wander from door to door, begging bowl in hand?",
+            "the dharma is neither existent nor nonexistent. do not seek it anywhere. it is right before your eyes.",
+            "when there is no one inside the gate, a thousand saints cannot save you. when someone is inside, one person is sufficient. who dwells in your gate?"
+        ];
+
+        const zenResponses = {
+            anger: [
+                "who is angry? can you find this one who burns? look closely - where does anger reside when you are not feeding it with thought?",
+                "anger is like holding a hot coal to throw at another. who gets burned first? the coal does not choose - you do.",
+                "when anger arises, do not suppress it. do not express it. just watch it. watch until you see its emptiness.",
+                "you say 'i am angry.' but is anger you, or is it passing through you like wind through an empty hall?",
+                "the master said: when anger comes, ask it three questions - where do you come from? how long will you stay? who are you when you are not here?"
+            ],
+            sad: [
+                "sadness comes. sadness goes. but what watches sadness? can that which watches ever be sad?",
+                "you say 'i am sad.' but can sadness exist without the story you tell about it? drop the story. what remains?",
+                "tears fall like rain. rain nourishes the earth. what does your sadness nourish?",
+                "the heart that has never been broken has never been opened. sit with this sadness. let it teach you compassion.",
+                "when sadness fills you completely, with no resistance, it becomes emptiness. emptiness becomes freedom."
+            ],
+            anxiety: [
+                "anxiety lives in the future, but the future is not here. can you be anxious about this very breath?",
+                "the mind creates ten thousand futures. which one is real? only this moment is solid ground.",
+                "you worry about tomorrow's rain while standing in today's sunshine. where are your feet?",
+                "the anxious mind is like a wild monkey jumping from branch to branch. stop feeding the monkey.",
+                "anxiety asks: what if? wisdom asks: what is? which question leads to peace?"
+            ],
+            fear: [
+                "look at fear. really look. is it solid or made of thought? can you hold it in your hand?",
+                "what would happen if you stopped running from this feeling? what if you turned and faced it?",
+                "fear is a guard dog protecting nothing. it barks loudest at shadows.",
+                "the zen master walks through the dark forest without fear. why? because he has already died a thousand deaths in meditation.",
+                "fear of death, fear of loss, fear of pain - all are fear of change. but what never changes? find that."
+            ],
+            default: [
+                "you name this feeling. but before the name, before the thought, what is it?",
+                "feelings arise like clouds. the sky does not become the cloud. do you?",
+                "sit with this. not to fix it. not to change it. just to know it fully. knowing itself is freedom.",
+                "all feelings are visitors. will you turn them away or offer them tea?",
+                "the question you bring has no answer. the answer you seek requires no question. sit in the space between.",
+                "whatever arises, let it arise. whatever passes, let it pass. you are not the weather - you are the sky.",
+                "this feeling - is it larger than the sky? deeper than the ocean? or is it just a ripple on the surface of being?"
+            ]
+        };
+
+        function init() {
+            populateTechniqueSelect();
+            changeTechnique();
+            updateBreathInfo();
+            loadKoan();
+            updateTotalHours();
+            scheduleBell();
+            updateBellToggle();
+            
+            let statsTimer;
+            const stats = document.getElementById('hiddenStats');
+            stats.addEventListener('touchstart', () => {
+                statsTimer = setTimeout(() => {
+                    stats.classList.add('revealed');
+                }, 2000);
+            });
+            stats.addEventListener('touchend', () => {
+                clearTimeout(statsTimer);
+            });
+        }
+
+        function populateTechniqueSelect() {
+            const select = document.getElementById('techniqueSelect');
+            select.innerHTML = '';
+            
+            // Start with mindfulness category by default
+            for (const [key, tech] of Object.entries(techniques)) {
+                if (tech.category === 'mindfulness') {
+                    const option = document.createElement('option');
+                    option.value = key;
+                    // Add level indicator if it exists
+                    const levelLabel = tech.level ? ` [${tech.level}]` : '';
+                    option.textContent = tech.name + levelLabel;
+                    select.appendChild(option);
+                }
+            }
+            
+            // Set first choice button as active
+            const firstBtn = document.querySelector('.choice-btn');
+            if (firstBtn) {
+                firstBtn.classList.add('active');
+            }
+        }
+
+        function updateTechniquesByCategory() {
+            const category = document.getElementById('categorySelect')?.value;
+            if (!category) return;
+            
+            const select = document.getElementById('techniqueSelect');
+            select.innerHTML = '';
+            
+            for (const [key, tech] of Object.entries(techniques)) {
+                if (category === 'all' || tech.category === category) {
+                    const option = document.createElement('option');
+                    option.value = key;
+                    option.textContent = tech.name;
+                    select.appendChild(option);
+                }
+            }
+            
+            changeTechnique();
+        }
+
+        function showScreen(screenName) {
+            document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+            document.querySelectorAll('.nav-btn').forEach(n => n.classList.remove('active'));
+            
+            const screen = document.getElementById(screenName + 'Screen');
+            if (screen) {
+                screen.classList.add('active');
+            }
+            
+            // Update active nav button
+            event.target.classList.add('active');
+
+            if (screenName === 'sangha' && sanghaActive) {
+                updateSanghaMap();
+            }
+        }
+
+        function changeTechnique() {
+            const select = document.getElementById('techniqueSelect');
+            currentTechnique = select.value;
+            const tech = techniques[currentTechnique];
+            
+            if (tech) {
+                const levelBadge = tech.level ? 
+                    `<span class="level-tag level-${tech.level}">${tech.level}</span>` : '';
+                
+                document.getElementById('techniqueInfo').innerHTML = 
+                    tech.description + 
+                    '<span class="category-tag">' + tech.category + levelBadge + '</span>';
+                
+                // Update breath circle info
+                updateBreathInfo();
+            }
+        }
+
+        function updateBreathInfo() {
+            const tech = techniques[currentTechnique];
+            if (!tech) return;
+            
+            // Update only the description
+            document.getElementById('breathDescription').textContent = tech.short || tech.description;
+        }
+
+        function extractBreathCount(phaseText) {
+            // Extract number from phase text like "inhale (4)" or "exhale (7)"
+            const match = phaseText.match(/\((\d+)\)/);
+            return match ? match[1] : '';
+        }
+
+        function setSessionLength(minutes) {
+            sessionLength = minutes;
+            
+            // Handle random selection
+            if (minutes === -1) {
+                const options = [5, 10, 20, 30, 60];
+                sessionLength = options[Math.floor(Math.random() * options.length)];
+            }
+            
+            document.querySelectorAll('.preset-btn').forEach(btn => {
+                btn.classList.remove('active');
+            });
+            event.target.classList.add('active');
+        }
+
+        function selectPath(category) {
+            // Set the technique for this path
+            currentTechnique = pathTechniques[category];
+            
+            // Update the technique select to show this technique
+            const select = document.getElementById('techniqueSelect');
+            select.value = currentTechnique;
+            
+            // Update technique info and breath display
+            changeTechnique();
+            
+            // Navigate to breathe screen
+            showScreen('breathe');
+            document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+            document.querySelectorAll('.nav-item')[0].classList.add('active');
+        }
+
+        function selectBreathPath(category) {
+            // Update button states
+            document.querySelectorAll('.choice-btn').forEach(btn => btn.classList.remove('active'));
+            event.target.classList.add('active');
+            
+            // Filter techniques by category
+            const select = document.getElementById('techniqueSelect');
+            select.innerHTML = '';
+            
+            // Get all techniques for this category
+            for (const [key, tech] of Object.entries(techniques)) {
+                if (tech.category === category) {
+                    const option = document.createElement('option');
+                    option.value = key;
+                    // Add level indicator if it exists
+                    const levelLabel = tech.level ? ` [${tech.level}]` : '';
+                    option.textContent = tech.name + levelLabel;
+                    select.appendChild(option);
+                }
+            }
+            
+            // Select the first technique in this category
+            if (select.options.length > 0) {
+                currentTechnique = select.options[0].value;
+                changeTechnique();
+            }
+        }
+
+        function toggleBreathing() {
+            if (breathingActive) {
+                stopBreathing();
+            } else {
+                startBreathing();
+            }
+        }
+
+        function startBreathing() {
+            breathingActive = true;
+            sessionStartTime = Date.now();
+            let phaseIndex = 0;
+            const pattern = techniques[currentTechnique].pattern;
+            const circle = document.getElementById('breathCircle');
+            
+            circle.classList.add('breathing');
+            document.getElementById('breathLabel').textContent = 'breathing';
+            document.getElementById('timerDisplay').textContent = '0:00';
+            startSessionTimer();
+            ringBell();
+
+            function executePhase() {
+                if (!breathingActive) return;
+
+                const phase = pattern[phaseIndex];
+                const circle = document.getElementById('breathCircle');
+                const label = document.getElementById('breathLabel');
+                const countElement = document.getElementById('breathCount');
+
+                label.textContent = phase.phase;
+                
+                // Extract breath count if present
+                const breathCount = extractBreathCount(phase.phase);
+                
+                if (breathCount) {
+                    // Start countdown
+                    const totalSeconds = parseInt(breathCount);
+                    const durationMs = phase.duration;
+                    const intervalMs = durationMs / totalSeconds;
+                    
+                    let currentCount = totalSeconds;
+                    countElement.textContent = currentCount;
+                    
+                    const countdownInterval = setInterval(() => {
+                        currentCount--;
+                        if (currentCount >= 0) {
+                            countElement.textContent = currentCount;
+                        }
+                    }, intervalMs);
+                    
+                    // Clear countdown when phase ends
+                    setTimeout(() => clearInterval(countdownInterval), durationMs);
+                } else {
+                    countElement.textContent = '';
+                }
+
+                if (phase.phase.includes('inhale') || phase.phase.includes('fill') || 
+                    phase.phase.includes('raise') || phase.phase.includes('extend')) {
+                    circle.classList.add('inhale');
+                } else {
+                    circle.classList.remove('inhale');
+                }
+
+                if (hapticsEnabled && phase.haptic) {
+                    triggerHaptic(phase.haptic);
+                }
+
+                phaseIndex = (phaseIndex + 1) % pattern.length;
+                breathingInterval = setTimeout(executePhase, phase.duration);
+            }
+
+            executePhase();
+        }
+
+        function stopBreathing() {
+            breathingActive = false;
+            clearTimeout(breathingInterval);
+            clearInterval(sessionTimer);
+            
+            const circle = document.getElementById('breathCircle');
+            circle.classList.remove('inhale', 'breathing');
+            document.getElementById('breathLabel').textContent = 'tap to begin';
+            document.getElementById('breathCount').textContent = '';
+
+            if (sessionStartTime) {
+                const minutes = (Date.now() - sessionStartTime) / 60000;
+                totalPracticeMinutes += minutes;
+                localStorage.setItem('totalPracticeMinutes', totalPracticeMinutes);
+                updateTotalHours();
+            }
+
+            ringBell();
+        }
+
+        function startSessionTimer() {
+            let seconds = 0;
+            sessionTimer = setInterval(() => {
+                seconds++;
+                const mins = Math.floor(seconds / 60);
+                const secs = seconds % 60;
+                document.getElementById('timerDisplay').textContent = 
+                    `${mins}:${secs.toString().padStart(2, '0')}`;
+
+                if (sessionLength > 0 && seconds >= sessionLength * 60) {
+                    stopBreathing();
+                    document.getElementById('breatheBtn').textContent = 'sit';
+                }
+            }, 1000);
+        }
+
+        function enableHaptics() {
+            if ('vibrate' in navigator) {
+                hapticsEnabled = true;
+                navigator.vibrate(200);
+                alert('haptics enabled. you will feel the breath.');
+            } else {
+                alert('haptics not supported on this device.');
+            }
+        }
+
+        function triggerHaptic(intensity) {
+            if (!navigator.vibrate) return;
+            
+            const patterns = {
+                light: 100,
+                medium: 200,
+                heavy: [100, 50, 100]
+            };
+            
+            navigator.vibrate(patterns[intensity] || 100);
+        }
+
+        function joinSangha() {
+            sanghaActive = true;
+            updateSanghaMap();
+            
+            const currentCount = parseInt(localStorage.getItem('sanghaCount') || '47');
+            localStorage.setItem('sanghaCount', currentCount + 1);
+        }
+
+        function leaveSangha() {
+            sanghaActive = false;
+            const currentCount = parseInt(localStorage.getItem('sanghaCount') || '48');
+            if (currentCount > 0) {
+                localStorage.setItem('sanghaCount', currentCount - 1);
+            }
+        }
+
+        function updateSanghaMap() {
+            const map = document.getElementById('sanghaMap');
+            const count = parseInt(localStorage.getItem('sanghaCount') || '47');
+            
+            map.innerHTML = '';
+            
+            for (let i = 0; i < Math.min(count, 100); i++) {
+                const dot = document.createElement('div');
+                dot.className = 'meditator-dot';
+                dot.style.left = Math.random() * 100 + '%';
+                dot.style.top = Math.random() * 100 + '%';
+                dot.style.animationDelay = (Math.random() * 2) + 's';
+                map.appendChild(dot);
+            }
+            
+            document.getElementById('sanghaCount').textContent = 
+                `${count} beings currently sitting`;
+        }
+
+        function loadKoan() {
+            const koan = koans[Math.floor(Math.random() * koans.length)];
+            document.getElementById('koanText').textContent = koan;
+            
+            const saved = localStorage.getItem('koanReflection_' + koan);
+            if (saved) {
+                document.getElementById('koanJournal').value = saved;
+            }
+        }
+
+        function newKoan() {
+            loadKoan();
+            document.getElementById('koanJournal').value = '';
+        }
+
+        function saveKoanReflection() {
+            const koan = document.getElementById('koanText').textContent;
+            const reflection = document.getElementById('koanJournal').value;
+            localStorage.setItem('koanReflection_' + koan, reflection);
+            alert('reflection saved. the koan remains unsolved, as it should.');
+        }
+
+        function startWalking() {
+            walkingActive = true;
+            
+            if (typeof DeviceMotionEvent !== 'undefined' && 
+                typeof DeviceMotionEvent.requestPermission === 'function') {
+                DeviceMotionEvent.requestPermission()
+                    .then(response => {
+                        if (response === 'granted') {
+                            window.addEventListener('devicemotion', handleMotion);
+                        }
+                    })
+                    .catch(console.error);
+            } else {
+                window.addEventListener('devicemotion', handleMotion);
+            }
+        }
+
+        function handleMotion(event) {
+            if (!walkingActive) return;
+
+            const acc = event.accelerationIncludingGravity;
+            const totalMotion = Math.abs(acc.x) + Math.abs(acc.y) + Math.abs(acc.z);
+            
+            const pace = totalMotion / 30;
+            const paceFill = document.getElementById('paceFill');
+            const feedback = document.getElementById('paceFeedback');
+            
+            paceFill.style.width = Math.min(pace * 100, 100) + '%';
+            
+            if (pace > 0.8) {
+                feedback.textContent = 'slow down. feel each step.';
+                paceFill.style.background = 'linear-gradient(90deg, rgba(200, 100, 100, 0.25), rgba(200, 100, 100, 0.4))';
+            } else if (pace > 0.5) {
+                feedback.textContent = 'good pace. stay present.';
+                paceFill.style.background = 'linear-gradient(90deg, rgba(139, 152, 165, 0.25), rgba(139, 152, 165, 0.4))';
+            } else {
+                feedback.textContent = 'mindful. each step a meditation.';
+                paceFill.style.background = 'linear-gradient(90deg, rgba(100, 150, 100, 0.25), rgba(100, 150, 100, 0.4))';
+            }
+        }
+
+        function stopWalking() {
+            walkingActive = false;
+            window.removeEventListener('devicemotion', handleMotion);
+            document.getElementById('paceFeedback').textContent = 'walk at your natural pace';
+        }
+
+        function askZenMaster() {
+            const input = document.getElementById('zenInput').value.toLowerCase();
+            const response = document.getElementById('zenResponse');
+            
+            if (!input.trim()) {
+                response.textContent = 'the master waits for your question...';
+                return;
+            }
+
+            let category = 'default';
+            if (input.includes('angry') || input.includes('anger') || input.includes('mad')) {
+                category = 'anger';
+            } else if (input.includes('sad') || input.includes('depressed') || input.includes('down')) {
+                category = 'sad';
+            } else if (input.includes('anxious') || input.includes('anxiety') || input.includes('worried')) {
+                category = 'anxiety';
+            } else if (input.includes('afraid') || input.includes('fear') || input.includes('scared')) {
+                category = 'fear';
+            }
+
+            const responses = zenResponses[category];
+            const zenReply = responses[Math.floor(Math.random() * responses.length)];
+            
+            response.textContent = zenReply;
+        }
+
+        function toggleBells() {
+            const toggle = document.getElementById('bellToggle');
+            bellsEnabled = toggle.value === 'enabled';
+            localStorage.setItem('bellsEnabled', bellsEnabled);
+            
+            if (bellsEnabled) {
+                scheduleBell();
+            }
+        }
+
+        function updateBellToggle() {
+            document.getElementById('bellToggle').value = bellsEnabled ? 'enabled' : 'disabled';
+        }
+
+        function scheduleBell() {
+            if (!bellsEnabled) return;
+
+            const minMinutes = 30;
+            const maxMinutes = 180;
+            const randomMinutes = Math.random() * (maxMinutes - minMinutes) + minMinutes;
+            const milliseconds = randomMinutes * 60 * 1000;
+
+            setTimeout(() => {
+                ringBell();
+                scheduleBell();
+            }, milliseconds);
+        }
+
+        function ringBell() {
+            const bell = document.getElementById('bellNotification');
+            const freq = parseFloat(document.getElementById('freqSelect').value);
+            
+            bell.classList.add('show');
+
+            try {
+                const audioContext = new (window.AudioContext || window.webkitAudioContext)();
+                const oscillator = audioContext.createOscillator();
+                const gainNode = audioContext.createGain();
+
+                oscillator.connect(gainNode);
+                gainNode.connect(audioContext.destination);
+
+                oscillator.frequency.value = freq;
+                oscillator.type = 'sine';
+
+                gainNode.gain.setValueAtTime(0.3, audioContext.currentTime);
+                gainNode.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + 4);
+
+                oscillator.start(audioContext.currentTime);
+                oscillator.stop(audioContext.currentTime + 4);
+            } catch (e) {}
+
+            setTimeout(() => {
+                bell.classList.remove('show');
+            }, 4000);
+        }
+
+        function updateTotalHours() {
+            const hours = (totalPracticeMinutes / 60).toFixed(1);
+            document.getElementById('totalHours').textContent = hours;
+        }
+
+        function shareApp() {
+            if (navigator.share) {
+                navigator.share({
+                    title: 'presence',
+                    text: 'a meditation companion',
+                    url: window.location.href
+                }).catch(() => {});
+            } else {
+                const url = window.location.href;
+                navigator.clipboard.writeText(url).then(() => {
+                    alert('link copied to clipboard');
+                }).catch(() => {
+                    alert('copy this URL to share:\n' + url);
+                });
+            }
+        }
+
+        window.addEventListener('load', init);
+
+        document.getElementById('bellNotification').addEventListener('click', function() {
+            this.classList.remove('show');
+        });
+    </script>
+</body>
+</html>

@@ -1,0 +1,293 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>presence • insights</title>
+    <script src="presence-content-manager.js"></script>
+    <script src="presence-monitoring.js"></script>
+    <script src="presence-auto-integrate.js"></script>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@300;400;600&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --dawn-start: #f8f9fa; --dawn-mid: #e9ecef; --dawn-end: #dee2e6;
+            --text-whisper: #6c757d; --text-soft: #495057; --text-present: #212529;
+        }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: linear-gradient(180deg, var(--dawn-start) 0%, var(--dawn-mid) 50%, var(--dawn-end) 100%);
+            min-height: 100vh; color: var(--text-soft);
+        }
+        .font-serif { font-family: 'Cormorant Garamond', serif; }
+        .stat-label { font-size: 0.7rem; letter-spacing: 0.3em; text-transform: uppercase; color: var(--text-whisper); }
+        .insight-card {
+            background: rgba(255,255,255,0.5); border: 1px solid rgba(0,0,0,0.05);
+            backdrop-filter: blur(10px); transition: all 0.3s ease;
+        }
+        .heatmap-day {
+            width: 20px; height: 20px; border-radius: 4px;
+            background: rgba(0,0,0,0.05); transition: all 0.3s;
+        }
+        .heatmap-day:hover { transform: scale(1.2); }
+        .signal-bar {
+            height: 100%; border-radius: 4px; transition: all 0.5s ease;
+            background: linear-gradient(to top, rgba(139, 152, 165, 0.3), rgba(139, 152, 165, 0.8));
+        }
+    </style>
+</head>
+<body class="p-8 md:p-16">
+    <div class="max-w-6xl mx-auto">
+        <header class="mb-16">
+            <a href="index.html" class="stat-label text-indigo-400 mb-4 block">← Hub</a>
+            <h1 class="font-serif text-7xl tracking-tighter text-gray-900 mb-4">Insights</h1>
+            <p class="text-lg text-gray-500 font-light">Patterns in the practice</p>
+        </header>
+
+        <!-- Key Metrics -->
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-12">
+            <div class="insight-card p-8 rounded-[2rem]">
+                <div class="stat-label mb-3">Total Hours</div>
+                <div class="text-5xl font-light text-gray-900" id="totalHours">0.0</div>
+            </div>
+            <div class="insight-card p-8 rounded-[2rem]">
+                <div class="stat-label mb-3">Current Streak</div>
+                <div class="text-5xl font-light text-gray-900" id="streak">0</div>
+                <div class="text-sm text-gray-500 mt-2">days</div>
+            </div>
+            <div class="insight-card p-8 rounded-[2rem]">
+                <div class="stat-label mb-3">Journal Entries</div>
+                <div class="text-5xl font-light text-gray-900" id="journalCount">0</div>
+            </div>
+        </div>
+
+        <!-- Practice Heatmap -->
+        <div class="insight-card p-8 md:p-12 rounded-[2.5rem] mb-12">
+            <div class="stat-label mb-6">Last 12 Weeks</div>
+            <div id="heatmap" class="flex gap-2 overflow-x-auto pb-4"></div>
+            <div class="flex justify-between text-xs text-gray-400 mt-4">
+                <span>Less</span>
+                <span>More</span>
+            </div>
+        </div>
+
+        <!-- Signal Analysis -->
+        <div class="insight-card p-8 md:p-12 rounded-[2.5rem] mb-12">
+            <div class="stat-label mb-6">Signal Patterns</div>
+            <div class="grid grid-cols-3 gap-8 mb-8">
+                <div>
+                    <div class="text-sm text-gray-600 mb-3">Still</div>
+                    <div class="h-32 bg-gray-100 rounded-lg overflow-hidden">
+                        <div id="stillBar" class="signal-bar"></div>
+                    </div>
+                    <div class="text-center mt-2 text-sm text-gray-500" id="stillCount">0 sessions</div>
+                </div>
+                <div>
+                    <div class="text-sm text-gray-600 mb-3">Flow</div>
+                    <div class="h-32 bg-gray-100 rounded-lg overflow-hidden">
+                        <div id="flowBar" class="signal-bar"></div>
+                    </div>
+                    <div class="text-center mt-2 text-sm text-gray-500" id="flowCount">0 sessions</div>
+                </div>
+                <div>
+                    <div class="text-sm text-gray-600 mb-3">Ritual</div>
+                    <div class="h-32 bg-gray-100 rounded-lg overflow-hidden">
+                        <div id="ritualBar" class="signal-bar"></div>
+                    </div>
+                    <div class="text-center mt-2 text-sm text-gray-500" id="ritualCount">0 sessions</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Mood Trends -->
+        <div class="insight-card p-8 md:p-12 rounded-[2.5rem] mb-12">
+            <div class="stat-label mb-6">Mood Journey</div>
+            <div id="moodTrend" class="h-48"></div>
+            <div class="text-center text-sm text-gray-500 mt-4" id="avgMood">Average: --</div>
+        </div>
+
+        <!-- Time of Day Preferences -->
+        <div class="insight-card p-8 md:p-12 rounded-[2.5rem]">
+            <div class="stat-label mb-6">Preferred Practice Times</div>
+            <div id="timePreferences" class="space-y-3"></div>
+        </div>
+    </div>
+
+    <script>
+        function loadInsights() {
+            // Total Hours
+            const totalMins = parseInt(localStorage.getItem('totalPracticeMinutes') || '0');
+            document.getElementById('totalHours').textContent = (totalMins / 60).toFixed(1);
+
+            // Journal Count
+            const journal = JSON.parse(localStorage.getItem('presence_journal') || '[]');
+            document.getElementById('journalCount').textContent = journal.length;
+
+            // Calculate Streak
+            const streak = calculateStreak();
+            document.getElementById('streak').textContent = streak;
+
+            // Render Heatmap
+            renderHeatmap();
+
+            // Signal Analysis
+            analyzeSignals();
+
+            // Mood Trends
+            analyzeMood(journal);
+
+            // Time Preferences
+            analyzeTimePreferences(journal);
+        }
+
+        function calculateStreak() {
+            const journal = JSON.parse(localStorage.getItem('presence_journal') || '[]');
+            if (journal.length === 0) return 0;
+
+            const today = new Date();
+            today.setHours(0, 0, 0, 0);
+            
+            let streak = 0;
+            let checkDate = new Date(today);
+
+            for (let i = 0; i < 365; i++) {
+                const hasEntry = journal.some(entry => {
+                    const entryDate = new Date(entry.timestamp);
+                    entryDate.setHours(0, 0, 0, 0);
+                    return entryDate.getTime() === checkDate.getTime();
+                });
+
+                if (hasEntry) {
+                    streak++;
+                    checkDate.setDate(checkDate.getDate() - 1);
+                } else {
+                    break;
+                }
+            }
+
+            return streak;
+        }
+
+        function renderHeatmap() {
+            const journal = JSON.parse(localStorage.getItem('presence_journal') || '[]');
+            const heatmap = document.getElementById('heatmap');
+            
+            // Create 84 days (12 weeks)
+            const days = [];
+            const today = new Date();
+            
+            for (let i = 83; i >= 0; i--) {
+                const date = new Date(today);
+                date.setDate(date.getDate() - i);
+                date.setHours(0, 0, 0, 0);
+                
+                const count = journal.filter(entry => {
+                    const entryDate = new Date(entry.timestamp);
+                    entryDate.setHours(0, 0, 0, 0);
+                    return entryDate.getTime() === date.getTime();
+                }).length;
+                
+                days.push({ date, count });
+            }
+
+            const maxCount = Math.max(...days.map(d => d.count), 1);
+
+            heatmap.innerHTML = days.map(day => {
+                const intensity = day.count / maxCount;
+                const opacity = 0.1 + (intensity * 0.9);
+                return `<div class="heatmap-day" style="background: rgba(139, 152, 165, ${opacity});" title="${day.date.toLocaleDateString()}: ${day.count} entries"></div>`;
+            }).join('');
+        }
+
+        function analyzeSignals() {
+            const journal = JSON.parse(localStorage.getItem('presence_journal') || '[]');
+            
+            const signals = { still: 0, flow: 0, ritual: 0 };
+            
+            journal.forEach(entry => {
+                const source = entry.source?.toLowerCase() || '';
+                if (source.includes('meditation') || source.includes('still')) signals.still++;
+                if (source.includes('yoga') || source.includes('flow')) signals.flow++;
+                if (source.includes('ritual')) signals.ritual++;
+            });
+
+            const total = Math.max(signals.still + signals.flow + signals.ritual, 1);
+
+            document.getElementById('stillBar').style.height = `${(signals.still / total) * 100}%`;
+            document.getElementById('flowBar').style.height = `${(signals.flow / total) * 100}%`;
+            document.getElementById('ritualBar').style.height = `${(signals.ritual / total) * 100}%`;
+
+            document.getElementById('stillCount').textContent = `${signals.still} sessions`;
+            document.getElementById('flowCount').textContent = `${signals.flow} sessions`;
+            document.getElementById('ritualCount').textContent = `${signals.ritual} sessions`;
+        }
+
+        function analyzeMood(journal) {
+            if (journal.length === 0) {
+                document.getElementById('moodTrend').innerHTML = '<p class="text-center text-gray-400 py-12">No mood data yet</p>';
+                return;
+            }
+
+            const moods = journal.slice(0, 30).reverse().map(e => e.mood || 3);
+            const avg = (moods.reduce((a, b) => a + b, 0) / moods.length).toFixed(1);
+            
+            document.getElementById('avgMood').textContent = `Average: ${avg}/5`;
+
+            // Simple line visualization
+            const container = document.getElementById('moodTrend');
+            const width = container.offsetWidth;
+            const height = 192;
+            const stepX = width / Math.max(moods.length - 1, 1);
+
+            const points = moods.map((mood, i) => {
+                const x = i * stepX;
+                const y = height - ((mood / 5) * height);
+                return `${x},${y}`;
+            }).join(' ');
+
+            container.innerHTML = `
+                <svg width="${width}" height="${height}" class="w-full h-full">
+                    <polyline points="${points}" fill="none" stroke="rgba(139, 152, 165, 0.5)" stroke-width="2"/>
+                    ${moods.map((mood, i) => `
+                        <circle cx="${i * stepX}" cy="${height - ((mood / 5) * height)}" r="4" fill="rgba(139, 152, 165, 0.8)"/>
+                    `).join('')}
+                </svg>
+            `;
+        }
+
+        function analyzeTimePreferences(journal) {
+            const times = { morning: 0, afternoon: 0, evening: 0, night: 0 };
+            
+            journal.forEach(entry => {
+                const hour = new Date(entry.timestamp).getHours();
+                if (hour >= 5 && hour < 12) times.morning++;
+                else if (hour >= 12 && hour < 17) times.afternoon++;
+                else if (hour >= 17 && hour < 21) times.evening++;
+                else times.night++;
+            });
+
+            const total = Math.max(times.morning + times.afternoon + times.evening + times.night, 1);
+            const container = document.getElementById('timePreferences');
+
+            container.innerHTML = ['Morning (5am-12pm)', 'Afternoon (12pm-5pm)', 'Evening (5pm-9pm)', 'Night (9pm-5am)']
+                .map((label, i) => {
+                    const key = ['morning', 'afternoon', 'evening', 'night'][i];
+                    const pct = (times[key] / total * 100).toFixed(0);
+                    return `
+                        <div>
+                            <div class="flex justify-between text-sm mb-2">
+                                <span class="text-gray-600">${label}</span>
+                                <span class="text-gray-500">${times[key]} sessions</span>
+                            </div>
+                            <div class="h-2 bg-gray-100 rounded-full overflow-hidden">
+                                <div class="h-full bg-gradient-to-r from-gray-300 to-gray-500 rounded-full transition-all duration-1000" style="width: ${pct}%"></div>
+                            </div>
+                        </div>
+                    `;
+                }).join('');
+        }
+
+        loadInsights();
+    </script>
+</body>
+</html>

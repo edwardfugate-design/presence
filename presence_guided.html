@@ -1,0 +1,490 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="theme-color" content="#f8f9fa">
+    <title>presence • guided meditation</title>
+    <script src="presence-content-manager.js"></script>
+    <script src="presence-monitoring.js"></script>
+    <script src="presence-auto-integrate.js"></script>
+    <script src="all-libraries-compact.js"></script>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@300;400;600&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --dawn-start: #f8f9fa; --dawn-mid: #e9ecef; --dawn-end: #dee2e6;
+            --text-whisper: #6c757d; --text-soft: #495057; --text-present: #212529;
+            --accent-focus: #6366f1;
+        }
+        * { -webkit-tap-highlight-color: transparent; }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: linear-gradient(180deg, var(--dawn-start) 0%, var(--dawn-mid) 50%, var(--dawn-end) 100%);
+            min-height: 100vh; min-height: -webkit-fill-available;
+            color: var(--text-soft);
+            padding: env(safe-area-inset-top) env(safe-area-inset-right) env(safe-area-inset-bottom) env(safe-area-inset-left);
+        }
+        .font-serif { font-family: 'Cormorant Garamond', serif; }
+        .stat-label { font-size: 0.7rem; letter-spacing: 0.3em; text-transform: uppercase; color: var(--text-whisper); }
+        .session-card {
+            background: rgba(255,255,255,0.4); border: 1px solid rgba(0,0,0,0.05);
+            backdrop-filter: blur(10px); transition: all 0.3s;
+        }
+        @media (hover: hover) {
+            .session-card:hover { background: rgba(255,255,255,0.7); transform: translateY(-2px); }
+        }
+        .pulse-circle {
+            animation: pulse 4s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+        }
+        @keyframes pulse {
+            0%, 100% { transform: scale(1); opacity: 0.5; }
+            50% { transform: scale(1.1); opacity: 0.8; }
+        }
+    </style>
+</head>
+<body class="p-4 sm:p-8 md:p-16">
+    <div class="max-w-4xl mx-auto">
+        <header class="mb-8 sm:mb-16">
+            <a href="index.html" class="stat-label mb-4 block min-h-[44px] flex items-center" style="color: var(--accent-focus);">← Hub</a>
+            <h1 class="font-serif text-5xl sm:text-7xl tracking-tighter text-gray-900 mb-4">Guided Meditation</h1>
+            <p class="text-base sm:text-lg text-gray-500 font-light">Voice-guided sessions for every intention</p>
+        </header>
+
+        <!-- Library View -->
+        <div id="libraryView">
+            <!-- Filter -->
+            <div class="flex gap-2 mb-8 overflow-x-auto pb-2">
+                <button onclick="filterSessions('all')" class="filter-btn px-6 py-3 rounded-full text-xs uppercase tracking-widest transition-all min-h-[44px]" data-filter="all">All</button>
+                <button onclick="filterSessions('beginner')" class="filter-btn px-6 py-3 rounded-full text-xs uppercase tracking-widest transition-all min-h-[44px]" data-filter="beginner">Beginner</button>
+                <button onclick="filterSessions('focus')" class="filter-btn px-6 py-3 rounded-full text-xs uppercase tracking-widest transition-all min-h-[44px]" data-filter="focus">Focus</button>
+                <button onclick="filterSessions('anxiety')" class="filter-btn px-6 py-3 rounded-full text-xs uppercase tracking-widest transition-all min-h-[44px]" data-filter="anxiety">Anxiety</button>
+                <button onclick="filterSessions('sleep')" class="filter-btn px-6 py-3 rounded-full text-xs uppercase tracking-widest transition-all min-h-[44px]" data-filter="sleep">Sleep</button>
+            </div>
+
+            <!-- Sessions Grid -->
+            <div id="sessionsGrid" class="grid grid-cols-1 md:grid-cols-2 gap-4"></div>
+        </div>
+
+        <!-- Player View -->
+        <div id="playerView" class="hidden">
+            <div class="text-center mb-12">
+                <button onclick="exitPlayer()" class="stat-label mb-8 cursor-pointer" style="color: var(--accent-focus);">← Back to Library</button>
+                
+                <div class="relative w-64 h-64 mx-auto mb-8">
+                    <div class="pulse-circle absolute inset-0 rounded-full" style="background: radial-gradient(circle, rgba(139, 152, 165, 0.3), rgba(139, 152, 165, 0.05));"></div>
+                    <div class="absolute inset-0 flex items-center justify-center">
+                        <div id="playerStatus" class="text-6xl">●</div>
+                    </div>
+                </div>
+
+                <h2 id="playerTitle" class="font-serif text-4xl mb-4 text-gray-900">Session Title</h2>
+                <p id="playerDuration" class="text-sm text-gray-500 mb-8">10 minutes</p>
+
+                <div class="space-y-4 max-w-md mx-auto mb-8">
+                    <button id="playPauseBtn" onclick="togglePlayPause()" class="w-full py-4 rounded-full bg-gray-900 text-white text-sm uppercase tracking-widest hover:bg-gray-800 transition-all min-h-[48px]">
+                        Begin Session
+                    </button>
+                    
+                    <div class="flex items-center gap-4">
+                        <span class="text-xs text-gray-500">Voice Speed</span>
+                        <input type="range" id="speedControl" min="0.5" max="1.5" step="0.1" value="1" class="flex-1" onchange="updateSpeed()">
+                        <span id="speedValue" class="text-xs text-gray-500">1.0x</span>
+                    </div>
+
+                    <div class="flex items-center gap-4">
+                        <span class="text-xs text-gray-500">Volume</span>
+                        <input type="range" id="volumeControl" min="0" max="1" step="0.1" value="0.8" class="flex-1" onchange="updateVolume()">
+                        <span id="volumeValue" class="text-xs text-gray-500">80%</span>
+                    </div>
+                </div>
+
+                <div id="currentScript" class="text-sm text-gray-500 italic max-w-lg mx-auto min-h-[60px]"></div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Meditation Library with full scripts
+        const MEDITATION_LIBRARY = [
+            {
+                id: 'breath-awareness-5',
+                title: 'Breath Awareness',
+                duration: 5,
+                category: 'beginner',
+                description: 'Simple breath-focused meditation for beginners',
+                script: [
+                    { time: 0, text: "Welcome. Find a comfortable seated position. Close your eyes if that feels right." },
+                    { time: 10, text: "Begin by taking three deep breaths. In through the nose... and out through the mouth." },
+                    { time: 25, text: "Now, allow your breath to return to its natural rhythm." },
+                    { time: 35, text: "Simply notice the breath as it enters... and leaves your body." },
+                    { time: 50, text: "You don't need to change anything. Just observe." },
+                    { time: 65, text: "When your mind wanders, and it will, gently bring your attention back to the breath." },
+                    { time: 85, text: "Notice the coolness as you breathe in... the warmth as you breathe out." },
+                    { time: 105, text: "Each breath is an anchor to this present moment." },
+                    { time: 125, text: "Continue breathing naturally for the next few minutes." },
+                    { time: 180, text: "You're doing well. Stay with the breath." },
+                    { time: 240, text: "Begin to deepen your breath slightly." },
+                    { time: 255, text: "Wiggle your fingers and toes." },
+                    { time: 265, text: "When you're ready, gently open your eyes." },
+                    { time: 280, text: "Well done. Take this calm with you into your day." }
+                ]
+            },
+            {
+                id: 'body-scan-10',
+                title: 'Body Scan',
+                duration: 10,
+                category: 'beginner',
+                description: 'Progressive relaxation through body awareness',
+                script: [
+                    { time: 0, text: "Welcome to this body scan meditation. Lie down or sit comfortably." },
+                    { time: 10, text: "Close your eyes and take three deep breaths." },
+                    { time: 25, text: "Bring your awareness to your feet. Notice any sensations." },
+                    { time: 45, text: "Relax your feet. Let go of any tension." },
+                    { time: 60, text: "Move your awareness to your lower legs and calves." },
+                    { time: 80, text: "Soften these muscles. Release any tightness." },
+                    { time: 100, text: "Shift attention to your thighs. Notice... then relax." },
+                    { time: 120, text: "Bring awareness to your hips and pelvis. Let them settle." },
+                    { time: 150, text: "Notice your abdomen. Let your belly soften." },
+                    { time: 180, text: "Move to your chest. Feel it rise and fall with each breath." },
+                    { time: 210, text: "Bring attention to your shoulders. Let them drop away from your ears." },
+                    { time: 240, text: "Notice your arms, from shoulders to fingertips. Relax completely." },
+                    { time: 280, text: "Soften your neck and throat." },
+                    { time: 310, text: "Relax your jaw. Let your tongue rest in your mouth." },
+                    { time: 340, text: "Soften your eyes, your forehead, the top of your head." },
+                    { time: 370, text: "Your entire body is now relaxed and at ease." },
+                    { time: 420, text: "Rest here for a few more moments." },
+                    { time: 480, text: "Begin to deepen your breath." },
+                    { time: 520, text: "Gently move your fingers and toes." },
+                    { time: 560, text: "When you're ready, open your eyes." },
+                    { time: 580, text: "Notice how relaxed you feel. Well done." }
+                ]
+            },
+            {
+                id: 'anxiety-relief-10',
+                title: 'Anxiety Relief',
+                duration: 10,
+                category: 'anxiety',
+                description: 'Calming practice for anxious moments',
+                script: [
+                    { time: 0, text: "You're safe right now. Find a comfortable position." },
+                    { time: 10, text: "Place one hand on your heart, the other on your belly." },
+                    { time: 20, text: "Take a slow breath in for four counts... 1... 2... 3... 4." },
+                    { time: 30, text: "Hold gently for four... 1... 2... 3... 4." },
+                    { time: 40, text: "Exhale slowly for six... 1... 2... 3... 4... 5... 6." },
+                    { time: 52, text: "Again. Breathe in for four..." },
+                    { time: 60, text: "Hold for four..." },
+                    { time: 68, text: "Out for six..." },
+                    { time: 80, text: "This breath pattern calms your nervous system." },
+                    { time: 95, text: "Notice the weight of your body where it touches the surface beneath you." },
+                    { time: 110, text: "You are grounded. You are here." },
+                    { time: 125, text: "Name five things you can see, even with eyes closed." },
+                    { time: 145, text: "Four things you can touch." },
+                    { time: 160, text: "Three things you can hear." },
+                    { time: 175, text: "Two things you can smell." },
+                    { time: 190, text: "One thing you can taste." },
+                    { time: 205, text: "This brings you into the present moment." },
+                    { time: 220, text: "Anxiety lives in the future. Right now, you are safe." },
+                    { time: 240, text: "Continue with your gentle breathing." },
+                    { time: 300, text: "In for four... hold for four... out for six." },
+                    { time: 360, text: "You're doing wonderfully." },
+                    { time: 420, text: "Each breath releases a little more tension." },
+                    { time: 480, text: "You are calm. You are capable. You are here." },
+                    { time: 540, text: "Begin to bring movement back to your body." },
+                    { time: 560, text: "Wiggle your fingers and toes." },
+                    { time: 575, text: "When ready, open your eyes." },
+                    { time: 590, text: "Remember: this calm is always available to you." }
+                ]
+            },
+            {
+                id: 'focus-clarity-15',
+                title: 'Focus & Clarity',
+                duration: 15,
+                category: 'focus',
+                description: 'Sharpen your mind before important work',
+                script: [
+                    { time: 0, text: "Welcome. This meditation will help you find clarity and focus." },
+                    { time: 12, text: "Sit upright in a chair or on a cushion. Spine straight but relaxed." },
+                    { time: 25, text: "Close your eyes. Take a moment to arrive here." },
+                    { time: 40, text: "Set an intention. What do you want to accomplish after this practice?" },
+                    { time: 60, text: "Hold that intention gently. Then let it go." },
+                    { time: 75, text: "Begin to notice your breath. The natural flow of air." },
+                    { time: 95, text: "With each exhale, release mental clutter." },
+                    { time: 115, text: "With each inhale, invite in clarity." },
+                    { time: 135, text: "Imagine your mind as a still pond. Thoughts are ripples on the surface." },
+                    { time: 160, text: "You are not the ripples. You are the deep, still water beneath." },
+                    { time: 185, text: "When thoughts arise, and they will, simply acknowledge them." },
+                    { time: 205, text: "Like clouds passing across the sky." },
+                    { time: 225, text: "You don't need to grab onto them or push them away." },
+                    { time: 250, text: "Just notice... and return to the breath." },
+                    { time: 270, text: "This is mental training. Each return builds focus." },
+                    { time: 300, text: "Continue for the next several minutes in silence." },
+                    { time: 480, text: "Notice how your mind feels now. Clearer. Sharper." },
+                    { time: 540, text: "Recall your intention from the beginning." },
+                    { time: 600, text: "You bring this clarity to everything you do next." },
+                    { time: 720, text: "Begin to deepen your breath." },
+                    { time: 780, text: "Bring gentle movement to your body." },
+                    { time: 840, text: "When you're ready, open your eyes." },
+                    { time: 880, text: "Carry this focused awareness with you." }
+                ]
+            },
+            {
+                id: 'gratitude-10',
+                title: 'Gratitude Practice',
+                duration: 10,
+                category: 'beginner',
+                description: 'Cultivate appreciation and positive emotion',
+                script: [
+                    { time: 0, text: "Welcome to this gratitude meditation." },
+                    { time: 10, text: "Sit comfortably and close your eyes." },
+                    { time: 20, text: "Take three deep, nourishing breaths." },
+                    { time: 40, text: "Bring to mind something you're grateful for today." },
+                    { time: 60, text: "It can be something small. The warmth of sunlight. A kind word." },
+                    { time: 80, text: "Hold this in your awareness. Notice how it makes you feel." },
+                    { time: 105, text: "Where do you feel gratitude in your body?" },
+                    { time: 125, text: "Perhaps warmth in your chest. A softening." },
+                    { time: 145, text: "Breathe into this feeling. Let it expand." },
+                    { time: 170, text: "Now think of a person you appreciate." },
+                    { time: 190, text: "See their face. Remember their kindness." },
+                    { time: 215, text: "Silently say: Thank you." },
+                    { time: 235, text: "Feel appreciation flow from your heart." },
+                    { time: 260, text: "Now expand your gratitude. Your home. Your health. This moment." },
+                    { time: 290, text: "Each breath is a gift. Notice this miracle." },
+                    { time: 320, text: "Even challenges have taught you something." },
+                    { time: 350, text: "Gratitude doesn't deny difficulty. It finds light alongside it." },
+                    { time: 380, text: "Rest in this feeling of appreciation." },
+                    { time: 450, text: "You can return to gratitude anytime." },
+                    { time: 510, text: "Begin to bring awareness back to your body." },
+                    { time: 540, text: "Wiggle your fingers. Stretch gently." },
+                    { time: 565, text: "Open your eyes when ready." },
+                    { time: 590, text: "Take this gratitude into your day." }
+                ]
+            },
+            {
+                id: 'sleep-preparation-20',
+                title: 'Sleep Preparation',
+                duration: 20,
+                category: 'sleep',
+                description: 'Wind down for restful sleep',
+                script: [
+                    { time: 0, text: "Welcome. It's time to prepare for sleep." },
+                    { time: 12, text: "Lie down in bed. Get comfortable." },
+                    { time: 25, text: "You have nowhere to be. Nothing to do." },
+                    { time: 40, text: "This is time just for rest." },
+                    { time: 55, text: "Close your eyes. Take a deep breath in..." },
+                    { time: 65, text: "...and sigh it out. Release the day." },
+                    { time: 80, text: "Again. Breathe in..." },
+                    { time: 88, text: "...sigh out. Let everything go." },
+                    { time: 105, text: "One more time. In..." },
+                    { time: 112, text: "...and release." },
+                    { time: 130, text: "Now allow your breath to find its natural rhythm." },
+                    { time: 150, text: "With each exhale, your body becomes heavier." },
+                    { time: 175, text: "Sinking into the bed beneath you." },
+                    { time: 200, text: "Notice your feet. They can completely relax now." },
+                    { time: 230, text: "Let them become heavy. Almost melting into the mattress." },
+                    { time: 260, text: "Your legs... heavy and still." },
+                    { time: 290, text: "Hips and pelvis... releasing all tension." },
+                    { time: 320, text: "Your belly softens with each breath." },
+                    { time: 350, text: "Chest rises and falls... gentle waves." },
+                    { time: 380, text: "Shoulders drop away from your ears." },
+                    { time: 410, text: "Arms become heavy. Fingers soft." },
+                    { time: 440, text: "Your neck relaxes. Throat soft." },
+                    { time: 470, text: "Jaw releases. Teeth don't need to touch." },
+                    { time: 500, text: "Soften your eyes. Your forehead." },
+                    { time: 530, text: "The top of your head." },
+                    { time: 560, text: "Your entire body is now deeply relaxed." },
+                    { time: 600, text: "If thoughts come, that's okay." },
+                    { time: 630, text: "You don't need to follow them." },
+                    { time: 660, text: "Just notice... and return to the breath." },
+                    { time: 690, text: "You are safe. You are held." },
+                    { time: 720, text: "Sleep will come when it's ready." },
+                    { time: 780, text: "For now, just rest here." },
+                    { time: 840, text: "Breathing... relaxing... letting go." },
+                    { time: 960, text: "Good night. Sleep well." }
+                ]
+            }
+        ];
+
+        let currentSession = null;
+        let currentScriptIndex = 0;
+        let sessionStartTime = null;
+        let isPlaying = false;
+        let synth = window.speechSynthesis;
+        let currentUtterance = null;
+        let currentFilter = 'all';
+
+        function renderLibrary() {
+            const grid = document.getElementById('sessionsGrid');
+            const sessions = currentFilter === 'all' 
+                ? MEDITATION_LIBRARY 
+                : MEDITATION_LIBRARY.filter(s => s.category === currentFilter);
+
+            grid.innerHTML = sessions.map(session => `
+                <div class="session-card p-6 rounded-2xl cursor-pointer" onclick="selectSession('${session.id}')">
+                    <div class="stat-label mb-2">${session.category}</div>
+                    <h3 class="text-2xl font-serif mb-2 text-gray-900">${session.title}</h3>
+                    <p class="text-sm text-gray-600 mb-4">${session.description}</p>
+                    <div class="text-xs text-gray-500">${session.duration} minutes</div>
+                </div>
+            `).join('');
+
+            // Update filter button styles
+            document.querySelectorAll('.filter-btn').forEach(btn => {
+                const filter = btn.dataset.filter;
+                if (filter === currentFilter) {
+                    btn.style.background = 'var(--accent-focus)';
+                    btn.style.color = 'white';
+                } else {
+                    btn.style.background = 'rgba(255,255,255,0.4)';
+                    btn.style.color = 'var(--text-soft)';
+                }
+            });
+        }
+
+        function filterSessions(category) {
+            currentFilter = category;
+            renderLibrary();
+        }
+
+        function selectSession(id) {
+            currentSession = MEDITATION_LIBRARY.find(s => s.id === id);
+            document.getElementById('libraryView').classList.add('hidden');
+            document.getElementById('playerView').classList.remove('hidden');
+            
+            document.getElementById('playerTitle').textContent = currentSession.title;
+            document.getElementById('playerDuration').textContent = `${currentSession.duration} minutes`;
+            
+            resetPlayer();
+        }
+
+        function exitPlayer() {
+            stopSession();
+            document.getElementById('libraryView').classList.remove('hidden');
+            document.getElementById('playerView').classList.add('hidden');
+        }
+
+        function resetPlayer() {
+            currentScriptIndex = 0;
+            sessionStartTime = null;
+            isPlaying = false;
+            document.getElementById('playPauseBtn').textContent = 'Begin Session';
+            document.getElementById('currentScript').textContent = '';
+            document.getElementById('playerStatus').textContent = '●';
+        }
+
+        function togglePlayPause() {
+            if (isPlaying) {
+                pauseSession();
+            } else {
+                startSession();
+            }
+        }
+
+        function startSession() {
+            isPlaying = true;
+            sessionStartTime = Date.now();
+            currentScriptIndex = 0;
+            
+            document.getElementById('playPauseBtn').textContent = 'Pause';
+            document.getElementById('playerStatus').textContent = '▶';
+            
+            playNextSegment();
+            
+            // Track practice time
+            localStorage.setItem('lastPracticeStart', Date.now());
+        }
+
+        function pauseSession() {
+            isPlaying = false;
+            if (currentUtterance) {
+                synth.cancel();
+            }
+            document.getElementById('playPauseBtn').textContent = 'Resume';
+            document.getElementById('playerStatus').textContent = '❚❚';
+        }
+
+        function stopSession() {
+            isPlaying = false;
+            if (currentUtterance) {
+                synth.cancel();
+            }
+            
+            // Save practice time
+            const startTime = localStorage.getItem('lastPracticeStart');
+            if (startTime) {
+                const duration = Math.floor((Date.now() - startTime) / 1000 / 60);
+                const totalMins = parseInt(localStorage.getItem('totalPracticeMinutes') || '0');
+                localStorage.setItem('totalPracticeMinutes', totalMins + duration);
+            }
+        }
+
+        function playNextSegment() {
+            if (!isPlaying || !currentSession) return;
+            
+            const elapsed = Math.floor((Date.now() - sessionStartTime) / 1000);
+            const script = currentSession.script;
+            
+            // Find next segment to play
+            while (currentScriptIndex < script.length && script[currentScriptIndex].time <= elapsed) {
+                const segment = script[currentScriptIndex];
+                speakText(segment.text);
+                currentScriptIndex++;
+            }
+            
+            // Check if session complete
+            if (currentScriptIndex >= script.length && elapsed > script[script.length - 1].time + 10) {
+                completeSession();
+                return;
+            }
+            
+            // Continue checking
+            setTimeout(playNextSegment, 1000);
+        }
+
+        function speakText(text) {
+            if (synth.speaking) {
+                synth.cancel();
+            }
+            
+            currentUtterance = new SpeechSynthesisUtterance(text);
+            currentUtterance.rate = parseFloat(document.getElementById('speedControl').value);
+            currentUtterance.volume = parseFloat(document.getElementById('volumeControl').value);
+            currentUtterance.pitch = 0.9;
+            
+            // Display text
+            document.getElementById('currentScript').textContent = text;
+            
+            synth.speak(currentUtterance);
+            
+            // Haptic feedback
+            if ('vibrate' in navigator) {
+                navigator.vibrate(10);
+            }
+        }
+
+        function completeSession() {
+            isPlaying = false;
+            document.getElementById('playPauseBtn').textContent = 'Session Complete';
+            document.getElementById('playerStatus').textContent = '✓';
+            document.getElementById('currentScript').textContent = 'Well done. Return to the library for another session.';
+            
+            stopSession();
+        }
+
+        function updateSpeed() {
+            const speed = document.getElementById('speedControl').value;
+            document.getElementById('speedValue').textContent = `${speed}x`;
+        }
+
+        function updateVolume() {
+            const volume = Math.round(document.getElementById('volumeControl').value * 100);
+            document.getElementById('volumeValue').textContent = `${volume}%`;
+        }
+
+        // Initialize
+        renderLibrary();
+    </script>
+</body>
+</html>
