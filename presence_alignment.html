@@ -231,6 +231,416 @@
                 ],
                 muscles: ['glutes', 'hip_flexors', 'calves', 'core'],
                 difficulty: 'beginner'
+            },
+            triangle: {
+                name: "Triangle Pose",
+                checkpoints: [
+                    { joint: 'front_leg', ideal: 180, range: [175, 180], label: 'Front Leg Extension' },
+                    { joint: 'spine_lateral', ideal: 0, range: [-10, 10], label: 'Spine Side Bend' },
+                    { joint: 'shoulder_stack', ideal: 90, range: [80, 90], label: 'Shoulders Stacked' },
+                    { joint: 'hip_open', ideal: 180, range: [160, 180], label: 'Hip Opening' }
+                ],
+                muscles: ['hamstrings', 'quadriceps', 'obliques', 'hip_flexors'],
+                difficulty: 'intermediate'
+            },
+            bridge: {
+                name: "Bridge Pose",
+                checkpoints: [
+                    { joint: 'knee_angle', ideal: 90, range: [85, 95], label: 'Knee Angle' },
+                    { joint: 'hip_extension', ideal: 165, range: [155, 175], label: 'Hip Extension' },
+                    { joint: 'shoulder_roll', ideal: 0, range: [-10, 10], label: 'Shoulders Under' },
+                    { joint: 'spine_curve', ideal: 20, range: [10, 30], label: 'Thoracic Extension' }
+                ],
+                muscles: ['glutes', 'hamstrings', 'back', 'core'],
+                difficulty: 'beginner'
+            },
+            chair: {
+                name: "Chair Pose (Utkatasana)",
+                checkpoints: [
+                    { joint: 'knee_angle', ideal: 90, range: [80, 100], label: 'Knee Bend' },
+                    { joint: 'hip_hinge', ideal: 45, range: [35, 55], label: 'Hip Hinge' },
+                    { joint: 'spine', ideal: 0, range: [-15, 5], label: 'Spine Extension' },
+                    { joint: 'shoulder_raise', ideal: 180, range: [160, 180], label: 'Arms Overhead' }
+                ],
+                muscles: ['quadriceps', 'glutes', 'core', 'shoulders'],
+                difficulty: 'intermediate'
+            },
+            pigeon: {
+                name: "Pigeon Pose",
+                checkpoints: [
+                    { joint: 'front_hip', ideal: 90, range: [60, 120], label: 'Front Hip External Rotation' },
+                    { joint: 'back_hip', ideal: 180, range: [170, 180], label: 'Back Hip Extension' },
+                    { joint: 'pelvis', ideal: 0, range: [-15, 15], label: 'Pelvis Square' },
+                    { joint: 'spine', ideal: 0, range: [-20, 20], label: 'Spine Alignment' }
+                ],
+                muscles: ['glutes', 'hip_flexors', 'hamstrings'],
+                difficulty: 'intermediate'
+            }
+        };
+
+        // Common alignment issues and corrections
+        const ALIGNMENT_ISSUES = {
+            forward_head: {
+                name: "Forward Head Posture",
+                description: "Head positioned forward of shoulders, common from desk work and phone use",
+                assessment: {
+                    ideal_angle: 0,
+                    range: [-15, 15],
+                    measurement: "Ear should align vertically over shoulder when viewed from side"
+                },
+                causes: [
+                    "Prolonged screen time",
+                    "Weak deep neck flexors",
+                    "Tight chest and anterior neck muscles",
+                    "Poor sitting posture"
+                ],
+                corrections: [
+                    {
+                        name: "Chin Tucks",
+                        reps: "10-15 reps, 3-5 second holds",
+                        description: "Gently draw chin straight back (not down) to align ear over shoulder"
+                    },
+                    {
+                        name: "Wall Angels",
+                        reps: "10-12 reps, slow and controlled",
+                        description: "Stand against wall, slide arms up and down maintaining contact with wall"
+                    },
+                    {
+                        name: "Neck Extensor Strengthening",
+                        reps: "8-10 reps, 5 second holds",
+                        description: "Lie face down, lift head against gravity or light resistance"
+                    }
+                ],
+                stretches: [
+                    "Chest doorway stretch (2 min hold)",
+                    "Upper trapezius stretch (30 sec each side)",
+                    "Levator scapulae stretch (30 sec each side)"
+                ]
+            },
+            rounded_shoulders: {
+                name: "Rounded Shoulders",
+                description: "Shoulders rolled forward, scapulae protracted, common with poor posture",
+                assessment: {
+                    ideal_angle: 0,
+                    range: [-10, 10],
+                    measurement: "Acromion (shoulder point) should align over mid-torso from side view"
+                },
+                causes: [
+                    "Tight pectoralis major and minor",
+                    "Weak rhomboids and mid-trapezius",
+                    "Excessive internal rotation",
+                    "Poor ergonomic setup"
+                ],
+                corrections: [
+                    {
+                        name: "Scapular Retractions",
+                        reps: "15-20 reps, 3 second holds",
+                        description: "Squeeze shoulder blades together, down and back"
+                    },
+                    {
+                        name: "Band Pull-Aparts",
+                        reps: "12-15 reps",
+                        description: "Pull resistance band apart at chest height, focus on squeezing shoulder blades"
+                    },
+                    {
+                        name: "Prone Y-Raises",
+                        reps: "10-12 reps",
+                        description: "Lie face down, raise arms in Y position, thumbs up"
+                    }
+                ],
+                stretches: [
+                    "Doorway pec stretch (90° and 45° angles, 90 sec each)",
+                    "Child's pose with shoulder flexion (2 min)",
+                    "Thread the needle stretch (60 sec each side)"
+                ]
+            },
+            anterior_pelvic_tilt: {
+                name: "Anterior Pelvic Tilt",
+                description: "Pelvis rotated forward, often causing lower back arch and belly protrusion",
+                assessment: {
+                    ideal_angle: 8-12,
+                    range: [5, 15],
+                    measurement: "ASIS to PSIS alignment should be nearly horizontal, 8-12° tilt normal"
+                },
+                causes: [
+                    "Tight hip flexors (iliopsoas)",
+                    "Weak glutes and hamstrings",
+                    "Weak abdominals",
+                    "Prolonged sitting"
+                ],
+                corrections: [
+                    {
+                        name: "Dead Bug",
+                        reps: "10 reps each side",
+                        description: "Maintain neutral spine, extend opposite arm and leg without arching back"
+                    },
+                    {
+                        name: "Glute Bridges",
+                        reps: "15-20 reps",
+                        description: "Drive through heels, squeeze glutes at top, maintain neutral pelvis"
+                    },
+                    {
+                        name: "Planks (Posterior Tilt)",
+                        reps: "30-60 sec holds",
+                        description: "Tuck tailbone slightly, engage abs to maintain neutral spine"
+                    }
+                ],
+                stretches: [
+                    "Kneeling hip flexor stretch (90 sec each side)",
+                    "Quad stretch with posterior pelvic tilt (60 sec each)",
+                    "Low lunge with hip flexor emphasis (90 sec each)"
+                ]
+            },
+            knee_valgus: {
+                name: "Knee Valgus (Knock-Knees)",
+                description: "Knees collapsing inward during movement, increases injury risk",
+                assessment: {
+                    ideal_angle: 0,
+                    range: [-5, 5],
+                    measurement: "Knee should track over 2nd-3rd toe during squatting movements"
+                },
+                causes: [
+                    "Weak hip abductors (glute medius)",
+                    "Weak glute maximus",
+                    "Overpronated feet",
+                    "Poor motor control"
+                ],
+                corrections: [
+                    {
+                        name: "Banded Side Steps",
+                        reps: "15 steps each direction",
+                        description: "Band around knees, step sideways maintaining tension, knees out"
+                    },
+                    {
+                        name: "Single-Leg Squats with Mirror",
+                        reps: "8-10 reps each leg",
+                        description: "Monitor knee alignment, keep knee tracking over toes"
+                    },
+                    {
+                        name: "Clamshells",
+                        reps: "15-20 reps each side",
+                        description: "Side-lying, knees bent, lift top knee while keeping feet together"
+                    }
+                ],
+                stretches: [
+                    "IT band foam rolling (60-90 sec)",
+                    "Pigeon pose for external rotation (2 min each side)",
+                    "Standing quad stretch (45 sec each)"
+                ]
+            }
+        };
+
+        // Targeted strength exercises by muscle group
+        const STRENGTH_EXERCISES = {
+            core: {
+                name: "Core Strengthening",
+                exercises: [
+                    {
+                        name: "Dead Bug",
+                        muscles: "Transverse abdominis, rectus abdominis, obliques",
+                        sets: "3 sets x 10 reps each side",
+                        cues: "Press low back to floor, extend opposite arm and leg slowly, exhale on extension"
+                    },
+                    {
+                        name: "Bird Dog",
+                        muscles: "Erector spinae, glutes, core stabilizers",
+                        sets: "3 sets x 10 reps each side",
+                        cues: "Maintain neutral spine, extend arm and leg without rotating torso, pause 2 seconds"
+                    },
+                    {
+                        name: "Plank Variations",
+                        muscles: "Entire core, shoulders",
+                        sets: "3 sets x 30-60 sec",
+                        cues: "Elbows under shoulders, body in straight line, tuck tailbone slightly"
+                    },
+                    {
+                        name: "Pallof Press",
+                        muscles: "Anti-rotation core, obliques",
+                        sets: "3 sets x 12 reps each side",
+                        cues: "Resist rotation from band, press straight out from chest, control return"
+                    }
+                ]
+            },
+            glutes: {
+                name: "Glute Development",
+                exercises: [
+                    {
+                        name: "Hip Thrust",
+                        muscles: "Gluteus maximus, hamstrings",
+                        sets: "4 sets x 12-15 reps",
+                        cues: "Drive through heels, full hip extension, squeeze glutes at top for 2 seconds"
+                    },
+                    {
+                        name: "Bulgarian Split Squat",
+                        muscles: "Glutes, quadriceps, balance",
+                        sets: "3 sets x 10 reps each leg",
+                        cues: "Front foot far enough forward, vertical shin, drive through front heel"
+                    },
+                    {
+                        name: "Banded Glute Kickbacks",
+                        muscles: "Glute maximus isolation",
+                        sets: "3 sets x 15-20 reps",
+                        cues: "Keep hips square, extend hip without arching low back, control eccentric"
+                    },
+                    {
+                        name: "Clamshells",
+                        muscles: "Glute medius (hip abduction)",
+                        sets: "3 sets x 20 reps each side",
+                        cues: "Maintain pelvis stable, lift knee without rotating torso, pause at top"
+                    }
+                ]
+            },
+            shoulders: {
+                name: "Shoulder Stability & Strength",
+                exercises: [
+                    {
+                        name: "Face Pulls",
+                        muscles: "Rear deltoids, rhomboids, external rotators",
+                        sets: "3 sets x 15-20 reps",
+                        cues: "Pull to face level, externally rotate at end range, squeeze shoulder blades"
+                    },
+                    {
+                        name: "YTW Raises",
+                        muscles: "All three deltoid heads, rotator cuff",
+                        sets: "3 sets x 8 reps each position",
+                        cues: "Thumbs up, controlled movement, focus on scapular retraction"
+                    },
+                    {
+                        name: "Overhead Press",
+                        muscles: "Anterior and lateral deltoids, triceps, core",
+                        sets: "4 sets x 8-10 reps",
+                        cues: "Elbows slightly forward, press straight up, avoid arching lower back"
+                    },
+                    {
+                        name: "Scaption Raises",
+                        muscles: "Supraspinatus, deltoids",
+                        sets: "3 sets x 12-15 reps",
+                        cues: "Raise arms 30° forward of lateral plane, thumbs up, stop at shoulder height"
+                    }
+                ]
+            },
+            hip_flexors: {
+                name: "Hip Mobility & Control",
+                exercises: [
+                    {
+                        name: "90/90 Hip Switches",
+                        muscles: "Hip internal/external rotation, mobility",
+                        sets: "3 sets x 10 reps each side",
+                        cues: "Sit tall, switch legs smoothly, keep knees at 90°, chest up"
+                    },
+                    {
+                        name: "Copenhagen Plank",
+                        muscles: "Hip adductors, core, obliques",
+                        sets: "3 sets x 20-30 sec each side",
+                        cues: "Top leg on bench, bottom leg lifted, maintain straight line"
+                    },
+                    {
+                        name: "Reverse Lunges",
+                        muscles: "Hip flexors (eccentric), quads, glutes",
+                        sets: "3 sets x 12 reps each leg",
+                        cues: "Step back, lower knee toward ground, drive through front heel to return"
+                    },
+                    {
+                        name: "Banded Hip Marches",
+                        muscles: "Iliopsoas, core stability",
+                        sets: "3 sets x 20 reps",
+                        cues: "Band around feet, march in place maintaining resistance, stay tall"
+                    }
+                ]
+            }
+        };
+
+        // Mobility assessment routines
+        const MOBILITY_ASSESSMENTS = {
+            shoulder_mobility: {
+                name: "Shoulder Mobility Assessment",
+                description: "Evaluate shoulder flexion, extension, and rotation range of motion",
+                tests: [
+                    {
+                        name: "Overhead Reach Test",
+                        passing: "Arms reach vertical (180°) without arching lower back",
+                        failing: "Unable to reach vertical, or compensates with back arch",
+                        improvement: "Thoracic extension work, lat stretching, pec minor release"
+                    },
+                    {
+                        name: "Behind-Back Scratch Test",
+                        passing: "Hands can clasp behind back from overhead and underhand",
+                        failing: "Hands don't meet, or significant difference between sides",
+                        improvement: "Sleeper stretch, cross-body stretch, internal rotation work"
+                    },
+                    {
+                        name: "Wall Slide Test",
+                        passing: "Arms slide overhead maintaining wrist, elbow, and back contact with wall",
+                        failing: "Lower back arches, elbows leave wall, or wrists can't stay flat",
+                        improvement: "Pec stretching, scapular wall slides, thoracic mobility drills"
+                    }
+                ]
+            },
+            hip_mobility: {
+                name: "Hip Mobility Assessment",
+                description: "Evaluate hip flexion, extension, rotation, and abduction",
+                tests: [
+                    {
+                        name: "Thomas Test (Hip Flexor Length)",
+                        passing: "Lying on table edge, opposite leg hangs with thigh parallel to ground",
+                        failing: "Thigh lifts up, indicating tight hip flexors",
+                        improvement: "Kneeling hip flexor stretch, couch stretch, psoas release"
+                    },
+                    {
+                        name: "90/90 Test (Hip Rotation)",
+                        passing: "Knees touch ground in both internal and external rotation positions",
+                        failing: "Knees lift significantly, or can't switch positions smoothly",
+                        improvement: "90/90 stretching, hip CARs, pigeon pose, figure-4 stretch"
+                    },
+                    {
+                        name: "Deep Squat Assessment",
+                        passing: "Full squat with heels down, upright torso, knees tracking over toes",
+                        failing: "Heels lift, excessive forward lean, or knees cave inward",
+                        improvement: "Goblet squats, ankle mobility work, hip flexor strengthening"
+                    }
+                ]
+            },
+            spine_mobility: {
+                name: "Spinal Mobility Assessment",
+                description: "Evaluate thoracic and lumbar spine movement",
+                tests: [
+                    {
+                        name: "Thoracic Rotation Test",
+                        passing: "Can rotate 50-60° each direction while keeping hips stable",
+                        failing: "Less than 40° rotation, or compensates with hip/shoulder movement",
+                        improvement: "Thread the needle, open books, quadruped rotations"
+                    },
+                    {
+                        name: "Cat-Cow Assessment",
+                        passing: "Smooth segmental motion through entire spine, equal flexion/extension",
+                        failing: "Hinging at one segment, limited thoracic movement",
+                        improvement: "Segmental cat-cow, thoracic extensions on foam roller"
+                    },
+                    {
+                        name: "Toe Touch Test",
+                        passing: "Fingertips reach toes or floor with knees straight",
+                        failing: "Significant distance from toes, or must bend knees",
+                        improvement: "Hamstring stretching, hip hinge practice, nerve glides"
+                    }
+                ]
+            },
+            ankle_mobility: {
+                name: "Ankle Mobility Assessment",
+                description: "Evaluate dorsiflexion range critical for squatting and walking",
+                tests: [
+                    {
+                        name: "Wall Knee-to-Wall Test",
+                        passing: "Knee touches wall with toes 5 inches back, heel down",
+                        failing: "Heel lifts before knee touches, or can't reach 5 inches",
+                        improvement: "Calf stretching (bent and straight knee), ankle mobilizations"
+                    },
+                    {
+                        name: "Single-Leg Balance",
+                        passing: "Can balance 30+ seconds on each leg with eyes closed",
+                        failing: "Significant wobbling, or can't maintain 10 seconds",
+                        improvement: "Proprioception drills, single-leg exercises, balance board work"
+                    }
+                ]
             }
         };
 
@@ -292,11 +702,11 @@
 
                         {/* View Switcher */}
                         <div className="flex gap-2 mb-8 overflow-x-auto pb-2">
-                            {['analysis', 'anatomy', 'biometrics'].map(v => (
+                            {['analysis', 'anatomy', 'biometrics', 'issues', 'exercises', 'mobility'].map(v => (
                                 <button
                                     key={v}
                                     onClick={() => setView(v)}
-                                    className={`px-6 py-3 rounded-lg text-xs uppercase tracking-widest transition-all min-h-[44px]`}
+                                    className={`px-6 py-3 rounded-lg text-xs uppercase tracking-widest transition-all min-h-[44px] whitespace-nowrap`}
                                     style={view === v 
                                         ? { background: 'var(--accent-focus)', color: 'white' }
                                         : { background: 'var(--surface-primary)', color: 'var(--text-soft)', border: '1px solid var(--border-subtle)' }
@@ -350,6 +760,199 @@
                                 getAlignmentStatus={getAlignmentStatus}
                             />
                         )}
+
+                        {view === 'issues' && <AlignmentIssuesView />}
+                        
+                        {view === 'exercises' && <ExercisesView />}
+                        
+                        {view === 'mobility' && <MobilityView />}
+                    </div>
+                </div>
+            );
+        }
+
+        // New view components
+        function AlignmentIssuesView() {
+            const [selectedIssue, setSelectedIssue] = React.useState('forward_head');
+            const issue = ALIGNMENT_ISSUES[selectedIssue];
+
+            return (
+                <div className="space-y-6">
+                    {/* Issue Selector */}
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                        {Object.entries(ALIGNMENT_ISSUES).map(([key, iss]) => (
+                            <button
+                                key={key}
+                                onClick={() => setSelectedIssue(key)}
+                                className="bio-card p-5 rounded-xl text-left transition-all"
+                                style={selectedIssue === key ? { borderColor: 'var(--accent-alert)', borderWidth: '2px' } : {}}
+                            >
+                                <div className="text-sm font-medium mb-2" style={{ color: 'var(--text-present)' }}>{iss.name}</div>
+                                <div className="text-xs" style={{ color: 'var(--text-soft)' }}>{iss.description}</div>
+                            </button>
+                        ))}
+                    </div>
+
+                    {/* Issue Details */}
+                    <div className="bio-card p-8 rounded-2xl">
+                        <h3 className="text-2xl font-serif mb-4" style={{ color: 'var(--text-present)' }}>{issue.name}</h3>
+                        <p className="text-sm mb-6" style={{ color: 'var(--text-soft)' }}>{issue.description}</p>
+
+                        {/* Assessment */}
+                        <div className="mb-6 p-4 rounded-lg" style={{ background: 'rgba(99, 102, 241, 0.1)' }}>
+                            <div className="text-xs uppercase tracking-wider mb-2" style={{ color: 'var(--accent-focus)' }}>Assessment</div>
+                            <div className="text-sm" style={{ color: 'var(--text-present)' }}>{issue.assessment.measurement}</div>
+                        </div>
+
+                        {/* Causes */}
+                        <div className="mb-6">
+                            <div className="text-xs uppercase tracking-wider mb-3" style={{ color: 'var(--text-whisper)' }}>Common Causes</div>
+                            <ul className="space-y-2">
+                                {issue.causes.map((cause, idx) => (
+                                    <li key={idx} className="text-sm flex items-start">
+                                        <span style={{ color: 'var(--accent-alert)', marginRight: '0.5rem' }}>•</span>
+                                        <span style={{ color: 'var(--text-soft)' }}>{cause}</span>
+                                    </li>
+                                ))}
+                            </ul>
+                        </div>
+
+                        {/* Corrective Exercises */}
+                        <div className="mb-6">
+                            <div className="text-xs uppercase tracking-wider mb-3" style={{ color: 'var(--text-whisper)' }}>Corrective Exercises</div>
+                            <div className="space-y-4">
+                                {issue.corrections.map((ex, idx) => (
+                                    <div key={idx} className="p-4 rounded-lg" style={{ background: 'rgba(132, 204, 22, 0.1)' }}>
+                                        <div className="flex justify-between items-start mb-2">
+                                            <div className="font-medium text-sm" style={{ color: 'var(--text-present)' }}>{ex.name}</div>
+                                            <div className="text-xs" style={{ color: 'var(--accent-success)' }}>{ex.reps}</div>
+                                        </div>
+                                        <div className="text-xs" style={{ color: 'var(--text-soft)' }}>{ex.description}</div>
+                                    </div>
+                                ))}
+                            </div>
+                        </div>
+
+                        {/* Stretches */}
+                        <div>
+                            <div className="text-xs uppercase tracking-wider mb-3" style={{ color: 'var(--text-whisper)' }}>Recommended Stretches</div>
+                            <ul className="space-y-2">
+                                {issue.stretches.map((stretch, idx) => (
+                                    <li key={idx} className="text-sm flex items-start">
+                                        <span style={{ color: 'var(--accent-focus)', marginRight: '0.5rem' }}>→</span>
+                                        <span style={{ color: 'var(--text-soft)' }}>{stretch}</span>
+                                    </li>
+                                ))}
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            );
+        }
+
+        function ExercisesView() {
+            const [selectedGroup, setSelectedGroup] = React.useState('core');
+            const group = STRENGTH_EXERCISES[selectedGroup];
+
+            return (
+                <div className="space-y-6">
+                    {/* Muscle Group Selector */}
+                    <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+                        {Object.entries(STRENGTH_EXERCISES).map(([key, grp]) => (
+                            <button
+                                key={key}
+                                onClick={() => setSelectedGroup(key)}
+                                className="bio-card p-4 rounded-xl text-center transition-all min-h-[44px]"
+                                style={selectedGroup === key ? { borderColor: 'var(--accent-success)', borderWidth: '2px' } : {}}
+                            >
+                                <div className="text-sm font-medium" style={{ color: 'var(--text-present)' }}>{grp.name}</div>
+                            </button>
+                        ))}
+                    </div>
+
+                    {/* Exercise List */}
+                    <div className="grid md:grid-cols-2 gap-4">
+                        {group.exercises.map((ex, idx) => (
+                            <div key={idx} className="bio-card p-6 rounded-2xl">
+                                <div className="flex justify-between items-start mb-4">
+                                    <h4 className="text-lg font-medium" style={{ color: 'var(--text-present)' }}>{ex.name}</h4>
+                                    <div className="text-xs px-3 py-1 rounded-full" style={{ background: 'var(--accent-success)', color: 'white' }}>{idx + 1}</div>
+                                </div>
+                                
+                                <div className="space-y-3">
+                                    <div>
+                                        <div className="text-xs uppercase tracking-wider mb-1" style={{ color: 'var(--text-whisper)' }}>Target Muscles</div>
+                                        <div className="text-sm" style={{ color: 'var(--text-soft)' }}>{ex.muscles}</div>
+                                    </div>
+                                    
+                                    <div>
+                                        <div className="text-xs uppercase tracking-wider mb-1" style={{ color: 'var(--text-whisper)' }}>Programming</div>
+                                        <div className="text-sm font-medium" style={{ color: 'var(--accent-focus)' }}>{ex.sets}</div>
+                                    </div>
+                                    
+                                    <div>
+                                        <div className="text-xs uppercase tracking-wider mb-1" style={{ color: 'var(--text-whisper)' }}>Key Cues</div>
+                                        <div className="text-sm" style={{ color: 'var(--text-soft)' }}>{ex.cues}</div>
+                                    </div>
+                                </div>
+                            </div>
+                        ))}
+                    </div>
+                </div>
+            );
+        }
+
+        function MobilityView() {
+            const [selectedAssessment, setSelectedAssessment] = React.useState('shoulder_mobility');
+            const assessment = MOBILITY_ASSESSMENTS[selectedAssessment];
+
+            return (
+                <div className="space-y-6">
+                    {/* Assessment Selector */}
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                        {Object.entries(MOBILITY_ASSESSMENTS).map(([key, assess]) => (
+                            <button
+                                key={key}
+                                onClick={() => setSelectedAssessment(key)}
+                                className="bio-card p-5 rounded-xl text-left transition-all"
+                                style={selectedAssessment === key ? { borderColor: 'var(--accent-focus)', borderWidth: '2px' } : {}}
+                            >
+                                <div className="text-sm font-medium mb-2" style={{ color: 'var(--text-present)' }}>{assess.name}</div>
+                                <div className="text-xs" style={{ color: 'var(--text-soft)' }}>{assess.description}</div>
+                            </button>
+                        ))}
+                    </div>
+
+                    {/* Assessment Details */}
+                    <div className="bio-card p-8 rounded-2xl">
+                        <h3 className="text-2xl font-serif mb-4" style={{ color: 'var(--text-present)' }}>{assessment.name}</h3>
+                        <p className="text-sm mb-6" style={{ color: 'var(--text-soft)' }}>{assessment.description}</p>
+
+                        {/* Tests */}
+                        <div className="space-y-6">
+                            {assessment.tests.map((test, idx) => (
+                                <div key={idx} className="p-5 rounded-lg" style={{ background: 'rgba(99, 102, 241, 0.05)', border: '1px solid rgba(99, 102, 241, 0.2)' }}>
+                                    <div className="font-medium text-sm mb-3" style={{ color: 'var(--text-present)' }}>{test.name}</div>
+                                    
+                                    <div className="grid md:grid-cols-2 gap-4 mb-3">
+                                        <div className="p-3 rounded" style={{ background: 'rgba(132, 204, 22, 0.1)' }}>
+                                            <div className="text-xs uppercase tracking-wider mb-1" style={{ color: 'var(--accent-success)' }}>✓ Passing</div>
+                                            <div className="text-xs" style={{ color: 'var(--text-soft)' }}>{test.passing}</div>
+                                        </div>
+                                        
+                                        <div className="p-3 rounded" style={{ background: 'rgba(239, 68, 68, 0.1)' }}>
+                                            <div className="text-xs uppercase tracking-wider mb-1" style={{ color: 'var(--accent-alert)' }}>✗ Failing</div>
+                                            <div className="text-xs" style={{ color: 'var(--text-soft)' }}>{test.failing}</div>
+                                        </div>
+                                    </div>
+                                    
+                                    <div className="p-3 rounded" style={{ background: 'rgba(99, 102, 241, 0.1)' }}>
+                                        <div className="text-xs uppercase tracking-wider mb-1" style={{ color: 'var(--accent-focus)' }}>→ Improvement Strategy</div>
+                                        <div className="text-xs" style={{ color: 'var(--text-soft)' }}>{test.improvement}</div>
+                                    </div>
+                                </div>
+                            ))}
+                        </div>
                     </div>
                 </div>
             );
