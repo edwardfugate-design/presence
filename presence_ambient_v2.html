@@ -3,30 +3,108 @@
 <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
-    <title>Presence · Complete Master</title>
-    <script src="presence-content-manager.js"></script>
-    <script src="presence-monitoring.js"></script>
-    <script src="presence-auto-integrate.js"></script>
-    <script src="all-libraries-compact.js"></script>
-    <script crossorigin src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
-    <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
-    <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
-    <script src="https://cdn.tailwindcss.com"></script>
-    <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@300;400;600&display=swap" rel="stylesheet">
+    <title>Presence · Ambient</title>
+    
+    <!-- Preconnect to external domains for faster loading -->
+    <link rel="preconnect" href="https://cdn.freesound.org">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    
+    <!-- Inline critical CSS for instant render -->
     <style>
-        body { background: #fdfcfb; font-family: -apple-system, sans-serif; overflow-x: hidden; touch-action: manipulation; }
+        body { 
+            background: #fdfcfb; 
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; 
+            margin: 0;
+            overflow-x: hidden; 
+            touch-action: manipulation;
+        }
         .font-serif { font-family: 'Cormorant Garamond', serif; }
-        .aura-field { filter: blur(120px); transition: all 6s ease-in-out; position: fixed; inset: -10%; width: 120%; height: 120%; z-index: -1; opacity: 0.5; }
+        .aura-field { 
+            filter: blur(120px); 
+            transition: all 6s ease-in-out; 
+            position: fixed; 
+            inset: -10%; 
+            width: 120%; 
+            height: 120%; 
+            z-index: -1; 
+            opacity: 0.5;
+        }
         .hide-scrollbar::-webkit-scrollbar { display: none; }
+        .loading-screen {
+            position: fixed;
+            inset: 0;
+            background: #fdfcfb;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 9999;
+            opacity: 1;
+            transition: opacity 0.3s ease-out;
+        }
+        .loading-screen.hidden {
+            opacity: 0;
+            pointer-events: none;
+        }
+        /* Tailwind utility classes we need - inlined to avoid loading full framework */
+        .min-h-screen { min-height: 100vh; }
+        .p-6 { padding: 1.5rem; }
+        .max-w-5xl { max-width: 64rem; }
+        .mx-auto { margin-left: auto; margin-right: auto; }
+        .pb-40 { padding-bottom: 10rem; }
+        .flex { display: flex; }
+        .flex-col { flex-direction: column; }
+        .gap-4 { gap: 1rem; }
+        .gap-8 { gap: 2rem; }
+        .items-center { align-items: center; }
+        .items-start { align-items: flex-start; }
+        .items-end { align-items: flex-end; }
+        .justify-between { justify-content: space-between; }
+        .mb-12 { margin-bottom: 3rem; }
+        .mb-16 { margin-bottom: 4rem; }
+        .mt-4 { margin-top: 1rem; }
+        .text-6xl { font-size: 3.75rem; line-height: 1; }
+        .italic { font-style: italic; }
+        .grid { display: grid; }
+        .grid-cols-2 { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+        .rounded-full { border-radius: 9999px; }
+        .px-6 { padding-left: 1.5rem; padding-right: 1.5rem; }
+        .py-2 { padding-top: 0.5rem; padding-bottom: 0.5rem; }
+        .transition-all { transition-property: all; transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1); transition-duration: 150ms; }
+        .fixed { position: fixed; }
+        .bottom-10 { bottom: 2.5rem; }
+        
+        @media (min-width: 640px) {
+            .sm\:grid-cols-3 { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+            .md\:p-12 { padding: 3rem; }
+            .md\:flex-row { flex-direction: row; }
+        }
+        @media (min-width: 1024px) {
+            .lg\:grid-cols-4 { grid-template-columns: repeat(4, minmax(0, 1fr)); }
+        }
     </style>
+    
+    <!-- Defer non-critical resources -->
+    <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@300;400;600&display=swap" rel="stylesheet" media="print" onload="this.media='all'">
+    
+    <!-- Load monitoring scripts async -->
+    <script src="presence-content-manager.js" defer></script>
+    <script src="presence-monitoring.js" defer></script>
+    <script src="presence-auto-integrate.js" defer></script>
 </head>
 <body>
+    <!-- Loading screen -->
+    <div class="loading-screen" id="loadingScreen">
+        <div style="text-align: center;">
+            <div style="width: 40px; height: 40px; border: 3px solid #e5e7eb; border-top-color: #6366f1; border-radius: 50%; animation: spin 1s linear infinite; margin: 0 auto;"></div>
+            <p style="margin-top: 1rem; font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.1em; opacity: 0.5;">Loading Ambient...</p>
+        </div>
+    </div>
+    
     <div id="root"></div>
 
-    <script type="text/babel">
-        const { useState, useEffect, useRef } = React;
-
-        // FULL SOUND MAPPING RESTORED FROM BOTH FILES
+    <script>
+        // Optimized vanilla JS version - no React, no Babel, instant load
         const MASTER_LIBRARY = {
             "🌧️ Weather": [
                 { id: 'light-rain', n: 'Light Rain', urls: ['https://cdn.freesound.org/previews/344/344430_5121236-lq.mp3'] },
@@ -86,8 +164,14 @@
         };
 
         const AudioEngine = {
-            ctx: null, masterGain: null, filterNode: null, pannerNode: null,
-            activeLayers: [], gainNodes: [], driftInterval: null, timerId: null,
+            ctx: null,
+            masterGain: null,
+            filterNode: null,
+            pannerNode: null,
+            activeLayers: [],
+            gainNodes: [],
+            driftInterval: null,
+            timerId: null,
 
             init() {
                 if (!this.ctx) {
@@ -105,7 +189,6 @@
                 if (this.ctx.state === 'suspended') this.ctx.resume();
             },
 
-            // DSP Logic from V2
             updateSignal(mode) {
                 if (!this.filterNode) return;
                 const now = this.ctx.currentTime;
@@ -121,25 +204,20 @@
                 }
             },
 
-            // Layered Playback from Original
             async play(soundId, onLoading) {
                 this.init();
                 this.stop();
                 onLoading(true);
 
-                let sound;
-                for (const cat in MASTER_LIBRARY) {
-                    const found = MASTER_LIBRARY[cat].find(s => s.id === soundId);
-                    if (found) { sound = found; break; }
-                }
-
                 try {
-                    const count = 2; // Layered depth
-                    for(let i=0; i<count; i++) {
-                        const audio = new Audio(sound.urls[0]);
-                        audio.crossOrigin = "anonymous";
+                    const sounds = Object.values(MASTER_LIBRARY).flat();
+                    const sound = sounds.find(s => s.id === soundId);
+                    if (!sound) return;
+
+                    for (const url of sound.urls) {
+                        const audio = new Audio(url);
                         audio.loop = true;
-                        await new Promise(r => { audio.oncanplaythrough = r; audio.load(); });
+                        audio.crossOrigin = "anonymous";
                         audio.currentTime = Math.random() * 20;
                         const source = this.ctx.createMediaElementSource(audio);
                         const gain = this.ctx.createGain();
@@ -153,7 +231,10 @@
                     }
                     this.startDrift();
                     onLoading(false);
-                } catch (e) { console.error(e); onLoading(false); }
+                } catch (e) {
+                    console.error(e);
+                    onLoading(false);
+                }
             },
 
             startDrift() {
@@ -162,7 +243,6 @@
                 }, 5000);
             },
 
-            // Timer Logic from V2
             setTimer(mins, onEnd) {
                 if (this.timerId) clearTimeout(this.timerId);
                 this.timerId = setTimeout(() => {
@@ -181,88 +261,158 @@
             stop() {
                 clearInterval(this.driftInterval);
                 if (this.timerId) clearTimeout(this.timerId);
-                this.activeLayers.forEach(a => { a.pause(); a.src = ""; });
+                this.activeLayers.forEach(a => {
+                    a.pause();
+                    a.src = "";
+                });
                 this.activeLayers = [];
                 this.gainNodes = [];
                 if (this.masterGain) this.masterGain.gain.value = 0.5;
             }
         };
 
-        const App = () => {
-            const [cat, setCat] = useState("🌧️ Weather");
-            const [playing, setPlaying] = useState(null);
-            const [loading, setLoading] = useState(false);
-            const [signal, setSignal] = useState('Neutral');
-            const [timer, setTimer] = useState(null);
+        // App State
+        let state = {
+            category: "🌧️ Weather",
+            playing: null,
+            loading: false,
+            signal: 'Neutral',
+            timer: null
+        };
 
-            useEffect(() => { AudioEngine.updateSignal(signal); }, [signal]);
-
-            return (
-                <div className="min-h-screen p-6 md:p-12 max-w-5xl mx-auto pb-40">
-                    <div className={`aura-field ${signal === 'Focus' ? 'bg-amber-100' : signal === 'Rest' ? 'bg-blue-100' : 'bg-indigo-50'}`} />
+        function render() {
+            const root = document.getElementById('root');
+            
+            const auraColor = state.signal === 'Focus' ? '#fef3c7' : state.signal === 'Rest' ? '#dbeafe' : '#e0e7ff';
+            
+            root.innerHTML = `
+                <div class="min-h-screen p-6 md:p-12 max-w-5xl mx-auto pb-40">
+                    <div class="aura-field" style="background: ${auraColor};"></div>
                     
-                    <header className="flex flex-col md:flex-row justify-between items-start mb-16 gap-8">
+                    <header class="flex flex-col md:flex-row justify-between items-start mb-16 gap-8">
                         <div>
-                            <h1 className="text-6xl font-serif italic tracking-tighter">presence</h1>
-                            <p className="text-[10px] uppercase tracking-[0.4em] opacity-30 mt-4">Complete Integrated Engine</p>
+                            <h1 class="text-6xl font-serif italic" style="font-weight: 200; letter-spacing: -0.02em;">presence</h1>
+                            <p style="font-size: 0.625rem; text-transform: uppercase; letter-spacing: 0.4em; opacity: 0.3; margin-top: 1rem;">Ambient Soundscapes</p>
                         </div>
 
-                        <div className="flex flex-col gap-4 items-end">
-                            <div className="flex bg-black/5 p-1 rounded-full backdrop-blur-xl border border-black/5">
-                                {['Neutral', 'Focus', 'Rest'].map(m => (
-                                    <button key={m} onClick={() => setSignal(m)} className={`px-6 py-2 rounded-full text-[10px] uppercase tracking-widest transition-all ${signal === m ? 'bg-white shadow-sm font-bold' : 'opacity-30'}`}>{m}</button>
-                                ))}
+                        <div class="flex flex-col gap-4 items-end">
+                            <div class="flex" style="background: rgba(0,0,0,0.05); padding: 0.25rem; border-radius: 9999px; backdrop-filter: blur(20px); border: 1px solid rgba(0,0,0,0.05);">
+                                ${['Neutral', 'Focus', 'Rest'].map(m => `
+                                    <button onclick="setSignal('${m}')" class="px-6 py-2 rounded-full transition-all" style="font-size: 0.625rem; text-transform: uppercase; letter-spacing: 0.1em; ${state.signal === m ? 'background: white; box-shadow: 0 1px 2px rgba(0,0,0,0.1); font-weight: 700;' : 'opacity: 0.3;'}">${m}</button>
+                                `).join('')}
                             </div>
-                            {playing && (
-                                <div className="flex gap-2">
-                                    {[15, 30, 60].map(m => (
-                                        <button key={m} onClick={() => { setTimer(m); AudioEngine.setTimer(m, () => {setTimer(null); setPlaying(null);}); }} 
-                                            className={`text-[9px] uppercase px-3 py-1 rounded-md border transition-all ${timer === m ? 'bg-black text-white' : 'opacity-40 border-black/10'}`}>{m}m Timer</button>
-                                    ))}
+                            ${state.playing ? `
+                                <div class="flex gap-2">
+                                    ${[15, 30, 60].map(m => `
+                                        <button onclick="setTimer(${m})" style="font-size: 0.563rem; text-transform: uppercase; padding: 0.25rem 0.75rem; border-radius: 0.375rem; border: 1px solid; transition: all 0.15s; ${state.timer === m ? 'background: black; color: white;' : 'opacity: 0.4; border-color: rgba(0,0,0,0.1);'}">${m}m Timer</button>
+                                    `).join('')}
                                 </div>
-                            )}
+                            ` : ''}
                         </div>
                     </header>
 
-                    <nav className="flex gap-8 border-b border-black/5 mb-12 overflow-x-auto hide-scrollbar">
-                        {Object.keys(MASTER_LIBRARY).map(c => (
-                            <button key={c} onClick={() => setCat(c)} className={`pb-5 text-[11px] font-bold uppercase tracking-[0.2em] whitespace-nowrap transition-all ${cat === c ? 'border-b-2 border-black opacity-100' : 'opacity-20 hover:opacity-40'}`}>{c}</button>
-                        ))}
+                    <nav class="flex gap-8 mb-12 overflow-x-auto hide-scrollbar" style="border-bottom: 1px solid rgba(0,0,0,0.05);">
+                        ${Object.keys(MASTER_LIBRARY).map(c => `
+                            <button onclick="setCategory('${c}')" style="padding-bottom: 1.25rem; font-size: 0.688rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.2em; white-space: nowrap; transition: all 0.15s; ${state.category === c ? 'border-bottom: 2px solid black; opacity: 1;' : 'opacity: 0.2;'}">${c}</button>
+                        `).join('')}
                     </nav>
 
-                    <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4">
-                        {MASTER_LIBRARY[cat].map(s => (
-                            <button key={s.id} onClick={() => { if (playing === s.id) { AudioEngine.stop(); setPlaying(null); setTimer(null); } else { setPlaying(s.id); AudioEngine.play(s.id, setLoading); } }}
-                                className={`group p-6 rounded-[2rem] text-left transition-all duration-500 h-32 flex flex-col justify-between ${playing === s.id ? 'bg-white shadow-2xl scale-[1.02]' : 'bg-white/40 hover:bg-white/60'}`}>
-                                <div className={`w-2 h-2 rounded-full ${playing === s.id ? 'bg-indigo-500 animate-pulse' : 'bg-black/10'}`} />
+                    <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4">
+                        ${MASTER_LIBRARY[state.category].map(s => `
+                            <button onclick="toggleSound('${s.id}')" style="padding: 1.5rem; border-radius: 2rem; text-align: left; transition: all 0.5s; height: 8rem; display: flex; flex-direction: column; justify-content: space-between; ${state.playing === s.id ? 'background: white; box-shadow: 0 25px 50px -12px rgba(0,0,0,0.25); transform: scale(1.02);' : 'background: rgba(255,255,255,0.4);'}">
+                                <div style="width: 0.5rem; height: 0.5rem; border-radius: 9999px; ${state.playing === s.id ? 'background: #6366f1; animation: pulse 2s infinite;' : 'background: rgba(0,0,0,0.1);'}"></div>
                                 <div>
-                                    <h3 className="text-sm font-semibold tracking-tight leading-tight">{s.n}</h3>
-                                    <p className="text-[9px] opacity-30 mt-1 uppercase tracking-widest">{s.desc || 'Infinite'}</p>
+                                    <h3 style="font-size: 0.875rem; font-weight: 600; letter-spacing: -0.025em; line-height: 1.25;">${s.n}</h3>
+                                    <p style="font-size: 0.563rem; opacity: 0.3; margin-top: 0.25rem; text-transform: uppercase; letter-spacing: 0.1em;">${s.desc || 'Infinite'}</p>
                                 </div>
                             </button>
-                        ))}
+                        `).join('')}
                     </div>
 
-                    {(playing || loading) && (
-                        <div className="fixed bottom-10 left-1/2 -translate-x-1/2 w-[90%] max-w-md bg-white/95 backdrop-blur-2xl p-6 rounded-[2.5rem] shadow-2xl border border-white/50 flex justify-between items-center">
-                           <div className="flex items-center gap-4">
-                                <div className="w-10 h-10 rounded-full bg-indigo-50 flex items-center justify-center">
-                                    <div className="w-2 h-2 bg-indigo-500 rounded-full animate-ping" />
+                    ${(state.playing || state.loading) ? `
+                        <div class="fixed bottom-10" style="left: 50%; transform: translateX(-50%); width: 90%; max-width: 28rem; background: rgba(255,255,255,0.95); backdrop-filter: blur(40px); padding: 1.5rem; border-radius: 2.5rem; box-shadow: 0 25px 50px -12px rgba(0,0,0,0.25); border: 1px solid rgba(255,255,255,0.5); display: flex; justify-content: space-between; align-items: center;">
+                            <div style="display: flex; align-items: center; gap: 1rem;">
+                                <div style="width: 2.5rem; height: 2.5rem; border-radius: 9999px; background: #eef2ff; display: flex; align-items: center; justify-content: center;">
+                                    <div style="width: 0.5rem; height: 0.5rem; background: #6366f1; border-radius: 9999px; animation: ping 1s infinite;"></div>
                                 </div>
                                 <div>
-                                    <p className="text-[9px] uppercase tracking-widest opacity-40">{loading ? 'Loading...' : 'Layered Soundscape'}</p>
-                                    <p className="font-medium text-sm">{timer ? `${timer}m fade-out set` : 'Infinite · Non-Repeating'}</p>
+                                    <p style="font-size: 0.563rem; text-transform: uppercase; letter-spacing: 0.1em; opacity: 0.4;">${state.loading ? 'Loading...' : 'Layered Soundscape'}</p>
+                                    <p style="font-weight: 500; font-size: 0.875rem;">${state.timer ? `${state.timer}m fade-out set` : 'Infinite · Non-Repeating'}</p>
                                 </div>
                             </div>
-                            <button onClick={() => { AudioEngine.stop(); setPlaying(null); setTimer(null); }} className="bg-black text-white px-8 py-3 rounded-full text-[10px] font-bold uppercase tracking-widest">Stop</button>
+                            <button onclick="stopAll()" style="background: black; color: white; padding: 0.75rem 2rem; border-radius: 9999px; font-size: 0.625rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.1em;">Stop</button>
                         </div>
-                    )}
+                    ` : ''}
                 </div>
-            );
-        };
+            `;
+        }
 
-        const root = ReactDOM.createRoot(document.getElementById('root'));
-        root.render(<App />);
+        function setCategory(cat) {
+            state.category = cat;
+            render();
+        }
+
+        function setSignal(sig) {
+            state.signal = sig;
+            AudioEngine.updateSignal(sig);
+            render();
+        }
+
+        function setTimer(mins) {
+            state.timer = mins;
+            AudioEngine.setTimer(mins, () => {
+                state.timer = null;
+                state.playing = null;
+                render();
+            });
+            render();
+        }
+
+        function toggleSound(id) {
+            if (state.playing === id) {
+                AudioEngine.stop();
+                state.playing = null;
+                state.timer = null;
+            } else {
+                state.playing = id;
+                AudioEngine.play(id, (loading) => {
+                    state.loading = loading;
+                    render();
+                });
+            }
+            render();
+        }
+
+        function stopAll() {
+            AudioEngine.stop();
+            state.playing = null;
+            state.timer = null;
+            render();
+        }
+
+        // Add CSS animations
+        const style = document.createElement('style');
+        style.textContent = `
+            @keyframes spin {
+                to { transform: rotate(360deg); }
+            }
+            @keyframes pulse {
+                0%, 100% { opacity: 1; }
+                50% { opacity: 0.5; }
+            }
+            @keyframes ping {
+                75%, 100% { transform: scale(2); opacity: 0; }
+            }
+        `;
+        document.head.appendChild(style);
+
+        // Initial render and hide loading screen
+        window.addEventListener('DOMContentLoaded', () => {
+            render();
+            setTimeout(() => {
+                document.getElementById('loadingScreen').classList.add('hidden');
+            }, 100);
+        });
     </script>
 </body>
 </html>
