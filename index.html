@@ -275,3 +275,44 @@
     </script>
 </body>
 </html>
+<div id="debug-bar" class="hidden bg-red-50 text-red-500 text-[10px] uppercase tracking-widest p-2 text-center border-b border-red-100 animate-pulse">
+    System Alert: <span id="debug-message"></span>
+</div>
+
+<script>
+async function runSystemCheck() {
+    const filesToCheck = [
+        'presence_yoga_v3.html',
+        'presence_breathwork.html',
+        'presence_meditation.html',
+        'presence_rituals.html',
+        'breathwork-library.js',
+        'meditation-library.js',
+        'presence-master.js'
+    ];
+
+    const debugBar = document.getElementById('debug-bar');
+    const debugMsg = document.getElementById('debug-message');
+    let missingFiles = [];
+
+    for (const file of filesToCheck) {
+        try {
+            const response = await fetch(file, { method: 'HEAD' });
+            if (!response.ok) missingFiles.push(file);
+        } catch (e) {
+            missingFiles.push(file);
+        }
+    }
+
+    if (missingFiles.length > 0) {
+        debugBar.classList.remove('hidden');
+        debugMsg.innerText = `Missing or 404: ${missingFiles.join(', ')}`;
+        console.error("Presence Debugger found issues with:", missingFiles);
+    }
+}
+
+// Run check 1 second after load to ensure GitHub has settled
+window.addEventListener('load', () => {
+    setTimeout(runSystemCheck, 1000);
+});
+</script>
