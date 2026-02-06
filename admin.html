@@ -2,111 +2,118 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>Presence | Central Admin</title>
+    <title>Presence Admin | Auto-Sync</title>
     <style>
-        :root { --primary: #2c3e50; --bg: #f8f9fa; }
-        body { font-family: system-ui; background: var(--bg); display: flex; height: 100vh; margin: 0; }
-        
-        /* Sidebar Navigation */
-        .sidebar { width: 240px; background: var(--primary); color: white; padding: 20px; }
-        .sidebar h2 { font-size: 1.2rem; border-bottom: 1px solid #555; padding-bottom: 10px; }
-        .nav-item { padding: 12px; cursor: pointer; border-radius: 5px; margin-bottom: 5px; transition: 0.2s; }
-        .nav-item:hover, .nav-item.active { background: #34495e; color: #27ae60; }
-
-        /* Main Content */
-        .main { flex: 1; padding: 40px; overflow-y: auto; }
-        .card { background: white; padding: 30px; border-radius: 12px; box-shadow: 0 4px 10px rgba(0,0,0,0.1); }
-        .form-group { margin-bottom: 15px; }
-        label { display: block; margin-bottom: 5px; font-weight: bold; }
-        input, select, textarea { width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 6px; box-sizing: border-box; }
-        button { background: #27ae60; color: white; border: none; padding: 12px 20px; border-radius: 6px; cursor: pointer; width: 100%; font-size: 1rem; }
-        #codeOutput { margin-top: 20px; background: #222; color: #0f0; padding: 15px; border-radius: 6px; font-family: monospace; white-space: pre-wrap; }
+        body { font-family: sans-serif; background: #f4f7f6; padding: 40px; color: #2c3e50; }
+        .card { max-width: 600px; margin: auto; background: white; padding: 30px; border-radius: 12px; shadow: 0 4px 10px rgba(0,0,0,0.1); }
+        input, select, button { width: 100%; padding: 12px; margin: 8px 0; border: 1px solid #ddd; border-radius: 6px; box-sizing: border-box; }
+        button { background: #27ae60; color: white; border: none; cursor: pointer; font-weight: bold; }
+        .token-box { background: #fff3cd; padding: 15px; border-radius: 6px; font-size: 0.9em; margin-bottom: 20px; }
     </style>
 </head>
 <body>
 
-<div class="sidebar">
-    <h2>Presence Admin</h2>
-    <div class="nav-item active" onclick="switchApp('yoga')">🧘 Yoga Vault</div>
-    <div class="nav-item" onclick="switchApp('journal')">📖 Daily Journal</div>
-    <div class="nav-item" onclick="switchApp('habits')">📈 Habit Tracker</div>
-</div>
-
-<div class="main">
-    <div class="card">
-        <h1 id="appTitle">Yoga Vault Entry</h1>
-        <form id="adminForm">
-            <div id="dynamicFields">
-                </div>
-            <button type="button" onclick="generateSnippet()">Generate & Copy Code</button>
-        </form>
-        
-        <div id="codeOutput" title="Click to copy" onclick="copyToClipboard()">// Code snippet will appear here...</div>
+<div class="card">
+    <h2>Vault Auto-Updater</h2>
+    
+    <div class="token-box">
+        <strong>Auth Required:</strong><br>
+        <input type="password" id="ghToken" placeholder="Paste GitHub Personal Access Token here...">
     </div>
+
+    <form id="poseForm">
+        <input type="text" id="name" placeholder="Pose Name" required>
+        <input type="text" id="sanskrit" placeholder="Sanskrit Name">
+        <select id="category">
+            <option value="standing">Standing</option>
+            <option value="seated">Seated</option>
+            <option value="backbends">Backbends</option>
+            <option value="inversions">Inversions</option>
+            <option value="restorative">Restorative</option>
+        </select>
+        <select id="level">
+            <option value="Beginner">Beginner</option>
+            <option value="Intermediate">Intermediate</option>
+            <option value="Advanced">Advanced</option>
+        </select>
+        <input type="text" id="muscles" placeholder="Muscles (comma separated)">
+        
+        <button type="button" onclick="pushToGitHub()">Add to Vault & Update Live Site</button>
+    </form>
+    <p id="status" style="text-align: center; font-weight: bold;"></p>
 </div>
 
 <script>
-    const configs = {
-        yoga: {
-            title: "Yoga Vault Entry",
-            fields: [
-                { id: 'name', label: 'Pose Name', type: 'text' },
-                { id: 'sanskrit', label: 'Sanskrit Name', type: 'text' },
-                { id: 'cat', label: 'Category', type: 'select', options: ['standing', 'seated', 'backbends', 'inversions'] },
-                { id: 'level', label: 'Level', type: 'select', options: ['Beginner', 'Intermediate', 'Advanced'] }
-            ],
-            template: (d) => `POSE_DATABASE.${d.cat}.push({ id: Date.now(), name: "${d.name}", sanskrit: "${d.sanskrit}", level: "${d.level}" });`
-        },
-        journal: {
-            title: "New Journal Prompt",
-            fields: [
-                { id: 'prompt', label: 'Reflection Question', type: 'text' },
-                { id: 'tag', label: 'Theme', type: 'select', options: ['Mindfulness', 'Gratitude', 'Growth'] }
-            ],
-            template: (d) => `JOURNAL_PROMPTS.push({ id: Date.now(), text: "${d.prompt}", theme: "${d.tag}" });`
-        }
-    };
+async function pushToGitHub() {
+    const token = document.getElementById('ghToken').value;
+    const status = document.getElementById('status');
+    
+    if (!token) { alert("Please enter your GitHub Token"); return; }
 
-    let currentApp = 'yoga';
+    status.innerText = "Connecting to GitHub...";
+    status.style.color = "blue";
 
-    function switchApp(appKey) {
-        currentApp = appKey;
-        document.querySelectorAll('.nav-item').forEach(el => el.classList.remove('active'));
-        event.target.classList.add('active');
-        
-        const config = configs[appKey];
-        document.getElementById('appTitle').innerText = config.title;
-        
-        const container = document.getElementById('dynamicFields');
-        container.innerHTML = config.fields.map(f => `
-            <div class="form-group">
-                <label>${f.label}</label>
-                ${f.type === 'select' 
-                    ? `<select id="${f.id}">${f.options.map(o => `<option value="${o}">${o}</option>`).join('')}</select>`
-                    : `<input type="${f.type}" id="${f.id}" placeholder="Enter ${f.label.toLowerCase()}...">`
-                }
-            </div>
-        `).join('');
-    }
-
-    function generateSnippet() {
-        const data = {};
-        configs[currentApp].fields.forEach(f => {
-            data[f.id] = document.getElementById(f.id).value;
+    const REPO = "edwardfugate-design/presence";
+    const PATH = "presence-vault.js"; // Make sure this matches your filename exactly
+    
+    try {
+        // 1. Fetch the current file from GitHub
+        const getUrl = `https://api.github.com/repos/${REPO}/contents/${PATH}`;
+        const response = await fetch(getUrl, {
+            headers: { 'Authorization': `token ${token}` }
         });
-        const snippet = configs[currentApp].template(data);
-        document.getElementById('codeOutput').innerText = snippet;
-    }
+        const fileData = await response.json();
+        const sha = fileData.sha;
+        
+        // 2. Decode the old content
+        let content = decodeURIComponent(escape(atob(fileData.content)));
 
-    function copyToClipboard() {
-        const text = document.getElementById('codeOutput').innerText;
-        navigator.clipboard.writeText(text);
-        alert("Code copied! Now paste it into your GitHub .js file.");
-    }
+        // 3. Prepare the new pose data
+        const newPose = {
+            id: Date.now(),
+            name: document.getElementById('name').value,
+            sanskrit: document.getElementById('sanskrit').value,
+            category: document.getElementById('category').value,
+            level: document.getElementById('level').value,
+            muscles: document.getElementById('muscles').value.split(',').map(m => m.trim())
+        };
 
-    // Init
-    switchApp('yoga');
+        // 4. Inject the new pose into the POSE_DATABASE object in the string
+        // This looks for the category array and pushes the new pose inside it
+        const searchKey = `${newPose.category}: [`;
+        const injectionPoint = content.indexOf(searchKey) + searchKey.length;
+        const newEntry = `\n        ${JSON.stringify(newPose, null, 8).replace(/}$/, '        },')}`;
+        
+        const updatedContent = content.slice(0, injectionPoint) + newEntry + content.slice(injectionPoint);
+
+        // 5. Send it back to GitHub
+        const updateResponse = await fetch(getUrl, {
+            method: 'PUT',
+            headers: { 
+                'Authorization': `token ${token}`,
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({
+                message: `Admin: Added ${newPose.name} to Vault`,
+                content: btoa(unescape(encodeURIComponent(updatedContent))),
+                sha: sha
+            })
+        });
+
+        if (updateResponse.ok) {
+            status.innerText = "Success! Site updated.";
+            status.style.color = "green";
+            document.getElementById('poseForm').reset();
+        } else {
+            throw new Error("Failed to update file.");
+        }
+
+    } catch (err) {
+        status.innerText = "Error: Check token or filename.";
+        status.style.color = "red";
+        console.error(err);
+    }
+}
 </script>
-
 </body>
 </html>
