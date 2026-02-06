@@ -66,4 +66,41 @@ window.addEventListener('DOMContentLoaded', () => {
     const bodyId = document.body.id;
     // Basic setup for all pages
     console.log("Presence Brain Online.");
-});
+
+});// --- PREMIER VOICE ENGINE ---
+const PresenceVoice = {
+    getNaturalVoice: () => {
+        const voices = window.speechSynthesis.getVoices();
+        
+        // Priority list of "human-sounding" voices
+        const premiumVoices = [
+            'Samantha', 'Daniel', 'Karen', 'Moira', 
+            'Google US English', 'Apple Color'
+        ];
+
+        // Find the first match from our premium list
+        for (let name of premiumVoices) {
+            const found = voices.find(v => v.name.includes(name));
+            if (found) return found;
+        }
+        return voices[0]; // Fallback to default if no premium found
+    },
+
+    speak: (text) => {
+        // Cancel any current talking so it doesn't overlap
+        window.speechSynthesis.cancel();
+
+        const utterance = new SpeechSynthesisUtterance(text);
+        utterance.voice = PresenceVoice.getNaturalVoice();
+        utterance.pitch = 0.9; // Slightly lower pitch for a "grounded" feel
+        utterance.rate = 0.85; // Slightly slower for meditative pacing
+        
+        window.speechSynthesis.speak(utterance);
+    }
+};
+
+// Make it global so your apps can use it
+window.PresenceVoice = PresenceVoice;
+
+// Essential: Voices load asynchronously, so we "prime" them here
+window.speechSynthesis.onvoiceschanged = () => PresenceVoice.getNaturalVoice();
