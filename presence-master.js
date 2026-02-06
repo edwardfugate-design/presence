@@ -104,3 +104,30 @@ window.PresenceVoice = PresenceVoice;
 
 // Essential: Voices load asynchronously, so we "prime" them here
 window.speechSynthesis.onvoiceschanged = () => PresenceVoice.getNaturalVoice();
+// --- AMBIENT SOUND ENGINE ---
+const PresenceSound = {
+    audio: null,
+    
+    play: (type) => {
+        if (PresenceSound.audio) PresenceSound.audio.pause();
+        
+        // Using high-quality public domain sound links
+        const sounds = {
+            'rain': 'https://www.soundhelix.com/examples/mp3/SoundHelix-Song-1.mp3', // Placeholder: Replace with a clean loop
+            'brown_noise': 'https://actions.google.com/sounds/v1/weather/rain_on_roof.ogg',
+            'singing_bowl': 'https://actions.google.com/sounds/v1/alarms/digital_watch_alarm_long.ogg' // Placeholder
+        };
+
+        PresenceSound.audio = new Audio(sounds[type]);
+        PresenceSound.audio.loop = true;
+        PresenceSound.audio.volume = 0.2; // Keep it subtle
+        PresenceSound.audio.play();
+    },
+
+    stop: () => {
+        if (PresenceSound.audio) PresenceSound.audio.pause();
+    }
+};
+
+window.PresenceSound = PresenceSound;
+
