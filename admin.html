@@ -1,0 +1,112 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Presence | Central Admin</title>
+    <style>
+        :root { --primary: #2c3e50; --bg: #f8f9fa; }
+        body { font-family: system-ui; background: var(--bg); display: flex; height: 100vh; margin: 0; }
+        
+        /* Sidebar Navigation */
+        .sidebar { width: 240px; background: var(--primary); color: white; padding: 20px; }
+        .sidebar h2 { font-size: 1.2rem; border-bottom: 1px solid #555; padding-bottom: 10px; }
+        .nav-item { padding: 12px; cursor: pointer; border-radius: 5px; margin-bottom: 5px; transition: 0.2s; }
+        .nav-item:hover, .nav-item.active { background: #34495e; color: #27ae60; }
+
+        /* Main Content */
+        .main { flex: 1; padding: 40px; overflow-y: auto; }
+        .card { background: white; padding: 30px; border-radius: 12px; box-shadow: 0 4px 10px rgba(0,0,0,0.1); }
+        .form-group { margin-bottom: 15px; }
+        label { display: block; margin-bottom: 5px; font-weight: bold; }
+        input, select, textarea { width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 6px; box-sizing: border-box; }
+        button { background: #27ae60; color: white; border: none; padding: 12px 20px; border-radius: 6px; cursor: pointer; width: 100%; font-size: 1rem; }
+        #codeOutput { margin-top: 20px; background: #222; color: #0f0; padding: 15px; border-radius: 6px; font-family: monospace; white-space: pre-wrap; }
+    </style>
+</head>
+<body>
+
+<div class="sidebar">
+    <h2>Presence Admin</h2>
+    <div class="nav-item active" onclick="switchApp('yoga')">🧘 Yoga Vault</div>
+    <div class="nav-item" onclick="switchApp('journal')">📖 Daily Journal</div>
+    <div class="nav-item" onclick="switchApp('habits')">📈 Habit Tracker</div>
+</div>
+
+<div class="main">
+    <div class="card">
+        <h1 id="appTitle">Yoga Vault Entry</h1>
+        <form id="adminForm">
+            <div id="dynamicFields">
+                </div>
+            <button type="button" onclick="generateSnippet()">Generate & Copy Code</button>
+        </form>
+        
+        <div id="codeOutput" title="Click to copy" onclick="copyToClipboard()">// Code snippet will appear here...</div>
+    </div>
+</div>
+
+<script>
+    const configs = {
+        yoga: {
+            title: "Yoga Vault Entry",
+            fields: [
+                { id: 'name', label: 'Pose Name', type: 'text' },
+                { id: 'sanskrit', label: 'Sanskrit Name', type: 'text' },
+                { id: 'cat', label: 'Category', type: 'select', options: ['standing', 'seated', 'backbends', 'inversions'] },
+                { id: 'level', label: 'Level', type: 'select', options: ['Beginner', 'Intermediate', 'Advanced'] }
+            ],
+            template: (d) => `POSE_DATABASE.${d.cat}.push({ id: Date.now(), name: "${d.name}", sanskrit: "${d.sanskrit}", level: "${d.level}" });`
+        },
+        journal: {
+            title: "New Journal Prompt",
+            fields: [
+                { id: 'prompt', label: 'Reflection Question', type: 'text' },
+                { id: 'tag', label: 'Theme', type: 'select', options: ['Mindfulness', 'Gratitude', 'Growth'] }
+            ],
+            template: (d) => `JOURNAL_PROMPTS.push({ id: Date.now(), text: "${d.prompt}", theme: "${d.tag}" });`
+        }
+    };
+
+    let currentApp = 'yoga';
+
+    function switchApp(appKey) {
+        currentApp = appKey;
+        document.querySelectorAll('.nav-item').forEach(el => el.classList.remove('active'));
+        event.target.classList.add('active');
+        
+        const config = configs[appKey];
+        document.getElementById('appTitle').innerText = config.title;
+        
+        const container = document.getElementById('dynamicFields');
+        container.innerHTML = config.fields.map(f => `
+            <div class="form-group">
+                <label>${f.label}</label>
+                ${f.type === 'select' 
+                    ? `<select id="${f.id}">${f.options.map(o => `<option value="${o}">${o}</option>`).join('')}</select>`
+                    : `<input type="${f.type}" id="${f.id}" placeholder="Enter ${f.label.toLowerCase()}...">`
+                }
+            </div>
+        `).join('');
+    }
+
+    function generateSnippet() {
+        const data = {};
+        configs[currentApp].fields.forEach(f => {
+            data[f.id] = document.getElementById(f.id).value;
+        });
+        const snippet = configs[currentApp].template(data);
+        document.getElementById('codeOutput').innerText = snippet;
+    }
+
+    function copyToClipboard() {
+        const text = document.getElementById('codeOutput').innerText;
+        navigator.clipboard.writeText(text);
+        alert("Code copied! Now paste it into your GitHub .js file.");
+    }
+
+    // Init
+    switchApp('yoga');
+</script>
+
+</body>
+</html>
