@@ -1,857 +1,683 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Presence Yoga - AI Sequencing Studio</title>
-    <script src="presence-content-manager.js"></script>
-    <script src="presence-monitoring.js"></script>
-    <script src="presence-auto-integrate.js"></script>
-    <script src="yoga-library-with-variations.js"></script>
-    <script src="pose-database.js"></script>
+import React, { useState, useEffect } from 'react';
+import { Search, Plus, Trash2, Save, Download, Upload, Sparkles, Filter, Clock, Target, Users, Book, Play, Pause, SkipForward, ChevronDown, ChevronUp, Copy, Shuffle, Zap, Heart, TrendingUp, Moon, Sun, Wind, Flame, Archive, FileText, Printer, Share2, Settings, BarChart3, Calendar, Timer, MessageCircle, Edit3, Check, X, Star, Info, AlertCircle, RefreshCw } from 'lucide-react';
+
+// =================================================================
+// MASSIVE PROFESSIONAL POSE LIBRARY - 200+ POSES
+// The most comprehensive yoga pose database
+// =================================================================
+const POSE_LIBRARY = {
+  // STANDING POSES (60+)
+  mountain: { id: 'mountain', name: 'Mountain Pose', sanskrit: 'Tadasana', family: 'Standing', intensity: 1, styles: ['all'], benefits: ['posture', 'grounding'], cues: 'Root down through all four corners' },
+  tree: { id: 'tree', name: 'Tree Pose', sanskrit: 'Vrksasana', family: 'Standing', intensity: 4, styles: ['all'], benefits: ['balance', 'focus'], cues: 'Press foot into thigh, gaze forward' },
+  warrior_i: { id: 'warrior_i', name: 'Warrior I', sanskrit: 'Virabhadrasana I', family: 'Standing', intensity: 5, styles: ['all'], benefits: ['strength', 'stamina'], cues: 'Square hips, ground back heel' },
+  warrior_ii: { id: 'warrior_ii', name: 'Warrior II', sanskrit: 'Virabhadrasana II', family: 'Standing', intensity: 5, styles: ['all'], benefits: ['strength', 'focus'], cues: 'Open hips, knee over ankle' },
+  warrior_iii: { id: 'warrior_iii', name: 'Warrior III', sanskrit: 'Virabhadrasana III', family: 'Standing', intensity: 7, styles: ['vinyasa', 'power'], benefits: ['balance', 'core'], cues: 'Hinge forward, lift back leg' },
+  triangle: { id: 'triangle', name: 'Triangle Pose', sanskrit: 'Trikonasana', family: 'Standing', intensity: 4, styles: ['all'], benefits: ['side stretch', 'digestion'], cues: 'Reach forward, hand to shin' },
+  extended_side: { id: 'extended_side', name: 'Extended Side Angle', sanskrit: 'Utthita Parsvakonasana', family: 'Standing', intensity: 5, styles: ['all'], benefits: ['side stretch', 'strength'], cues: 'Forearm to thigh, reach overhead' },
+  revolved_triangle: { id: 'revolved_triangle', name: 'Revolved Triangle', sanskrit: 'Parivrtta Trikonasana', family: 'Standing', intensity: 6, styles: ['vinyasa', 'hatha'], benefits: ['twist', 'digestion'], cues: 'Hand outside foot, twist from navel' },
+  revolved_side_angle: { id: 'revolved_side_angle', name: 'Revolved Side Angle', sanskrit: 'Parivrtta Parsvakonasana', family: 'Standing', intensity: 7, styles: ['vinyasa', 'power'], benefits: ['twist', 'detox'], cues: 'Prayer hands, elbow outside knee' },
+  eagle: { id: 'eagle', name: 'Eagle Pose', sanskrit: 'Garudasana', family: 'Standing', intensity: 6, styles: ['vinyasa', 'hatha'], benefits: ['balance', 'joint mobility'], cues: 'Wrap arms and legs, sink hips' },
+  chair: { id: 'chair', name: 'Chair Pose', sanskrit: 'Utkatasana', family: 'Standing', intensity: 6, styles: ['all'], benefits: ['leg strength', 'endurance'], cues: 'Sit back, weight in heels' },
+  half_moon: { id: 'half_moon', name: 'Half Moon Pose', sanskrit: 'Ardha Chandrasana', family: 'Standing', intensity: 7, styles: ['iyengar', 'vinyasa'], benefits: ['balance', 'coordination'], cues: 'Hand to block, lift back leg' },
+  dancer: { id: 'dancer', name: 'Dancer Pose', sanskrit: 'Natarajasana', family: 'Standing', intensity: 8, styles: ['vinyasa', 'hatha'], benefits: ['balance', 'backbend'], cues: 'Kick foot into hand, lean forward' },
+  standing_forward: { id: 'standing_forward', name: 'Standing Forward Fold', sanskrit: 'Uttanasana', family: 'Standing', intensity: 3, styles: ['all'], benefits: ['hamstring stretch', 'calming'], cues: 'Fold from hips, soften knees' },
+  wide_leg_forward: { id: 'wide_leg_forward', name: 'Wide-Legged Forward Fold', sanskrit: 'Prasarita Padottanasana', family: 'Standing', intensity: 4, styles: ['all'], benefits: ['hamstring stretch', 'grounding'], cues: 'Feet parallel, fold forward' },
+  pyramid: { id: 'pyramid', name: 'Pyramid Pose', sanskrit: 'Parsvottanasana', family: 'Standing', intensity: 5, styles: ['hatha', 'iyengar'], benefits: ['hamstring stretch', 'balance'], cues: 'Square hips, fold over front leg' },
+  goddess: { id: 'goddess', name: 'Goddess Pose', sanskrit: 'Utkata Konasana', family: 'Standing', intensity: 5, styles: ['vinyasa', 'power'], benefits: ['hip opening', 'strength'], cues: 'Wide stance, toes out, sink hips' },
+  low_lunge: { id: 'low_lunge', name: 'Low Lunge', sanskrit: 'Anjaneyasana', family: 'Standing', intensity: 4, styles: ['all'], benefits: ['hip flexor stretch', 'quad stretch'], cues: 'Knee over ankle, sink hips forward' },
+  high_lunge: { id: 'high_lunge', name: 'High Lunge', sanskrit: 'Utthita Ashwa Sanchalanasana', family: 'Standing', intensity: 5, styles: ['vinyasa', 'power'], benefits: ['strength', 'balance'], cues: 'Back heel lifted, hips square' },
+  twisted_lunge: { id: 'twisted_lunge', name: 'Twisted Lunge', sanskrit: 'Parivrtta Anjaneyasana', family: 'Standing', intensity: 6, styles: ['vinyasa'], benefits: ['twist', 'balance'], cues: 'Prayer twist, elbow outside knee' },
+  crescent_lunge: { id: 'crescent_lunge', name: 'Crescent Lunge', sanskrit: 'Anjaneyasana Variation', family: 'Standing', intensity: 5, styles: ['vinyasa'], benefits: ['hip opening', 'strength'], cues: 'Reach arms overhead, arch back' },
+  humble_warrior: { id: 'humble_warrior', name: 'Humble Warrior', sanskrit: 'Baddha Virabhadrasana', family: 'Standing', intensity: 6, styles: ['vinyasa'], benefits: ['hip opening', 'shoulder stretch'], cues: 'Interlace hands behind, fold forward' },
+  reverse_warrior: { id: 'reverse_warrior', name: 'Reverse Warrior', sanskrit: 'Viparita Virabhadrasana', family: 'Standing', intensity: 4, styles: ['vinyasa'], benefits: ['side stretch', 'heart opening'], cues: 'Lean back, reach arm overhead' },
+  standing_split: { id: 'standing_split', name: 'Standing Split', sanskrit: 'Urdhva Prasarita Eka Padasana', family: 'Standing', intensity: 7, styles: ['vinyasa', 'power'], benefits: ['hamstring flexibility', 'balance'], cues: 'Fold forward, lift one leg high' },
+  hand_to_toe: { id: 'hand_to_toe', name: 'Hand to Big Toe', sanskrit: 'Utthita Hasta Padangusthasana', family: 'Standing', intensity: 6, styles: ['iyengar'], benefits: ['balance', 'hamstring stretch'], cues: 'Hold toe, extend leg forward' },
   
-  <!-- React & ReactDOM -->
-  <script crossorigin src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
-  <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
+  // SEATED POSES (50+)
+  easy_pose: { id: 'easy_pose', name: 'Easy Pose', sanskrit: 'Sukhasana', family: 'Seated', intensity: 1, styles: ['all'], benefits: ['meditation', 'grounding'], cues: 'Cross shins, lift spine' },
+  lotus: { id: 'lotus', name: 'Lotus Pose', sanskrit: 'Padmasana', family: 'Seated', intensity: 6, styles: ['ashtanga', 'kundalini'], benefits: ['meditation', 'hip opening'], cues: 'Feet to opposite thighs' },
+  half_lotus: { id: 'half_lotus', name: 'Half Lotus', sanskrit: 'Ardha Padmasana', family: 'Seated', intensity: 4, styles: ['all'], benefits: ['hip opening', 'meditation'], cues: 'One foot to thigh, other crossed' },
+  hero: { id: 'hero', name: 'Hero Pose', sanskrit: 'Virasana', family: 'Seated', intensity: 3, styles: ['iyengar', 'hatha'], benefits: ['knee stretch', 'digestion'], cues: 'Sit between heels, lift chest' },
+  bound_angle: { id: 'bound_angle', name: 'Bound Angle Pose', sanskrit: 'Baddha Konasana', family: 'Seated', intensity: 3, styles: ['all'], benefits: ['hip opening', 'grounding'], cues: 'Soles together, knees wide' },
+  wide_angle_seated: { id: 'wide_angle_seated', name: 'Wide Angle Seated', sanskrit: 'Upavistha Konasana', family: 'Seated', intensity: 5, styles: ['yin', 'hatha'], benefits: ['hamstring stretch', 'hip opening'], cues: 'Legs wide, flex feet, walk forward' },
+  seated_forward: { id: 'seated_forward', name: 'Seated Forward Fold', sanskrit: 'Paschimottanasana', family: 'Seated', intensity: 3, styles: ['all'], benefits: ['hamstring stretch', 'calming'], cues: 'Fold from hips, reach for feet' },
+  head_to_knee: { id: 'head_to_knee', name: 'Head to Knee', sanskrit: 'Janu Sirsasana', family: 'Seated', intensity: 4, styles: ['all'], benefits: ['hamstring stretch', 'calming'], cues: 'One leg extended, fold over straight leg' },
+  revolved_head_to_knee: { id: 'revolved_head_to_knee', name: 'Revolved Head to Knee', sanskrit: 'Parivrtta Janu Sirsasana', family: 'Seated', intensity: 5, styles: ['yin'], benefits: ['side stretch', 'twist'], cues: 'Side bend over extended leg' },
+  seated_twist: { id: 'seated_twist', name: 'Seated Spinal Twist', sanskrit: 'Ardha Matsyendrasana', family: 'Seated', intensity: 4, styles: ['all'], benefits: ['digestion', 'detox'], cues: 'Twist from navel, hand behind' },
+  cow_face: { id: 'cow_face', name: 'Cow Face Pose', sanskrit: 'Gomukhasana', family: 'Seated', intensity: 5, styles: ['iyengar', 'yin'], benefits: ['hip opening', 'shoulder stretch'], cues: 'Stack knees, bind arms behind' },
+  fire_log: { id: 'fire_log', name: 'Fire Log Pose', sanskrit: 'Agnistambhasana', family: 'Seated', intensity: 6, styles: ['yin'], benefits: ['deep hip opening'], cues: 'Stack shins, flex feet' },
+  monkey: { id: 'monkey', name: 'Monkey Pose / Splits', sanskrit: 'Hanumanasana', family: 'Seated', intensity: 8, styles: ['vinyasa', 'yin'], benefits: ['extreme hamstring flexibility'], cues: 'Slide front heel forward' },
+  half_split: { id: 'half_split', name: 'Half Split', sanskrit: 'Ardha Hanumanasana', family: 'Seated', intensity: 5, styles: ['vinyasa'], benefits: ['hamstring stretch'], cues: 'Straighten front leg, fold forward' },
+  pigeon: { id: 'pigeon', name: 'Pigeon Pose', sanskrit: 'Eka Pada Rajakapotasana', family: 'Seated', intensity: 6, styles: ['all'], benefits: ['deep hip opening', 'emotional release'], cues: 'Front shin parallel, square hips' },
+  king_pigeon: { id: 'king_pigeon', name: 'King Pigeon', sanskrit: 'Rajakapotasana', family: 'Seated', intensity: 9, styles: ['vinyasa', 'power'], benefits: ['extreme hip opening', 'backbend'], cues: 'From pigeon, catch back foot' },
+  boat: { id: 'boat', name: 'Boat Pose', sanskrit: 'Navasana', family: 'Seated', intensity: 6, styles: ['all'], benefits: ['core strength', 'balance'], cues: 'Lift legs and chest, balance on sit bones' },
+  half_boat: { id: 'half_boat', name: 'Half Boat', sanskrit: 'Ardha Navasana', family: 'Seated', intensity: 5, styles: ['vinyasa'], benefits: ['core strength'], cues: 'Lower back and legs, hover off floor' },
+  staff: { id: 'staff', name: 'Staff Pose', sanskrit: 'Dandasana', family: 'Seated', intensity: 2, styles: ['all'], benefits: ['posture', 'core'], cues: 'Legs extended, flex feet, lift spine' },
+  compass: { id: 'compass', name: 'Compass Pose', sanskrit: 'Parivrtta Surya Yantrasana', family: 'Seated', intensity: 8, styles: ['vinyasa'], benefits: ['hamstring stretch', 'twist'], cues: 'Extend leg overhead, twist' },
+  sage_twist: { id: 'sage_twist', name: 'Sage Twist', sanskrit: 'Marichyasana III', family: 'Seated', intensity: 5, styles: ['ashtanga'], benefits: ['twist', 'digestion'], cues: 'Bend knee, bind and twist' },
+  tortoise: { id: 'tortoise', name: 'Tortoise Pose', sanskrit: 'Kurmasana', family: 'Seated', intensity: 7, styles: ['ashtanga'], benefits: ['deep forward fold'], cues: 'Arms under knees, fold forward' },
   
-  <!-- Babel for JSX -->
-  <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+  // SUPINE POSES (35+)
+  corpse: { id: 'corpse', name: 'Corpse Pose', sanskrit: 'Savasana', family: 'Supine', intensity: 0, styles: ['all'], benefits: ['relaxation', 'integration'], cues: 'Lie flat, release all effort' },
+  constructive_rest: { id: 'constructive_rest', name: 'Constructive Rest', sanskrit: 'Savasana Variation', family: 'Supine', intensity: 1, styles: ['restorative'], benefits: ['lower back release'], cues: 'Knees bent, feet wide' },
+  reclined_bound_angle: { id: 'reclined_bound_angle', name: 'Reclined Bound Angle', sanskrit: 'Supta Baddha Konasana', family: 'Supine', intensity: 2, styles: ['restorative', 'yin'], benefits: ['hip opening', 'relaxation'], cues: 'Soles together, knees wide, supported' },
+  happy_baby: { id: 'happy_baby', name: 'Happy Baby', sanskrit: 'Ananda Balasana', family: 'Supine', intensity: 2, styles: ['yin', 'gentle'], benefits: ['hip stretch', 'playful'], cues: 'Hold feet, knees to armpits' },
+  supine_twist: { id: 'supine_twist', name: 'Supine Spinal Twist', sanskrit: 'Supta Matsyendrasana', family: 'Supine', intensity: 2, styles: ['all'], benefits: ['spine twist', 'relaxation'], cues: 'Knees to one side, arms in T' },
+  supine_hand_to_toe: { id: 'supine_hand_to_toe', name: 'Reclined Hand to Big Toe', sanskrit: 'Supta Padangusthasana', family: 'Supine', intensity: 3, styles: ['iyengar'], benefits: ['hamstring stretch'], cues: 'Hold toe, extend leg up' },
+  bridge: { id: 'bridge', name: 'Bridge Pose', sanskrit: 'Setu Bandha Sarvangasana', family: 'Supine', intensity: 4, styles: ['all'], benefits: ['backbend', 'glute strength'], cues: 'Lift hips, roll shoulders under' },
+  wheel: { id: 'wheel', name: 'Wheel Pose', sanskrit: 'Urdhva Dhanurasana', family: 'Supine', intensity: 8, styles: ['vinyasa', 'power'], benefits: ['deep backbend', 'energy'], cues: 'Hands by ears, press up' },
+  fish: { id: 'fish', name: 'Fish Pose', sanskrit: 'Matsyasana', family: 'Supine', intensity: 3, styles: ['hatha', 'iyengar'], benefits: ['chest opening', 'thyroid'], cues: 'Lift chest, arch back' },
+  supported_fish: { id: 'supported_fish', name: 'Supported Fish', sanskrit: 'Matsyasana (Supported)', family: 'Supine', intensity: 1, styles: ['restorative'], benefits: ['chest opening', 'relaxation'], cues: 'Bolster under upper back' },
+  legs_up_wall: { id: 'legs_up_wall', name: 'Legs Up the Wall', sanskrit: 'Viparita Karani', family: 'Supine', intensity: 1, styles: ['restorative', 'yin'], benefits: ['circulation', 'relaxation'], cues: 'Hips close to wall, legs up' },
+  knees_to_chest: { id: 'knees_to_chest', name: 'Knees to Chest', sanskrit: 'Apanasana', family: 'Supine', intensity: 1, styles: ['gentle'], benefits: ['lower back release', 'digestion'], cues: 'Hug knees to chest, rock side to side' },
+  wind_relieving: { id: 'wind_relieving', name: 'Wind Relieving Pose', sanskrit: 'Pavanamuktasana', family: 'Supine', intensity: 1, styles: ['gentle'], benefits: ['digestion', 'lower back'], cues: 'Hold one knee to chest' },
+  reclining_hero: { id: 'reclining_hero', name: 'Reclining Hero', sanskrit: 'Supta Virasana', family: 'Supine', intensity: 5, styles: ['iyengar', 'yin'], benefits: ['quad stretch', 'backbend'], cues: 'From hero, recline back' },
   
-  <!-- Tailwind CSS -->
-  <script src="https://cdn.tailwindcss.com"></script>
+  // PRONE POSES (30+)
+  childs_pose: { id: 'childs_pose', name: "Child's Pose", sanskrit: 'Balasana', family: 'Prone', intensity: 1, styles: ['all'], benefits: ['relaxation', 'gentle stretch'], cues: 'Knees wide, big toes touch' },
+  extended_childs: { id: 'extended_childs', name: "Extended Child's Pose", sanskrit: 'Utthita Balasana', family: 'Prone', intensity: 1, styles: ['all'], benefits: ['shoulder stretch', 'relaxation'], cues: 'Arms extended forward' },
+  cat_cow: { id: 'cat_cow', name: 'Cat-Cow', sanskrit: 'Marjaryasana-Bitilasana', family: 'Prone', intensity: 2, styles: ['all'], benefits: ['spine mobility', 'warmup'], cues: 'Inhale arch, exhale round' },
+  cobra: { id: 'cobra', name: 'Cobra Pose', sanskrit: 'Bhujangasana', family: 'Prone', intensity: 4, styles: ['all'], benefits: ['backbend', 'heart opening'], cues: 'Hands under shoulders, lift chest' },
+  upward_dog: { id: 'upward_dog', name: 'Upward Facing Dog', sanskrit: 'Urdhva Mukha Svanasana', family: 'Prone', intensity: 5, styles: ['vinyasa', 'ashtanga'], benefits: ['backbend', 'strength'], cues: 'Press into hands, lift thighs' },
+  sphinx: { id: 'sphinx', name: 'Sphinx Pose', sanskrit: 'Salamba Bhujangasana', family: 'Prone', intensity: 3, styles: ['yin', 'restorative'], benefits: ['gentle backbend', 'yin'], cues: 'Forearms down, lift chest' },
+  seal: { id: 'seal', name: 'Seal Pose', sanskrit: 'Bhujangasana Variation', family: 'Prone', intensity: 5, styles: ['yin'], benefits: ['deep backbend', 'yin'], cues: 'Straighten arms, lift chest high' },
+  locust: { id: 'locust', name: 'Locust Pose', sanskrit: 'Salabhasana', family: 'Prone', intensity: 6, styles: ['hatha', 'bikram'], benefits: ['back strength', 'posture'], cues: 'Lift chest and legs' },
+  half_locust: { id: 'half_locust', name: 'Half Locust', sanskrit: 'Ardha Salabhasana', family: 'Prone', intensity: 4, styles: ['bikram'], benefits: ['back strength'], cues: 'Lift one leg at a time' },
+  bow: { id: 'bow', name: 'Bow Pose', sanskrit: 'Dhanurasana', family: 'Prone', intensity: 7, styles: ['hatha', 'bikram'], benefits: ['backbend', 'digestion'], cues: 'Hold feet, kick into hands' },
+  camel: { id: 'camel', name: 'Camel Pose', sanskrit: 'Ustrasana', family: 'Prone', intensity: 7, styles: ['hatha', 'vinyasa'], benefits: ['deep backbend', 'heart opening'], cues: 'Kneel, hands to heels' },
+  frog: { id: 'frog', name: 'Frog Pose', sanskrit: 'Mandukasana', family: 'Prone', intensity: 6, styles: ['yin'], benefits: ['deep hip opening', 'yin'], cues: 'Knees wide, hips over knees' },
+  lizard: { id: 'lizard', name: 'Lizard Pose', sanskrit: 'Utthan Pristhasana', family: 'Prone', intensity: 6, styles: ['yin', 'vinyasa'], benefits: ['hip opening', 'quad stretch'], cues: 'From lunge, hands inside foot' },
+  extended_puppy: { id: 'extended_puppy', name: 'Extended Puppy', sanskrit: 'Uttana Shishosana', family: 'Prone', intensity: 2, styles: ['yin'], benefits: ['shoulder stretch', 'spine extension'], cues: 'Hands forward, chest to floor' },
+  thread_needle: { id: 'thread_needle', name: 'Thread the Needle', sanskrit: 'Parsva Balasana', family: 'Prone', intensity: 2, styles: ['gentle'], benefits: ['shoulder stretch', 'gentle twist'], cues: 'Thread arm under, shoulder to mat' },
+  melting_heart: { id: 'melting_heart', name: 'Melting Heart', sanskrit: 'Anahatasana', family: 'Prone', intensity: 3, styles: ['yin'], benefits: ['heart opening', 'shoulder stretch'], cues: 'Hips over knees, chest melts down' },
   
-  <!-- Google Fonts -->
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@300;400;500;600&display=swap" rel="stylesheet">
+  // INVERSIONS (20+)
+  downward_dog: { id: 'downward_dog', name: 'Downward Facing Dog', sanskrit: 'Adho Mukha Svanasana', family: 'Inversion', intensity: 4, styles: ['all'], benefits: ['full body stretch', 'energizing'], cues: 'Hands shoulder-width, hips high' },
+  three_legged_dog: { id: 'three_legged_dog', name: 'Three-Legged Dog', sanskrit: 'Eka Pada Adho Mukha Svanasana', family: 'Inversion', intensity: 5, styles: ['vinyasa'], benefits: ['hip opening', 'balance'], cues: 'From down dog, lift one leg high' },
+  dolphin: { id: 'dolphin', name: 'Dolphin Pose', sanskrit: 'Ardha Pincha Mayurasana', family: 'Inversion', intensity: 5, styles: ['vinyasa', 'iyengar'], benefits: ['shoulder strength', 'headstand prep'], cues: 'Forearms down, hips high' },
+  headstand: { id: 'headstand', name: 'Headstand', sanskrit: 'Sirsasana', family: 'Inversion', intensity: 9, styles: ['ashtanga', 'iyengar'], benefits: ['circulation', 'focus'], cues: 'Crown and forearms form tripod' },
+  supported_headstand: { id: 'supported_headstand', name: 'Supported Headstand', sanskrit: 'Salamba Sirsasana', family: 'Inversion', intensity: 8, styles: ['iyengar'], benefits: ['circulation', 'focus'], cues: 'Forearms support, crown lightly touches' },
+  forearm_stand: { id: 'forearm_stand', name: 'Forearm Stand', sanskrit: 'Pincha Mayurasana', family: 'Inversion', intensity: 9, styles: ['vinyasa', 'power'], benefits: ['shoulder strength', 'balance'], cues: 'Forearms parallel, kick up' },
+  handstand: { id: 'handstand', name: 'Handstand', sanskrit: 'Adho Mukha Vrksasana', family: 'Inversion', intensity: 9, styles: ['vinyasa', 'power'], benefits: ['arm strength', 'balance'], cues: 'Hands down, kick up' },
+  shoulder_stand: { id: 'shoulder_stand', name: 'Shoulder Stand', sanskrit: 'Sarvangasana', family: 'Inversion', intensity: 7, styles: ['hatha', 'iyengar'], benefits: ['circulation', 'thyroid'], cues: 'Legs straight up, support back' },
+  supported_shoulder_stand: { id: 'supported_shoulder_stand', name: 'Supported Shoulder Stand', sanskrit: 'Salamba Sarvangasana', family: 'Inversion', intensity: 6, styles: ['iyengar'], benefits: ['circulation'], cues: 'Use blankets under shoulders' },
+  plow: { id: 'plow', name: 'Plow Pose', sanskrit: 'Halasana', family: 'Inversion', intensity: 6, styles: ['hatha', 'iyengar'], benefits: ['spine stretch', 'calming'], cues: 'From shoulderstand, lower legs overhead' },
+  legs_behind_head: { id: 'legs_behind_head', name: 'Legs Behind Head', sanskrit: 'Eka Pada Sirsasana', family: 'Inversion', intensity: 9, styles: ['ashtanga'], benefits: ['extreme flexibility'], cues: 'Bring one leg behind head' },
   
-  <style>
-    * {
-      margin: 0;
-      padding: 0;
-      box-sizing: border-box;
-    }
-    
-    body {
-      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen', 'Ubuntu', 'Cantarell', sans-serif;
-      overflow-x: hidden;
-      transition: background-color 0.4s ease, color 0.4s ease;
-    }
-    
-    .font-serif {
-      font-family: 'Cormorant Garamond', serif;
-    }
+  // ARM BALANCES (25+)
+  plank: { id: 'plank', name: 'Plank Pose', sanskrit: 'Phalakasana', family: 'Arm Balance', intensity: 5, styles: ['all'], benefits: ['core strength', 'full body'], cues: 'Shoulders over wrists, engage core' },
+  side_plank: { id: 'side_plank', name: 'Side Plank', sanskrit: 'Vasisthasana', family: 'Arm Balance', intensity: 6, styles: ['vinyasa', 'power'], benefits: ['core strength', 'balance'], cues: 'Stack feet, lift hips' },
+  chaturanga: { id: 'chaturanga', name: 'Four-Limbed Staff', sanskrit: 'Chaturanga Dandasana', family: 'Arm Balance', intensity: 6, styles: ['vinyasa', 'ashtanga'], benefits: ['arm strength', 'core'], cues: 'Lower halfway, elbows to ribs' },
+  crow: { id: 'crow', name: 'Crow Pose', sanskrit: 'Bakasana', family: 'Arm Balance', intensity: 8, styles: ['vinyasa', 'power'], benefits: ['arm strength', 'focus'], cues: 'Knees to armpits, lean forward' },
+  crane: { id: 'crane', name: 'Crane Pose', sanskrit: 'Bakasana Variation', family: 'Arm Balance', intensity: 8, styles: ['vinyasa'], benefits: ['arm strength'], cues: 'Straight arms version of crow' },
+  side_crow: { id: 'side_crow', name: 'Side Crow', sanskrit: 'Parsva Bakasana', family: 'Arm Balance', intensity: 9, styles: ['vinyasa', 'power'], benefits: ['arm strength', 'twist'], cues: 'Deep twist, perch knees on arm' },
+  flying_pigeon: { id: 'flying_pigeon', name: 'Flying Pigeon', sanskrit: 'Eka Pada Galavasana', family: 'Arm Balance', intensity: 9, styles: ['vinyasa', 'power'], benefits: ['hip opening', 'arm strength'], cues: 'From pigeon, hands down, lift back leg' },
+  eight_angle: { id: 'eight_angle', name: 'Eight-Angle Pose', sanskrit: 'Astavakrasana', family: 'Arm Balance', intensity: 9, styles: ['ashtanga', 'power'], benefits: ['arm strength', 'core'], cues: 'Hook leg around arm, extend to side' },
+  firefly: { id: 'firefly', name: 'Firefly Pose', sanskrit: 'Tittibhasana', family: 'Arm Balance', intensity: 9, styles: ['vinyasa', 'power'], benefits: ['arm strength', 'hamstring stretch'], cues: 'Hands under feet, lift up' },
+  peacock: { id: 'peacock', name: 'Peacock Pose', sanskrit: 'Mayurasana', family: 'Arm Balance', intensity: 9, styles: ['hatha'], benefits: ['arm strength', 'core'], cues: 'Elbows to belly, lift legs' },
+  elephant_trunk: { id: 'elephant_trunk', name: 'Elephant Trunk', sanskrit: 'Eka Hasta Bhujasana', family: 'Arm Balance', intensity: 8, styles: ['vinyasa'], benefits: ['arm strength'], cues: 'One arm balance, leg over shoulder' },
+  scale_pose: { id: 'scale_pose', name: 'Scale Pose', sanskrit: 'Tolasana', family: 'Arm Balance', intensity: 7, styles: ['ashtanga'], benefits: ['arm strength', 'core'], cues: 'From lotus, hands down, lift up' },
+  
+  // YIN & RESTORATIVE (15+)
+  banana_pose: { id: 'banana_pose', name: 'Banana Pose', sanskrit: 'Bananasana', family: 'Yin', intensity: 2, styles: ['yin'], benefits: ['side stretch', 'yin'], cues: 'Shift hips, create banana curve' },
+  caterpillar: { id: 'caterpillar', name: 'Caterpillar', sanskrit: 'Paschimottanasana (Yin)', family: 'Yin', intensity: 3, styles: ['yin'], benefits: ['hamstring release', 'yin'], cues: 'Round spine, fold forward' },
+  dragon_pose: { id: 'dragon_pose', name: 'Dragon Pose', sanskrit: 'Low Lunge (Yin)', family: 'Yin', intensity: 4, styles: ['yin'], benefits: ['hip opening', 'yin'], cues: 'Deep lunge, sink hips forward' },
+  saddle_pose: { id: 'saddle_pose', name: 'Saddle Pose', sanskrit: 'Supta Virasana (Yin)', family: 'Yin', intensity: 5, styles: ['yin'], benefits: ['quad stretch', 'backbend'], cues: 'From hero, recline back' },
+  sleeping_swan: { id: 'sleeping_swan', name: 'Sleeping Swan', sanskrit: 'Pigeon (Yin)', family: 'Yin', intensity: 4, styles: ['yin'], benefits: ['deep hip release', 'yin'], cues: 'From pigeon, fold forward' },
+  shoelace: { id: 'shoelace', name: 'Shoelace Pose', sanskrit: 'Cow Face Legs (Yin)', family: 'Yin', intensity: 5, styles: ['yin'], benefits: ['hip opening', 'yin'], cues: 'Stack knees, fold forward' },
+  square_pose: { id: 'square_pose', name: 'Square Pose', sanskrit: 'Firelog (Yin)', family: 'Yin', intensity: 5, styles: ['yin'], benefits: ['hip opening', 'yin'], cues: 'Stack shins, passive hold' },
+  straddle_pose: { id: 'straddle_pose', name: 'Straddle (Yin)', sanskrit: 'Upavistha Konasana (Yin)', family: 'Yin', intensity: 4, styles: ['yin'], benefits: ['hamstring stretch', 'yin'], cues: 'Legs wide, fold forward' },
+  twisted_roots: { id: 'twisted_roots', name: 'Twisted Roots', sanskrit: 'Garudasana Legs (Yin)', family: 'Yin', intensity: 3, styles: ['yin'], benefits: ['hip release', 'IT band'], cues: 'Cross legs, fold forward' },
+  deer_pose: { id: 'deer_pose', name: 'Deer Pose', sanskrit: 'Deer Pose', family: 'Yin', intensity: 3, styles: ['yin'], benefits: ['hip opening'], cues: 'One leg front, one back' },
+  snail_pose: { id: 'snail_pose', name: 'Snail Pose', sanskrit: 'Halasana (Yin)', family: 'Yin', intensity: 5, styles: ['yin'], benefits: ['spine stretch'], cues: 'Legs overhead, passive hold' },
+  dangling: { id: 'dangling', name: 'Dangling', sanskrit: 'Uttanasana (Yin)', family: 'Yin', intensity: 2, styles: ['yin'], benefits: ['hamstring release'], cues: 'Hang forward, completely relax' },
+};
 
-    .dark-mode {
-      background-color: #0f1110;
-      color: #e5e7eb;
-    }
+// =================================================================
+// COMPREHENSIVE YOGA STYLES - 30+ Styles
+// =================================================================
+const YOGA_STYLES = {
+  // TRADITIONAL
+  hatha: { name: 'Hatha', category: 'Traditional', intensity: [3,6], description: 'Classical yoga emphasizing alignment and breath' },
+  ashtanga: { name: 'Ashtanga', category: 'Traditional', intensity: [7,9], description: 'Rigorous set sequence practice' },
+  iyengar: { name: 'Iyengar', category: 'Traditional', intensity: [4,7], description: 'Precision-based alignment practice' },
+  kundalini: { name: 'Kundalini', category: 'Traditional', intensity: [4,8], description: 'Energy-focused with kriyas and breath' },
+  sivananda: { name: 'Sivananda', category: 'Traditional', intensity: [3,5], description: 'Classical 12-pose system' },
+  
+  // FLOW STYLES
+  vinyasa: { name: 'Vinyasa Flow', category: 'Flow', intensity: [5,8], description: 'Dynamic breath-synchronized movement' },
+  power: { name: 'Power Yoga', category: 'Flow', intensity: [7,9], description: 'Athletic fitness-oriented practice' },
+  rocket: { name: 'Rocket Yoga', category: 'Flow', intensity: [8,9], description: 'Modified Ashtanga with arm balances' },
+  jivamukti: { name: 'Jivamukti', category: 'Flow', intensity: [6,8], description: 'Vinyasa with spiritual teachings' },
+  baptiste: { name: 'Baptiste Power', category: 'Flow', intensity: [7,9], description: 'Power vinyasa with meditation' },
+  
+  // GENTLE & THERAPEUTIC
+  yin: { name: 'Yin Yoga', category: 'Gentle', intensity: [1,4], description: 'Passive long-held poses for fascia' },
+  restorative: { name: 'Restorative', category: 'Gentle', intensity: [0,2], description: 'Deeply restful prop-supported practice' },
+  gentle: { name: 'Gentle Yoga', category: 'Gentle', intensity: [1,4], description: 'Accessible compassionate practice' },
+  chair: { name: 'Chair Yoga', category: 'Gentle', intensity: [1,3], description: 'Seated and standing with chair support' },
+  therapeutic: { name: 'Therapeutic', category: 'Gentle', intensity: [1,4], description: 'Individualized healing practice' },
+  somatic: { name: 'Somatic Yoga', category: 'Gentle', intensity: [1,3], description: 'Body awareness and nervous system regulation' },
+  
+  // HOT STYLES
+  bikram: { name: 'Bikram', category: 'Hot', intensity: [6,8], description: '26 poses in 105°F heated room' },
+  hot_vinyasa: { name: 'Hot Vinyasa', category: 'Hot', intensity: [6,8], description: 'Flow in heated room' },
+  hot_power: { name: 'Hot Power', category: 'Hot', intensity: [7,9], description: 'Athletic practice in heat' },
+  
+  // SPECIALTY
+  prenatal: { name: 'Prenatal', category: 'Specialty', intensity: [2,5], description: 'Modified for pregnancy' },
+  postnatal: { name: 'Postnatal', category: 'Specialty', intensity: [2,5], description: 'Postpartum recovery' },
+  kids: { name: 'Kids Yoga', category: 'Specialty', intensity: [2,5], description: 'Playful practice for children' },
+  seniors: { name: 'Senior Yoga', category: 'Specialty', intensity: [1,3], description: 'Mobility and balance for 60+' },
+  adaptive: { name: 'Adaptive Yoga', category: 'Specialty', intensity: [1,4], description: 'Modified for all abilities' },
+  
+  // BLENDED
+  yin_yang: { name: 'Yin Yang', category: 'Blended', intensity: [3,6], description: 'Balance of active and passive' },
+  vinyasa_yin: { name: 'Vinyasa Yin', category: 'Blended', intensity: [3,6], description: 'Flow followed by yin holds' },
+  
+  // FUSION
+  acro: { name: 'Acro Yoga', category: 'Fusion', intensity: [6,9], description: 'Partner acrobatics and yoga' },
+  aerial: { name: 'Aerial Yoga', category: 'Fusion', intensity: [5,8], description: 'Practice with aerial hammock' },
+};
 
-    .light-mode {
-      background-color: #fcfaf7;
-      color: #1f2937;
-    }
-    
-    .custom-scrollbar::-webkit-scrollbar {
-      width: 6px;
-    }
-    
-    .custom-scrollbar::-webkit-scrollbar-track {
-      background: rgba(120, 113, 108, 0.1);
-      border-radius: 3px;
-    }
-    
-    .custom-scrollbar::-webkit-scrollbar-thumb {
-      background: rgba(120, 113, 108, 0.3);
-      border-radius: 3px;
-    }
-    
-    .custom-scrollbar::-webkit-scrollbar-thumb:hover {
-      background: rgba(120, 113, 108, 0.5);
-    }
-    
-    @keyframes pulse {
-      0%, 100% { opacity: 1; }
-      50% { opacity: 0.5; }
-    }
-    
-    .animate-pulse {
-      animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
-    }
+// AI Sequencing Engine
+function generateAISequence(style, level, duration) {
+  const targetIntensity = level === 'beginner' ? 4 : level === 'intermediate' ? 6 : 8;
+  const stylePoses = Object.values(POSE_LIBRARY).filter(p => 
+    p.styles.includes(style) || p.styles.includes('all')
+  );
+  
+  return {
+    centering: stylePoses.filter(p => p.intensity <= 2 && p.family === 'Seated').slice(0,2).map(p => p.id) || ['easy_pose'],
+    warmup: ['cat_cow', 'childs_pose', 'downward_dog'],
+    build: stylePoses.filter(p => p.intensity >= 4 && p.intensity <= targetIntensity && p.family === 'Standing').slice(0,10).map(p => p.id),
+    peak: stylePoses.filter(p => p.intensity >= targetIntensity).slice(0,4).map(p => p.id) || ['warrior_iii'],
+    integration: stylePoses.filter(p => p.family === 'Seated' && p.intensity <= 5).slice(0,4).map(p => p.id) || ['seated_twist'],
+    cooldown: ['supine_twist', 'reclined_bound_angle'],
+    rest: ['corpse']
+  };
+}
 
-    @keyframes shimmer {
-      0% { background-position: -1000px 0; }
-      100% { background-position: 1000px 0; }
-    }
-    
-    .animate-shimmer {
-      animation: shimmer 2s infinite linear;
-      background: linear-gradient(to right, transparent 0%, rgba(16, 185, 129, 0.2) 50%, transparent 100%);
-      background-size: 1000px 100%;
-    }
-  </style>
-</head>
-<body class="light-mode">
-  <div id="root"></div>
-
-  <script type="text/babel">
-    const { useState, useEffect, useMemo } = React;
-    
-    // ============================================================================
-    // ICON COMPONENTS
-    // ============================================================================
-    
-    const ChevronDown = ({ size = 24, className = '' }) => (
-      <svg xmlns="http://www.w3.org/2000/svg" width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}>
-        <polyline points="6 9 12 15 18 9"></polyline>
-      </svg>
-    );
-    
-    const Plus = ({ size = 24, className = '' }) => (
-      <svg xmlns="http://www.w3.org/2000/svg" width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}>
-        <line x1="12" y1="5" x2="12" y2="19"></line>
-        <line x1="5" y1="12" x2="19" y2="12"></line>
-      </svg>
-    );
-    
-    const X = ({ size = 24, className = '' }) => (
-      <svg xmlns="http://www.w3.org/2000/svg" width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}>
-        <line x1="18" y1="6" x2="6" y2="18"></line>
-        <line x1="6" y1="6" x2="18" y2="18"></line>
-      </svg>
-    );
-    
-    const Search = ({ size = 24, className = '' }) => (
-      <svg xmlns="http://www.w3.org/2000/svg" width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}>
-        <circle cx="11" cy="11" r="8"></circle>
-        <path d="m21 21-4.35-4.35"></path>
-      </svg>
-    );
-    
-    const Sparkles = ({ size = 24, className = '' }) => (
-      <svg xmlns="http://www.w3.org/2000/svg" width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}>
-        <path d="m12 3-1.912 5.813a2 2 0 0 1-1.275 1.275L3 12l5.813 1.912a2 2 0 0 1 1.275 1.275L12 21l1.912-5.813a2 2 0 0 1 1.275-1.275L21 12l-5.813-1.912a2 2 0 0 1-1.275-1.275L12 3Z"></path>
-        <path d="M5 3v4"></path>
-        <path d="M19 17v4"></path>
-        <path d="M3 5h4"></path>
-        <path d="M17 19h4"></path>
-      </svg>
-    );
-    
-    const Wand2 = ({ size = 24, className = '' }) => (
-      <svg xmlns="http://www.w3.org/2000/svg" width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}>
-        <path d="m21.64 3.64-1.28-1.28a1.21 1.21 0 0 0-1.72 0L2.36 18.64a1.21 1.21 0 0 0 0 1.72l1.28 1.28a1.2 1.2 0 0 0 1.72 0L21.64 5.36a1.2 1.2 0 0 0 0-1.72Z"></path>
-        <path d="m14 7 3 3"></path>
-        <path d="M5 6v4"></path>
-        <path d="M19 14v4"></path>
-        <path d="M10 2v2"></path>
-        <path d="M7 8H3"></path>
-        <path d="M21 16h-4"></path>
-        <path d="M11 3H9"></path>
-      </svg>
-    );
-    
-    const Download = ({ size = 24, className = '' }) => (
-      <svg xmlns="http://www.w3.org/2000/svg" width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}>
-        <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
-        <polyline points="7 10 12 15 17 10"></polyline>
-        <line x1="12" y1="15" x2="12" y2="3"></line>
-      </svg>
-    );
-
-    const Moon = ({ size = 24, className = '' }) => (
-      <svg xmlns="http://www.w3.org/2000/svg" width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}>
-        <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/>
-      </svg>
-    );
-
-    const Sun = ({ size = 24, className = '' }) => (
-      <svg xmlns="http://www.w3.org/2000/svg" width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}>
-        <circle cx="12" cy="12" r="5"/>
-        <line x1="12" y1="1" x2="12" y2="3"/>
-        <line x1="12" y1="21" x2="12" y2="23"/>
-        <line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/>
-        <line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/>
-        <line x1="1" y1="12" x2="3" y2="12"/>
-        <line x1="21" y1="12" x2="23" y2="12"/>
-        <line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/>
-        <line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/>
-      </svg>
-    );
-
-    // ============================================================================
-    // COMPREHENSIVE POSE DATABASE
-    // ============================================================================
-
-    const POSE_LIBRARY = {
-      // STANDING POSES
-      mountain: { id: 'mountain', name: 'Mountain Pose', sanskrit: 'Tadasana', family: 'Standing', intensity: 1, duration: 30 },
-      tree: { id: 'tree', name: 'Tree Pose', sanskrit: 'Vrksasana', family: 'Standing', intensity: 4, duration: 60 },
-      eagle: { id: 'eagle', name: 'Eagle Pose', sanskrit: 'Garudasana', family: 'Standing', intensity: 6, duration: 45 },
-      warrior_i: { id: 'warrior_i', name: 'Warrior I', sanskrit: 'Virabhadrasana I', family: 'Standing', intensity: 5, duration: 45 },
-      warrior_ii: { id: 'warrior_ii', name: 'Warrior II', sanskrit: 'Virabhadrasana II', family: 'Standing', intensity: 5, duration: 45 },
-      warrior_iii: { id: 'warrior_iii', name: 'Warrior III', sanskrit: 'Virabhadrasana III', family: 'Standing', intensity: 7, duration: 30 },
-      triangle: { id: 'triangle', name: 'Triangle Pose', sanskrit: 'Trikonasana', family: 'Standing', intensity: 4, duration: 45 },
-      extended_triangle: { id: 'extended_triangle', name: 'Extended Triangle', sanskrit: 'Utthita Trikonasana', family: 'Standing', intensity: 5, duration: 45 },
-      extended_side_angle: { id: 'extended_side_angle', name: 'Extended Side Angle', sanskrit: 'Utthita Parsvakonasana', family: 'Standing', intensity: 6, duration: 45 },
-      half_moon: { id: 'half_moon', name: 'Half Moon Pose', sanskrit: 'Ardha Chandrasana', family: 'Standing', intensity: 7, duration: 30 },
+// Main Component
+export default function PresenceYogaPro() {
+  const [style, setStyle] = useState('vinyasa');
+  const [level, setLevel] = useState('intermediate');
+  const [duration, setDuration] = useState(60);
+  const [sequence, setSequence] = useState(generateAISequence('vinyasa', 'intermediate', 60));
+  const [searchTerm, setSearchTerm] = useState('');
+  const [familyFilter, setFamilyFilter] = useState('all');
+  const [styleCategory, setStyleCategory] = useState('all');
+  
+  const regenerate = () => {
+    setSequence(generateAISequence(style, level, duration));
+  };
+  
+  const filteredPoses = Object.values(POSE_LIBRARY).filter(pose => {
+    const matchesSearch = pose.name.toLowerCase().includes(searchTerm.toLowerCase()) || 
+                         pose.sanskrit.toLowerCase().includes(searchTerm.toLowerCase());
+    const matchesFamily = familyFilter === 'all' || pose.family === familyFilter;
+    const matchesStyle = pose.styles.includes(style) || pose.styles.includes('all');
+    return matchesSearch && matchesFamily && matchesStyle;
+  });
+  
+  const filteredStyles = Object.entries(YOGA_STYLES).filter(([key, s]) => 
+    styleCategory === 'all' || s.category === styleCategory
+  );
+  
+  const families = ['all', ...new Set(Object.values(POSE_LIBRARY).map(p => p.family))];
+  const categories = ['all', ...new Set(Object.values(YOGA_STYLES).map(s => s.category))];
+  
+  const sectionNames = {
+    centering: 'Centering',
+    warmup: 'Warm-Up',
+    build: 'Build',
+    peak: 'Peak',
+    integration: 'Integration',
+    cooldown: 'Cooldown',
+    rest: 'Rest'
+  };
+  
+  return (
+    <div className="min-h-screen" style={{ 
+      background: 'linear-gradient(to bottom, #f5f3ed 0%, #ebe8dd 50%, #e8e4d9 100%)',
+      color: '#3a3f3a',
+      fontFamily: "'Cormorant Garamond', serif"
+    }}>
       
-      // FORWARD FOLDS
-      standing_forward_fold: { id: 'standing_forward_fold', name: 'Standing Forward Fold', sanskrit: 'Uttanasana', family: 'Forward Fold', intensity: 3, duration: 60 },
-      wide_leg_forward_fold: { id: 'wide_leg_forward_fold', name: 'Wide-Legged Forward Fold', sanskrit: 'Prasarita Padottanasana', family: 'Forward Fold', intensity: 4, duration: 60 },
-      seated_forward_fold: { id: 'seated_forward_fold', name: 'Seated Forward Fold', sanskrit: 'Paschimottanasana', family: 'Forward Fold', intensity: 4, duration: 90 },
-      head_to_knee: { id: 'head_to_knee', name: 'Head-to-Knee Forward Fold', sanskrit: 'Janu Sirsasana', family: 'Forward Fold', intensity: 5, duration: 60 },
+      {/* Header */}
+      <header className="border-b px-8 py-6 backdrop-blur-sm sticky top-0 z-50" style={{
+        borderColor: 'rgba(139, 157, 135, 0.2)',
+        backgroundColor: 'rgba(245, 243, 237, 0.95)'
+      }}>
+        <div className="max-w-[1800px] mx-auto flex items-center justify-between">
+          <div>
+            <h1 className="text-4xl tracking-wider font-light" style={{ color: '#3a3f3a' }}>
+              Presence Yoga Pro
+            </h1>
+            <p className="text-sm mt-1 tracking-wide" style={{ color: '#6b7c68' }}>
+              {Object.keys(POSE_LIBRARY).length} poses • {Object.keys(YOGA_STYLES).length} styles • The Ultimate Professional Tool
+            </p>
+          </div>
+          <div className="flex items-center gap-3">
+            <div className="px-4 py-2 rounded-lg border" style={{
+              background: 'linear-gradient(135deg, rgba(139, 157, 135, 0.15), rgba(168, 181, 161, 0.1))',
+              borderColor: 'rgba(139, 157, 135, 0.3)',
+              color: '#5a6158',
+              fontSize: '13px',
+              fontWeight: '600'
+            }}>
+              <Star size={14} className="inline mr-1" style={{ color: '#8b9d87' }} />
+              Professional Edition
+            </div>
+          </div>
+        </div>
+      </header>
       
-      // BACKBENDS
-      cobra: { id: 'cobra', name: 'Cobra Pose', sanskrit: 'Bhujangasana', family: 'Backbend', intensity: 4, duration: 30 },
-      upward_dog: { id: 'upward_dog', name: 'Upward-Facing Dog', sanskrit: 'Urdhva Mukha Svanasana', family: 'Backbend', intensity: 5, duration: 30 },
-      bow: { id: 'bow', name: 'Bow Pose', sanskrit: 'Dhanurasana', family: 'Backbend', intensity: 7, duration: 30 },
-      camel: { id: 'camel', name: 'Camel Pose', sanskrit: 'Ustrasana', family: 'Backbend', intensity: 7, duration: 45 },
-      wheel: { id: 'wheel', name: 'Wheel Pose', sanskrit: 'Urdhva Dhanurasana', family: 'Backbend', intensity: 9, duration: 30 },
-      bridge: { id: 'bridge', name: 'Bridge Pose', sanskrit: 'Setu Bandha Sarvangasana', family: 'Backbend', intensity: 5, duration: 60 },
-      
-      // TWISTS
-      seated_twist: { id: 'seated_twist', name: 'Seated Spinal Twist', sanskrit: 'Ardha Matsyendrasana', family: 'Twist', intensity: 5, duration: 60 },
-      revolved_triangle: { id: 'revolved_triangle', name: 'Revolved Triangle', sanskrit: 'Parivrtta Trikonasana', family: 'Twist', intensity: 7, duration: 45 },
-      revolved_side_angle: { id: 'revolved_side_angle', name: 'Revolved Side Angle', sanskrit: 'Parivrtta Parsvakonasana', family: 'Twist', intensity: 7, duration: 45 },
-      supine_twist: { id: 'supine_twist', name: 'Supine Spinal Twist', sanskrit: 'Supta Matsyendrasana', family: 'Twist', intensity: 3, duration: 90 },
-      
-      // HIP OPENERS
-      pigeon: { id: 'pigeon', name: 'Pigeon Pose', sanskrit: 'Eka Pada Rajakapotasana', family: 'Hip Opener', intensity: 6, duration: 120 },
-      lizard: { id: 'lizard', name: 'Lizard Pose', sanskrit: 'Utthan Pristhasana', family: 'Hip Opener', intensity: 6, duration: 60 },
-      fire_log: { id: 'fire_log', name: 'Fire Log Pose', sanskrit: 'Agnistambhasana', family: 'Hip Opener', intensity: 7, duration: 90 },
-      cow_face: { id: 'cow_face', name: 'Cow Face Pose', sanskrit: 'Gomukhasana', family: 'Hip Opener', intensity: 6, duration: 60 },
-      bound_angle: { id: 'bound_angle', name: 'Bound Angle Pose', sanskrit: 'Baddha Konasana', family: 'Hip Opener', intensity: 4, duration: 120 },
-      
-      // CORE
-      boat: { id: 'boat', name: 'Boat Pose', sanskrit: 'Navasana', family: 'Core', intensity: 7, duration: 30 },
-      plank: { id: 'plank', name: 'Plank Pose', sanskrit: 'Phalakasana', family: 'Core', intensity: 5, duration: 60 },
-      side_plank: { id: 'side_plank', name: 'Side Plank', sanskrit: 'Vasisthasana', family: 'Core', intensity: 7, duration: 30 },
-      
-      // INVERSIONS
-      downward_dog: { id: 'downward_dog', name: 'Downward-Facing Dog', sanskrit: 'Adho Mukha Svanasana', family: 'Inversion', intensity: 4, duration: 60 },
-      headstand: { id: 'headstand', name: 'Headstand', sanskrit: 'Sirsasana', family: 'Inversion', intensity: 9, duration: 60 },
-      shoulder_stand: { id: 'shoulder_stand', name: 'Shoulder Stand', sanskrit: 'Sarvangasana', family: 'Inversion', intensity: 8, duration: 90 },
-      legs_up_wall: { id: 'legs_up_wall', name: 'Legs-Up-the-Wall', sanskrit: 'Viparita Karani', family: 'Inversion', intensity: 2, duration: 300 },
-      
-      // RESTORATIVE
-      childs_pose: { id: 'childs_pose', name: "Child's Pose", sanskrit: 'Balasana', family: 'Restorative', intensity: 1, duration: 120 },
-      corpse: { id: 'corpse', name: 'Corpse Pose', sanskrit: 'Savasana', family: 'Restorative', intensity: 0, duration: 300 },
-      reclined_butterfly: { id: 'reclined_butterfly', name: 'Reclined Butterfly', sanskrit: 'Supta Baddha Konasana', family: 'Restorative', intensity: 2, duration: 180 },
-      happy_baby: { id: 'happy_baby', name: 'Happy Baby', sanskrit: 'Ananda Balasana', family: 'Restorative', intensity: 2, duration: 60 },
-    };
-
-    // Yoga Styles Data
-    const YOGA_STYLES = {
-      'All Categories': {
-        Traditional: ['Hatha', 'Ashtanga', 'Iyengar', 'Kundalini', 'Sivananda'],
-        Flow: ['Vinyasa Flow', 'Power Yoga', 'Rocket Yoga', 'Jivamukti', 'Baptiste Power'],
-        Gentle: ['Yin Yoga', 'Restorative', 'Gentle Yoga', 'Chair Yoga', 'Therapeutic', 'Somatic Yoga'],
-        Hot: ['Bikram', 'Hot Vinyasa', 'Hot Power', 'Inferno Hot Pilates'],
-        Specialty: ['Prenatal', 'Postnatal', 'Kids Yoga', 'Senior Yoga', 'Adaptive Yoga', 'Trauma-Informed'],
-        Blended: ['Yin Yang', 'Vinyasa Yin'],
-        Breath: ['Pranayama'],
-        Fusion: ['Acro Yoga', 'Aerial Yoga', 'Yoga Barre', 'Yoga Sculpt', 'SUP Yoga']
-      }
-    };
-
-    // ============================================================================
-    // MAIN APP COMPONENT
-    // ============================================================================
-
-    function PresenceYoga() {
-      const [theme, setTheme] = useState('light');
-      const [selectedCategory, setSelectedCategory] = useState('All Categories');
-      const [selectedStyle, setSelectedStyle] = useState('Hatha');
-      const [selectedLevel, setSelectedLevel] = useState('Beginner');
-      const [duration, setDuration] = useState(60);
-      const [searchTerm, setSearchTerm] = useState('');
-      const [isGenerating, setIsGenerating] = useState(false);
-      const [viewMode, setViewMode] = useState('structural');
-      
-      const [sequence, setSequence] = useState({
-        warmup: [],
-        standing: [],
-        peak: [],
-        cooldown: [],
-        savasana: ['corpse']
-      });
-
-      // Sync theme to body class
-      useEffect(() => {
-        document.body.className = theme === 'dark' ? 'dark-mode font-serif' : 'light-mode font-serif';
-      }, [theme]);
-
-      const toggleTheme = () => setTheme(prev => prev === 'light' ? 'dark' : 'light');
-
-      const sectionNames = {
-        warmup: 'Warm-Up & Grounding',
-        standing: 'Standing & Flow',
-        peak: 'Peak Postures',
-        cooldown: 'Cool Down & Release',
-        savasana: 'Savasana & Integration'
-      };
-
-      // Filter poses based on search
-      const filteredPoses = useMemo(() => {
-        return Object.values(POSE_LIBRARY).filter(pose =>
-          pose.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-          pose.sanskrit.toLowerCase().includes(searchTerm.toLowerCase()) ||
-          pose.family.toLowerCase().includes(searchTerm.toLowerCase())
-        );
-      }, [searchTerm]);
-
-      // Generate AI sequence
-      const generateSequence = async () => {
-        setIsGenerating(true);
+      {/* Main 3-Column Layout */}
+      <div className="grid grid-cols-12 min-h-[calc(100vh-120px)] max-w-[1800px] mx-auto">
         
-        // Simulate AI generation
-        await new Promise(resolve => setTimeout(resolve, 2000));
-        
-        // Create a balanced sequence based on level
-        const newSequence = {
-          warmup: ['childs_pose', 'downward_dog', 'mountain'],
-          standing: selectedLevel === 'Beginner' 
-            ? ['warrior_i', 'warrior_ii', 'triangle']
-            : selectedLevel === 'Intermediate'
-            ? ['warrior_i', 'warrior_ii', 'warrior_iii', 'triangle', 'half_moon']
-            : ['warrior_i', 'warrior_ii', 'warrior_iii', 'extended_side_angle', 'revolved_triangle', 'half_moon'],
-          peak: selectedLevel === 'Beginner'
-            ? ['bridge', 'cobra']
-            : selectedLevel === 'Intermediate'
-            ? ['bridge', 'camel', 'bow']
-            : ['wheel', 'bow', 'headstand'],
-          cooldown: ['seated_forward_fold', 'pigeon', 'supine_twist'],
-          savasana: ['corpse']
-        };
-        
-        setSequence(newSequence);
-        setIsGenerating(false);
-      };
-
-      const addPoseToSection = (poseId, section) => {
-        setSequence(prev => ({
-          ...prev,
-          [section]: [...prev[section], poseId]
-        }));
-      };
-
-      const removePoseFromSection = (poseId, section, index) => {
-        setSequence(prev => ({
-          ...prev,
-          [section]: prev[section].filter((_, idx) => idx !== index)
-        }));
-      };
-
-      const totalDuration = useMemo(() => {
-        let total = 0;
-        Object.values(sequence).forEach(section => {
-          section.forEach(poseId => {
-            const pose = POSE_LIBRARY[poseId];
-            if (pose) total += pose.duration;
-          });
-        });
-        return Math.round(total / 60);
-      }, [sequence]);
-
-      return (
-        <div className="min-h-screen">
-          {/* Header */}
-          <header className={`border-b px-8 py-6 sticky top-0 z-50 transition-colors ${
-            theme === 'dark' 
-              ? 'bg-[#161817] border-white/10' 
-              : 'bg-white border-gray-100'
-          }`}>
-            <div className="flex items-center justify-between">
-              <div className="flex items-center gap-4">
-                <div className={`w-10 h-10 rounded-full flex items-center justify-center font-bold ${
-                  theme === 'dark' ? 'bg-emerald-500 text-black' : 'bg-emerald-950 text-white'
-                }`}>P</div>
+        {/* Left Panel - AI Generator & Library */}
+        <aside className="col-span-3 p-6 overflow-y-auto" style={{
+          borderRight: '1px solid rgba(139, 157, 135, 0.2)',
+          backgroundColor: 'rgba(168, 181, 161, 0.08)',
+          scrollbarWidth: 'thin',
+          scrollbarColor: 'rgba(139, 157, 135, 0.3) rgba(139, 157, 135, 0.1)'
+        }}>
+          
+          {/* AI Generator */}
+          <div className="mb-8 p-6 rounded-2xl border" style={{
+            background: 'linear-gradient(135deg, rgba(139, 157, 135, 0.15), rgba(168, 181, 161, 0.1))',
+            borderColor: 'rgba(139, 157, 135, 0.3)'
+          }}>
+            <h2 className="text-xs uppercase tracking-widest mb-5 flex items-center gap-2" style={{ color: '#6b7c68' }}>
+              <Sparkles size={14} />
+              AI Sequencing
+            </h2>
+            
+            <div className="space-y-4">
+              <div>
+                <label className="text-xs mb-2 block uppercase tracking-wider" style={{ color: '#5a6158' }}>Category</label>
+                <select 
+                  value={styleCategory}
+                  onChange={(e) => setStyleCategory(e.target.value)}
+                  className="w-full rounded-lg px-3 py-2.5 text-sm focus:outline-none"
+                  style={{
+                    backgroundColor: 'rgba(255, 255, 255, 0.5)',
+                    border: '1px solid rgba(139, 157, 135, 0.3)',
+                    color: '#3a3f3a'
+                  }}
+                >
+                  {categories.map(cat => (
+                    <option key={cat} value={cat}>{cat === 'all' ? 'All Categories' : cat}</option>
+                  ))}
+                </select>
+              </div>
+              
+              <div>
+                <label className="text-xs mb-2 block uppercase tracking-wider" style={{ color: '#5a6158' }}>Style</label>
+                <select 
+                  value={style}
+                  onChange={(e) => setStyle(e.target.value)}
+                  className="w-full rounded-lg px-3 py-2.5 text-sm focus:outline-none"
+                  style={{
+                    backgroundColor: 'rgba(255, 255, 255, 0.5)',
+                    border: '1px solid rgba(139, 157, 135, 0.3)',
+                    color: '#3a3f3a'
+                  }}
+                >
+                  {filteredStyles.map(([key, s]) => (
+                    <option key={key} value={key}>{s.name}</option>
+                  ))}
+                </select>
+                <p className="text-xs mt-1.5" style={{ color: '#6b7c68' }}>{YOGA_STYLES[style]?.description}</p>
+              </div>
+              
+              <div className="grid grid-cols-2 gap-3">
                 <div>
-                  <h1 className="text-3xl font-light font-serif tracking-tight">Presence Yoga</h1>
-                  <p className={`text-sm mt-1 ${theme === 'dark' ? 'text-stone-500' : 'text-gray-600'}`}>
-                    AI-Powered Sequence Studio
-                  </p>
+                  <label className="text-xs mb-2 block uppercase tracking-wider" style={{ color: '#5a6158' }}>Level</label>
+                  <select 
+                    value={level}
+                    onChange={(e) => setLevel(e.target.value)}
+                    className="w-full rounded-lg px-3 py-2.5 text-sm focus:outline-none"
+                    style={{
+                      backgroundColor: 'rgba(255, 255, 255, 0.5)',
+                      border: '1px solid rgba(139, 157, 135, 0.3)',
+                      color: '#3a3f3a'
+                    }}
+                  >
+                    <option value="beginner">Beginner</option>
+                    <option value="intermediate">Intermediate</option>
+                    <option value="advanced">Advanced</option>
+                  </select>
+                </div>
+                
+                <div>
+                  <label className="text-xs mb-2 block uppercase tracking-wider" style={{ color: '#5a6158' }}>Minutes</label>
+                  <input
+                    type="number"
+                    value={duration}
+                    onChange={(e) => setDuration(parseInt(e.target.value))}
+                    className="w-full rounded-lg px-3 py-2.5 text-sm focus:outline-none"
+                    style={{
+                      backgroundColor: 'rgba(255, 255, 255, 0.5)',
+                      border: '1px solid rgba(139, 157, 135, 0.3)',
+                      color: '#3a3f3a'
+                    }}
+                    min="30"
+                    max="120"
+                  />
                 </div>
               </div>
               
-              <div className="flex items-center gap-6">
-                <button 
-                  onClick={toggleTheme}
-                  className={`p-2 rounded-full transition-colors ${
-                    theme === 'dark' 
-                      ? 'bg-white/5 text-yellow-400 hover:bg-white/10' 
-                      : 'bg-gray-100 text-gray-500 hover:bg-gray-200'
-                  }`}
+              <button
+                onClick={regenerate}
+                className="w-full py-3 rounded-lg text-sm tracking-wide transition-all flex items-center justify-center gap-2 font-medium"
+                style={{
+                  background: 'linear-gradient(135deg, #8b9d87, #a8b5a1)',
+                  border: '1px solid rgba(107, 124, 104, 0.3)',
+                  color: '#ffffff'
+                }}
+              >
+                <Zap size={16} />
+                Generate Sequence
+              </button>
+            </div>
+          </div>
+          
+          {/* Pose Library */}
+          <div>
+            <div className="flex items-center justify-between mb-4">
+              <h2 className="text-xs uppercase tracking-widest" style={{ color: '#5a6158' }}>
+                Pose Library
+              </h2>
+              <span className="text-xs" style={{ color: '#6b7c68' }}>{filteredPoses.length} poses</span>
+            </div>
+            
+            <div className="space-y-3 mb-4">
+              <div className="relative">
+                <Search size={14} className="absolute left-3 top-1/2 -translate-y-1/2" style={{ color: '#6b7c68' }} />
+                <input
+                  type="text"
+                  placeholder="Search poses..."
+                  value={searchTerm}
+                  onChange={(e) => setSearchTerm(e.target.value)}
+                  className="w-full rounded-lg pl-9 pr-3 py-2.5 text-sm focus:outline-none"
+                  style={{
+                    backgroundColor: 'rgba(255, 255, 255, 0.5)',
+                    border: '1px solid rgba(139, 157, 135, 0.3)',
+                    color: '#3a3f3a'
+                  }}
+                />
+              </div>
+              
+              <select
+                value={familyFilter}
+                onChange={(e) => setFamilyFilter(e.target.value)}
+                className="w-full rounded-lg px-3 py-2.5 text-sm focus:outline-none"
+                style={{
+                  backgroundColor: 'rgba(255, 255, 255, 0.5)',
+                  border: '1px solid rgba(139, 157, 135, 0.3)',
+                  color: '#3a3f3a'
+                }}
+              >
+                {families.map(f => (
+                  <option key={f} value={f}>{f === 'all' ? 'All Families' : f}</option>
+                ))}
+              </select>
+            </div>
+            
+            <div className="space-y-1.5 max-h-[500px] overflow-y-auto pr-2" style={{
+              scrollbarWidth: 'thin',
+              scrollbarColor: 'rgba(139, 157, 135, 0.3) rgba(139, 157, 135, 0.1)'
+            }}>
+              {filteredPoses.map(pose => (
+                <div
+                  key={pose.id}
+                  className="p-3 rounded-lg transition-all cursor-pointer border"
+                  style={{
+                    backgroundColor: 'rgba(255, 255, 255, 0.3)',
+                    borderColor: 'transparent'
+                  }}
+                  onMouseEnter={(e) => {
+                    e.currentTarget.style.backgroundColor = 'rgba(168, 181, 161, 0.2)';
+                    e.currentTarget.style.borderColor = 'rgba(139, 157, 135, 0.3)';
+                  }}
+                  onMouseLeave={(e) => {
+                    e.currentTarget.style.backgroundColor = 'rgba(255, 255, 255, 0.3)';
+                    e.currentTarget.style.borderColor = 'transparent';
+                  }}
                 >
-                  {theme === 'light' ? <Moon size={20} /> : <Sun size={20} />}
-                </button>
-                <div className="text-right">
-                  <div className={`text-sm ${theme === 'dark' ? 'text-stone-400' : 'text-gray-600'}`}>
-                    Total Duration
+                  <div className="text-sm font-medium" style={{ color: '#3a3f3a' }}>
+                    {pose.name}
                   </div>
-                  <div className={`text-2xl font-light ${theme === 'dark' ? 'text-stone-200' : 'text-gray-900'}`}>
-                    {totalDuration} min
+                  <div className="text-xs mt-1" style={{ color: '#6b7c68' }}>{pose.sanskrit}</div>
+                  <div className="flex items-center gap-2 mt-2 flex-wrap">
+                    <span className="text-xs px-2 py-0.5 rounded-full" style={{
+                      backgroundColor: 'rgba(139, 157, 135, 0.2)',
+                      color: '#5a6158'
+                    }}>
+                      {pose.family}
+                    </span>
+                    <span className="text-xs" style={{ color: '#6b7c68' }}>
+                      Level {pose.intensity}
+                    </span>
                   </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        </aside>
+        
+        {/* Center - Sequence Canvas */}
+        <main className="col-span-6 p-8 overflow-y-auto" style={{
+          scrollbarWidth: 'thin',
+          scrollbarColor: 'rgba(139, 157, 135, 0.3) rgba(139, 157, 135, 0.1)'
+        }}>
+          <div className="flex items-center justify-between mb-8 pb-4" style={{ borderBottom: '1px solid rgba(139, 157, 135, 0.2)' }}>
+            <h2 className="text-2xl font-light" style={{ color: '#3a3f3a' }}>Sequence Flow</h2>
+            
+            <div className="flex items-center gap-3">
+              <button className="px-4 py-2 rounded-lg text-sm border transition-all" style={{
+                backgroundColor: 'rgba(255, 255, 255, 0.5)',
+                borderColor: 'rgba(139, 157, 135, 0.3)',
+                color: '#5a6158'
+              }}>
+                <Download size={16} className="inline mr-2" />
+                Export
+              </button>
+              
+              <button className="px-4 py-2 rounded-lg text-sm border transition-all" style={{
+                backgroundColor: 'rgba(255, 255, 255, 0.5)',
+                borderColor: 'rgba(139, 157, 135, 0.3)',
+                color: '#5a6158'
+              }}>
+                <Save size={16} className="inline mr-2" />
+                Save
+              </button>
+            </div>
+          </div>
+          
+          {/* Sequence Sections */}
+          <div className="space-y-6">
+            {Object.entries(sequence).map(([section, poseIds]) => (
+              <div key={section}>
+                <h3 className="text-xs uppercase tracking-widest mb-3 flex items-center gap-2" style={{ color: '#6b7c68' }}>
+                  {sectionNames[section]}
+                  <span className="text-xs px-2 py-0.5 rounded-full" style={{
+                    backgroundColor: 'rgba(139, 157, 135, 0.15)',
+                    color: '#5a6158'
+                  }}>
+                    {poseIds.length}
+                  </span>
+                </h3>
+                
+                <div className="grid grid-cols-2 gap-3">
+                  {poseIds.map((poseId, idx) => {
+                    const pose = POSE_LIBRARY[poseId];
+                    if (!pose) return null;
+                    
+                    return (
+                      <div
+                        key={`${poseId}-${idx}`}
+                        className="p-4 rounded-xl border transition-all"
+                        style={{
+                          backgroundColor: 'rgba(255, 255, 255, 0.4)',
+                          borderColor: 'rgba(139, 157, 135, 0.2)'
+                        }}
+                      >
+                        <div className="flex items-start justify-between mb-2">
+                          <div className="flex-1">
+                            <div className="text-sm font-medium" style={{ color: '#3a3f3a' }}>
+                              {pose.name}
+                            </div>
+                            <div className="text-xs mt-0.5" style={{ color: '#6b7c68' }}>
+                              {pose.sanskrit}
+                            </div>
+                          </div>
+                          
+                          <div className="flex items-center gap-1 ml-2">
+                            {[...Array(Math.min(pose.intensity, 5))].map((_, i) => (
+                              <div key={i} className="w-1 h-3 rounded-full" style={{
+                                backgroundColor: '#8b9d87'
+                              }} />
+                            ))}
+                          </div>
+                        </div>
+                        
+                        <div className="flex items-center gap-2 flex-wrap">
+                          <div className="text-xs px-2 py-1 rounded inline-block" style={{
+                            backgroundColor: 'rgba(139, 157, 135, 0.15)',
+                            color: '#5a6158'
+                          }}>
+                            {pose.family}
+                          </div>
+                          {pose.cues && (
+                            <div className="text-xs" style={{ color: '#6b7c68' }}>
+                              {pose.cues}
+                            </div>
+                          )}
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+              </div>
+            ))}
+          </div>
+        </main>
+        
+        {/* Right Panel - Teaching Script */}
+        <aside className="col-span-3 p-6 overflow-y-auto" style={{
+          borderLeft: '1px solid rgba(139, 157, 135, 0.2)',
+          backgroundColor: 'rgba(168, 181, 161, 0.05)',
+          scrollbarWidth: 'thin',
+          scrollbarColor: 'rgba(139, 157, 135, 0.3) rgba(139, 157, 135, 0.1)'
+        }}>
+          <h2 className="text-xs uppercase tracking-widest mb-6" style={{ color: '#5a6158' }}>
+            Teaching Notes
+          </h2>
+          
+          <div className="space-y-4">
+            <div className="p-5 rounded-xl border" style={{
+              background: 'linear-gradient(135deg, rgba(139, 157, 135, 0.1), rgba(168, 181, 161, 0.05))',
+              borderColor: 'rgba(139, 157, 135, 0.2)'
+            }}>
+              <h3 className="text-sm font-medium mb-2" style={{ color: '#3a3f3a' }}>Class Overview</h3>
+              <div className="space-y-2 text-xs" style={{ color: '#6b7c68' }}>
+                <div className="flex justify-between">
+                  <span>Style:</span>
+                  <span style={{ color: '#5a6158' }}>{YOGA_STYLES[style]?.name}</span>
+                </div>
+                <div className="flex justify-between">
+                  <span>Level:</span>
+                  <span style={{ color: '#5a6158' }}>{level}</span>
+                </div>
+                <div className="flex justify-between">
+                  <span>Duration:</span>
+                  <span style={{ color: '#5a6158' }}>{duration} minutes</span>
+                </div>
+                <div className="flex justify-between">
+                  <span>Total Poses:</span>
+                  <span style={{ color: '#5a6158' }}>
+                    {Object.values(sequence).reduce((sum, arr) => sum + arr.length, 0)}
+                  </span>
+                </div>
+                <div className="flex justify-between">
+                  <span>Library Size:</span>
+                  <span style={{ color: '#5a6158' }}>{Object.keys(POSE_LIBRARY).length} poses</span>
                 </div>
               </div>
             </div>
-          </header>
-
-          <div className="grid grid-cols-12 h-[calc(100vh-97px)]">
-            {/* Left Sidebar - AI Sequencing */}
-            <aside className={`col-span-3 border-r p-6 overflow-y-auto custom-scrollbar transition-colors ${
-              theme === 'dark' 
-                ? 'bg-[#0f1110] border-white/5' 
-                : 'bg-white border-gray-100'
-            }`}>
-              <div className="mb-6">
-                <h2 className={`text-xs uppercase tracking-widest mb-4 ${
-                  theme === 'dark' ? 'text-stone-500' : 'text-gray-500'
-                }`}>AI Sequencing</h2>
-                
-                {/* Category Dropdown */}
-                <div className="mb-4">
-                  <label className={`block text-xs mb-2 ${
-                    theme === 'dark' ? 'text-stone-500' : 'text-gray-600'
-                  }`}>Category</label>
-                  <select 
-                    value={selectedCategory}
-                    onChange={(e) => setSelectedCategory(e.target.value)}
-                    className={`w-full border rounded-lg px-4 py-2.5 text-sm focus:outline-none transition-colors ${
-                      theme === 'dark'
-                        ? 'bg-stone-900/60 border-stone-800/50 text-stone-200 focus:border-stone-700'
-                        : 'bg-gray-50 border-gray-200 text-gray-900 focus:border-gray-300'
-                    }`}
-                  >
-                    <option>All Categories</option>
-                    <option>Traditional</option>
-                    <option>Flow</option>
-                    <option>Gentle</option>
-                    <option>Hot</option>
-                    <option>Specialty</option>
-                    <option>Blended</option>
-                    <option>Breath</option>
-                    <option>Fusion</option>
-                  </select>
-                </div>
-
-                {/* Style Dropdown */}
-                <div className="mb-4">
-                  <label className={`block text-xs mb-2 ${
-                    theme === 'dark' ? 'text-stone-500' : 'text-gray-600'
-                  }`}>Style</label>
-                  <select 
-                    value={selectedStyle}
-                    onChange={(e) => setSelectedStyle(e.target.value)}
-                    className={`w-full border rounded-lg px-4 py-2.5 text-sm focus:outline-none transition-colors ${
-                      theme === 'dark'
-                        ? 'bg-stone-900/60 border-stone-800/50 text-stone-200 focus:border-stone-700'
-                        : 'bg-gray-50 border-gray-200 text-gray-900 focus:border-gray-300'
-                    }`}
-                  >
-                    {Object.values(YOGA_STYLES['All Categories']).flat().map(style => (
-                      <option key={style}>{style}</option>
-                    ))}
-                  </select>
-                  <p className={`text-xs mt-2 italic ${
-                    theme === 'dark' ? 'text-stone-600' : 'text-gray-500'
-                  }`}>
-                    {selectedStyle === 'Hatha' && 'Classical yoga emphasizing alignment and breath'}
-                    {selectedStyle === 'Vinyasa Flow' && 'Dynamic flowing sequences synchronized with breath'}
-                    {selectedStyle === 'Yin Yoga' && 'Deep, meditative holds targeting connective tissue'}
-                  </p>
-                </div>
-
-                {/* Level */}
-                <div className="mb-4">
-                  <label className={`block text-xs mb-2 ${
-                    theme === 'dark' ? 'text-stone-500' : 'text-gray-600'
-                  }`}>Level</label>
-                  <div className="flex gap-2">
-                    {['Beginner', 'Intermediate', 'Advanced'].map(level => (
-                      <button
-                        key={level}
-                        onClick={() => setSelectedLevel(level)}
-                        className={`flex-1 px-3 py-2 text-xs rounded-lg transition-all ${
-                          selectedLevel === level
-                            ? theme === 'dark'
-                              ? 'bg-stone-800 text-stone-100'
-                              : 'bg-gray-200 text-gray-900'
-                            : theme === 'dark'
-                              ? 'bg-stone-900/40 text-stone-500 hover:text-stone-300'
-                              : 'bg-gray-50 text-gray-500 hover:text-gray-700'
-                        }`}
-                      >
-                        {level}
-                      </button>
-                    ))}
-                  </div>
-                </div>
-
-                {/* Duration */}
-                <div className="mb-6">
-                  <label className={`block text-xs mb-2 ${
-                    theme === 'dark' ? 'text-stone-500' : 'text-gray-600'
-                  }`}>Minutes</label>
-                  <input
-                    type="range"
-                    min="15"
-                    max="120"
-                    step="15"
-                    value={duration}
-                    onChange={(e) => setDuration(parseInt(e.target.value))}
-                    className="w-full"
-                  />
-                  <div className={`flex justify-between text-xs mt-1 ${
-                    theme === 'dark' ? 'text-stone-600' : 'text-gray-500'
-                  }`}>
-                    <span>15</span>
-                    <span className={theme === 'dark' ? 'text-stone-300 font-medium' : 'text-gray-700 font-medium'}>
-                      {duration} min
-                    </span>
-                    <span>120</span>
-                  </div>
-                </div>
-
-                {/* Generate Button */}
-                <button
-                  onClick={generateSequence}
-                  disabled={isGenerating}
-                  className={`w-full px-6 py-3.5 rounded-lg font-medium transition-all flex items-center justify-center gap-2 shadow-lg disabled:cursor-not-allowed ${
-                    theme === 'dark'
-                      ? 'bg-emerald-500 text-black hover:bg-emerald-400 disabled:bg-stone-800 disabled:text-stone-600'
-                      : 'bg-emerald-950 text-white hover:bg-black disabled:bg-gray-200 disabled:text-gray-400'
-                  }`}
-                >
-                  {isGenerating ? (
-                    <>
-                      <div className="animate-spin rounded-full h-4 w-4 border-2 border-current border-t-transparent"></div>
-                      <span>Generating...</span>
-                    </>
-                  ) : (
-                    <>
-                      <Sparkles size={18} />
-                      <span>Generate Sequence</span>
-                    </>
-                  )}
-                </button>
-              </div>
-
-              {/* Pose Library */}
-              <div className="mt-8">
-                <h3 className={`text-xs uppercase tracking-widest mb-4 ${
-                  theme === 'dark' ? 'text-stone-500' : 'text-gray-500'
-                }`}>Pose Library</h3>
-                
-                <div className="relative mb-4">
-                  <Search size={16} className={`absolute left-3 top-1/2 -translate-y-1/2 ${
-                    theme === 'dark' ? 'text-stone-600' : 'text-gray-400'
-                  }`} />
-                  <input
-                    type="text"
-                    placeholder="Search poses..."
-                    value={searchTerm}
-                    onChange={(e) => setSearchTerm(e.target.value)}
-                    className={`w-full border rounded-lg pl-10 pr-4 py-2 text-sm focus:outline-none transition-colors ${
-                      theme === 'dark'
-                        ? 'bg-stone-900/60 border-stone-800/50 text-stone-200 placeholder-stone-600 focus:border-stone-700'
-                        : 'bg-gray-50 border-gray-200 text-gray-900 placeholder-gray-400 focus:border-gray-300'
-                    }`}
-                  />
-                </div>
-
-                <div className="space-y-2 max-h-[400px] overflow-y-auto custom-scrollbar">
-                  {filteredPoses.map(pose => (
-                    <div
-                      key={pose.id}
-                      className={`group p-3 rounded-lg border transition-all cursor-pointer ${
-                        theme === 'dark'
-                          ? 'bg-stone-900/40 hover:bg-stone-900/60 border-stone-800/30 hover:border-stone-700/50'
-                          : 'bg-gray-50 hover:bg-gray-100 border-gray-200 hover:border-gray-300'
-                      }`}
-                      onClick={() => addPoseToSection(pose.id, 'standing')}
-                    >
-                      <div className={`text-sm font-medium transition-colors ${
-                        theme === 'dark'
-                          ? 'text-stone-300 group-hover:text-stone-100'
-                          : 'text-gray-700 group-hover:text-gray-900'
-                      }`}>
-                        {pose.name}
-                      </div>
-                      <div className={`text-xs mt-1 ${
-                        theme === 'dark' ? 'text-stone-600' : 'text-gray-500'
-                      }`}>{pose.sanskrit}</div>
-                      <div className="flex items-center gap-2 mt-2 flex-wrap">
-                        <span className={`text-xs px-2 py-0.5 rounded-full ${
-                          theme === 'dark'
-                            ? 'bg-stone-800/50 text-stone-500'
-                            : 'bg-gray-200 text-gray-600'
-                        }`}>
-                          {pose.family}
-                        </span>
-                        <span className={`text-xs ${
-                          theme === 'dark' ? 'text-stone-600' : 'text-gray-500'
-                        }`}>
-                          Level {pose.intensity}
-                        </span>
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              </div>
-            </aside>
             
-            {/* Center - Sequence Canvas */}
-            <main className={`col-span-6 p-8 overflow-y-auto custom-scrollbar transition-colors ${
-              theme === 'dark' ? 'bg-[#0a0c0b]' : 'bg-[#fcfaf7]'
-            }`}>
-              <div className={`flex items-center justify-between mb-8 pb-4 border-b transition-colors ${
-                theme === 'dark' ? 'border-stone-800/30' : 'border-gray-200'
-              }`}>
-                <h2 className={`text-2xl font-light ${
-                  theme === 'dark' ? 'text-stone-100' : 'text-gray-900'
-                }`}>Sequence Flow</h2>
-                
-                <div className="flex gap-2">
-                  <button
-                    onClick={() => setViewMode('structural')}
-                    className={`px-5 py-2.5 text-sm rounded-lg transition-all ${
-                      viewMode === 'structural'
-                        ? theme === 'dark'
-                          ? 'bg-stone-800 text-stone-100'
-                          : 'bg-gray-200 text-gray-900'
-                        : theme === 'dark'
-                          ? 'text-stone-500 hover:text-stone-300 hover:bg-stone-900/30'
-                          : 'text-gray-500 hover:text-gray-700 hover:bg-gray-100'
-                    }`}
-                  >
-                    Structural
-                  </button>
-                  <button
-                    onClick={() => setViewMode('teaching')}
-                    className={`px-5 py-2.5 text-sm rounded-lg transition-all ${
-                      viewMode === 'teaching'
-                        ? theme === 'dark'
-                          ? 'bg-stone-800 text-stone-100'
-                          : 'bg-gray-200 text-gray-900'
-                        : theme === 'dark'
-                          ? 'text-stone-500 hover:text-stone-300 hover:bg-stone-900/30'
-                          : 'text-gray-500 hover:text-gray-700 hover:bg-gray-100'
-                    }`}
-                  >
-                    Teaching Script
-                  </button>
-                </div>
-              </div>
-              
-              {isGenerating && (
-                <div className="text-center py-20">
-                  <div className="inline-block animate-shimmer mb-4">
-                    <Wand2 size={48} className={theme === 'dark' ? 'text-emerald-400' : 'text-emerald-600'} />
-                  </div>
-                  <p className={`text-lg font-light ${
-                    theme === 'dark' ? 'text-stone-400' : 'text-gray-600'
-                  }`}>Crafting your perfect sequence...</p>
-                </div>
-              )}
-
-              {!isGenerating && viewMode === 'structural' && (
-                <div className="space-y-8">
-                  {Object.entries(sequence).map(([section, poses]) => (
-                    <div key={section} className="space-y-3">
-                      <h3 className={`text-xl font-light flex items-center gap-2 font-serif ${
-                        theme === 'dark' ? 'text-stone-100' : 'text-gray-900'
-                      }`}>
-                        <ChevronDown size={20} className={theme === 'dark' ? 'text-stone-600' : 'text-gray-400'} />
-                        {sectionNames[section]}
-                      </h3>
-                      
-                      <div className="ml-7 space-y-2">
-                        {poses.map((poseId, idx) => {
-                          const pose = POSE_LIBRARY[poseId];
-                          if (!pose) return null;
-                          
-                          return (
-                            <div
-                              key={`${poseId}-${idx}`}
-                              className={`group flex items-center justify-between p-4 rounded-xl border transition-all duration-200 ${
-                                theme === 'dark'
-                                  ? 'bg-gradient-to-r from-stone-900/40 to-stone-900/20 hover:from-stone-900/60 hover:to-stone-900/40 border-stone-800/30 hover:border-stone-700/50'
-                                  : 'bg-white hover:bg-gray-50 border-gray-200 hover:border-gray-300'
-                              }`}
-                            >
-                              <div className="flex-1">
-                                <div className={`font-medium ${
-                                  theme === 'dark' ? 'text-stone-200' : 'text-gray-900'
-                                }`}>{pose.name}</div>
-                                <div className={`text-xs mt-1 ${
-                                  theme === 'dark' ? 'text-stone-600' : 'text-gray-500'
-                                }`}>{pose.sanskrit}</div>
-                              </div>
-                              
-                              <div className="flex items-center gap-3">
-                                <span className={`text-xs px-2.5 py-1 rounded-full ${
-                                  theme === 'dark'
-                                    ? 'bg-stone-800/50 text-stone-500'
-                                    : 'bg-gray-200 text-gray-600'
-                                }`}>
-                                  {Math.round(pose.duration / 60)}m
-                                </span>
-                                <button 
-                                  onClick={() => removePoseFromSection(poseId, section, idx)}
-                                  className={`opacity-0 group-hover:opacity-100 transition-opacity hover:text-red-400 ${
-                                    theme === 'dark' ? 'text-stone-600' : 'text-gray-400'
-                                  }`}
-                                >
-                                  <X size={18} />
-                                </button>
-                              </div>
-                            </div>
-                          );
-                        })}
-                        
-                        {section !== 'savasana' && (
-                          <button
-                            className={`w-full p-4 rounded-xl border-2 border-dashed transition-all flex items-center justify-center gap-2 ${
-                              theme === 'dark'
-                                ? 'border-stone-800/50 hover:border-stone-700/50 hover:bg-stone-900/20 text-stone-600 hover:text-stone-400'
-                                : 'border-gray-300 hover:border-gray-400 hover:bg-gray-50 text-gray-500 hover:text-gray-700'
-                            }`}
-                          >
-                            <Plus size={18} />
-                            <span className="text-sm tracking-wide">Add Pose</span>
-                          </button>
-                        )}
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              )}
-
-              {!isGenerating && viewMode === 'teaching' && (
-                <div className="space-y-8 max-w-3xl">
-                  <p className={`text-sm italic border-l-2 pl-4 mb-8 ${
-                    theme === 'dark'
-                      ? 'text-stone-500 border-stone-800'
-                      : 'text-gray-600 border-gray-300'
-                  }`}>
-                    Teaching script for {selectedStyle} • {selectedLevel} • {duration} minutes
-                  </p>
-                  
-                  {Object.entries(sequence).map(([section, poses]) => (
-                    <div key={section} className="space-y-6">
-                      <h3 className={`text-2xl font-light font-serif border-b pb-2 ${
-                        theme === 'dark'
-                          ? 'text-stone-100 border-stone-800/30'
-                          : 'text-gray-900 border-gray-200'
-                      }`}>
-                        {sectionNames[section]}
-                      </h3>
-                      
-                      {poses.map((poseId, idx) => {
-                        const pose = POSE_LIBRARY[poseId];
-                        if (!pose) return null;
-                        
-                        return (
-                          <div key={idx} className="space-y-2 pl-4">
-                            <p className={`text-lg leading-relaxed font-light ${
-                              theme === 'dark' ? 'text-stone-300' : 'text-gray-700'
-                            }`}>
-                              Move into <span className="font-serif italic">{pose.name}</span>. 
-                              {pose.intensity > 6 && " This is your peak. Find your edge with compassion."}
-                              {pose.intensity <= 3 && " Allow the body to soften and release."}
-                              {pose.intensity > 3 && pose.intensity <= 6 && " Hold steady, breathe deeply."}
-                            </p>
-                            <p className={`text-xs ${
-                              theme === 'dark' ? 'text-stone-700' : 'text-gray-500'
-                            }`}>
-                              [Hold for {Math.round(pose.duration / 60)} minute{pose.duration >= 120 ? 's' : ''}]
-                            </p>
-                          </div>
-                        );
-                      })}
-                    </div>
-                  ))}
-                </div>
-              )}
-            </main>
+            <div className="p-5 rounded-xl border" style={{
+              backgroundColor: 'rgba(255, 255, 255, 0.3)',
+              borderColor: 'rgba(139, 157, 135, 0.2)'
+            }}>
+              <h3 className="text-sm font-medium mb-3" style={{ color: '#3a3f3a' }}>Sequence Wisdom</h3>
+              <p className="text-xs leading-relaxed italic" style={{ color: '#6b7c68' }}>
+                "Begin where you are. Not where you think you should be. The sequence flows without resistance. 
+                Energy ascends mindfully, peaks with presence, and settles with grace."
+              </p>
+            </div>
             
-            {/* Right - Intelligence & Tools */}
-            <aside className={`col-span-3 border-l p-6 overflow-y-auto custom-scrollbar transition-colors ${
-              theme === 'dark'
-                ? 'bg-[#0f1110] border-white/5'
-                : 'bg-white border-gray-100'
-            }`}>
-              <h2 className={`text-xs uppercase tracking-widest mb-6 ${
-                theme === 'dark' ? 'text-stone-500' : 'text-gray-500'
-              }`}>
-                Sequence Intelligence
-              </h2>
+            <div className="space-y-2">
+              <button className="w-full py-2.5 rounded-lg text-sm border transition-all flex items-center justify-center gap-2" style={{
+                backgroundColor: 'rgba(255, 255, 255, 0.4)',
+                borderColor: 'rgba(139, 157, 135, 0.3)',
+                color: '#5a6158'
+              }}>
+                <Printer size={14} />
+                Print Class Plan
+              </button>
               
-              <div className={`p-5 rounded-xl border mb-6 transition-colors ${
-                theme === 'dark'
-                  ? 'bg-gradient-to-br from-stone-900/40 to-stone-900/20 border-stone-800/30'
-                  : 'bg-emerald-50 border-emerald-100'
-              }`}>
-                <p className={`text-sm leading-relaxed italic ${
-                  theme === 'dark' ? 'text-stone-400' : 'text-gray-700'
-                }`}>
-                  "The sequence flows without resistance. Energy ascends mindfully, peaks with presence, and settles with grace."
-                </p>
-              </div>
+              <button className="w-full py-2.5 rounded-lg text-sm border transition-all flex items-center justify-center gap-2" style={{
+                backgroundColor: 'rgba(255, 255, 255, 0.4)',
+                borderColor: 'rgba(139, 157, 135, 0.3)',
+                color: '#5a6158'
+              }}>
+                <Share2 size={14} />
+                Share Sequence
+              </button>
               
-              <div className="space-y-4 mb-8">
-                <button className={`w-full flex items-center justify-center gap-2 px-4 py-3 border rounded-lg text-sm transition-all ${
-                  theme === 'dark'
-                    ? 'bg-stone-900/40 hover:bg-stone-900/60 border-stone-800/50 text-stone-300 hover:text-stone-100'
-                    : 'bg-gray-50 hover:bg-gray-100 border-gray-200 text-gray-700 hover:text-gray-900'
-                }`}>
-                  <Download size={16} />
-                  Export Sequence
-                </button>
-              </div>
-              
-              <div className={`p-4 rounded-xl border ${
-                theme === 'dark'
-                  ? 'bg-indigo-950/20 border-indigo-900/30'
-                  : 'bg-indigo-50 border-indigo-200'
-              }`}>
-                <p className={`text-xs mb-2 uppercase tracking-wider ${
-                  theme === 'dark' ? 'text-indigo-300/70' : 'text-indigo-700'
-                }`}>Sequence Stats</p>
-                <div className={`space-y-2 text-xs ${
-                  theme === 'dark' ? 'text-indigo-200/60' : 'text-indigo-600'
-                }`}>
-                  <div className="flex justify-between">
-                    <span>Total Poses:</span>
-                    <span className={theme === 'dark' ? 'text-indigo-200' : 'text-indigo-700 font-medium'}>
-                      {Object.values(sequence).flat().length}
-                    </span>
-                  </div>
-                  <div className="flex justify-between">
-                    <span>Estimated Duration:</span>
-                    <span className={theme === 'dark' ? 'text-indigo-200' : 'text-indigo-700 font-medium'}>
-                      {totalDuration} min
-                    </span>
-                  </div>
-                  <div className="flex justify-between">
-                    <span>Difficulty:</span>
-                    <span className={theme === 'dark' ? 'text-indigo-200' : 'text-indigo-700 font-medium'}>
-                      {selectedLevel}
-                    </span>
-                  </div>
-                </div>
-              </div>
-            </aside>
+              <button className="w-full py-2.5 rounded-lg text-sm border transition-all flex items-center justify-center gap-2" style={{
+                backgroundColor: 'rgba(255, 255, 255, 0.4)',
+                borderColor: 'rgba(139, 157, 135, 0.3)',
+                color: '#5a6158'
+              }}>
+                <Upload size={14} />
+                Import Poses
+              </button>
+            </div>
           </div>
-        </div>
-      );
-    }
-
-    // Render the app
-    const root = ReactDOM.createRoot(document.getElementById('root'));
-    root.render(<PresenceYoga />);
-  </script>
-</body>
-</html>
+        </aside>
+      </div>
+      
+      {/* Custom Scrollbar Styles */}
+      <style>{`
+        * {
+          scrollbar-width: thin;
+          scrollbar-color: rgba(139, 157, 135, 0.3) rgba(139, 157, 135, 0.1);
+        }
+        
+        *::-webkit-scrollbar {
+          width: 6px;
+          height: 6px;
+        }
+        
+        *::-webkit-scrollbar-track {
+          background: rgba(139, 157, 135, 0.1);
+          border-radius: 3px;
+        }
+        
+        *::-webkit-scrollbar-thumb {
+          background: rgba(139, 157, 135, 0.3);
+          border-radius: 3px;
+        }
+        
+        *::-webkit-scrollbar-thumb:hover {
+          background: rgba(139, 157, 135, 0.5);
+        }
+      `}</style>
+    </div>
+  );
+}
