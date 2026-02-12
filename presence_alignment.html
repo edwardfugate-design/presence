@@ -33,12 +33,10 @@
 <body>
     <div id="root"></div>
 
-    <script type="text/babel">
+   <script type="text/babel">
         const { useState, useEffect } = React;
 
-        // GRABBING THE SHARED DATA
-        const MASTER_DATA = window.ALL_POSES || window.allPoses || [];
-
+        // Manual alignment logic for core poses
         const DETAILED_ALIGNMENT = {
             "warrior i": {
                 checkpoints: [
@@ -53,6 +51,69 @@
                 ]
             }
         };
+
+        function AlignmentLab() {
+            // Start with an empty list
+            const [masterData, setMasterData] = useState([]);
+            const [selectedPose, setSelectedPose] = useState(null);
+            const [searchQuery, setSearchQuery] = useState('');
+            const [angles, setAngles] = useState({});
+
+            // ===== PERSISTENT CONNECTION LOGIC =====
+            useEffect(() => {
+                let checkCount = 0;
+                const maxChecks = 50; // Try for 5 seconds
+
+                const attemptConnection = setInterval(() => {
+                    const vault = window.ALL_POSES || window.allPoses;
+                    
+                    if (vault && vault.length > 0) {
+                        setMasterData(vault);
+                        setSelectedPose(vault[0]);
+                        clearInterval(attemptConnection);
+                        console.log("✅ Vault Connected: Found " + vault.length + " poses.");
+                    } else {
+                        checkCount++;
+                        if (checkCount >= maxChecks) {
+                            clearInterval(attemptConnection);
+                            console.error("❌ Vault Timeout: Check if pose-database.js is correctly linked.");
+                        }
+                    }
+                }, 100); // Check every 100ms
+
+                return () => clearInterval(attemptConnection);
+            }, []);
+
+            // Update angles when pose changes
+            useEffect(() => {
+                if (selectedPose) {
+                    const details = DETAILED_ALIGNMENT[selectedPose.name.toLowerCase()];
+                    const initialAngles = {};
+                    if (details) {
+                        details.checkpoints.forEach(cp => initialAngles[cp.joint] = cp.ideal);
+                    }
+                    setAngles(initialAngles);
+                }
+            }, [selectedPose]);
+
+            const getFilteredResults = () => {
+                if (searchQuery.length < 2) return [];
+                return masterData.filter(p => 
+                    p.name.toLowerCase().includes(searchQuery.toLowerCase()) || 
+                    p.sanskrit.toLowerCase().includes(searchQuery.toLowerCase())
+                ).slice(0, 6);
+            };
+
+            // LOADING STATE
+            if (masterData.length === 0) {
+                return (
+                    <div className="min-h-screen flex flex-col items-center justify-center bg-indigo-50/30">
+                        <div className="w-12 h-12 border-4 border-indigo-200 border-t-indigo-600 rounded-full animate-spin mb-4"></div>
+                        <h2 className="text-xl font-serif text-indigo-900 animate-pulse">Establishing Vault Connection...</h2>
+                        <p className="text-xs text-indigo-400 mt-2">Checking window.ALL_POSES</p>
+                    </div>
+                );
+            }
 
         function AlignmentLab() {
             const [selectedPose, setSelectedPose] = useState(null);
