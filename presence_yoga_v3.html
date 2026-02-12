@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Presence • Yoga Studio v3.3</title>
+    <title>Presence • Yoga Studio v3.1</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script crossorigin src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
     <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
@@ -24,93 +24,126 @@
     <script type="text/babel">
         const { useState } = React;
 
+        // MASTER LIBRARY: Combined from your previous JS files
         const POSE_LIBRARY = [
-            { 
-                id: 'p1', name: 'Mountain (Tadasana) Family', category: 'Standing', level: 'Beginner', 
-                variations: [
-                    {id:'v1', name:'Extended (Urdhva Hastasana)'}, {id:'v2', name:'Side Bend'}, {id:'v3', name:'On Toes'}, 
-                    {id:'v4', name:'Cactus Arms'}, {id:'v5', name:'Eagle Arms'}, {id:'v6', name:'Cow Face Arms'}, 
-                    {id:'v7', name:'Backbend'}, {id:'v8', name:'One-Legged Balance'}, {id:'v9', name:'Twist'}, 
-                    {id:'v10', name:'Reverse Prayer'}, {id:'v11', name:'Wide Stance'}, {id:'v12', name:'With Block'}
-                ] 
-            },
-            { 
-                id: 'p2', name: 'Warrior I (Virabhadrasana I) Family', category: 'Standing', level: 'Beginner', 
-                variations: [
-                    {id:'v13', name:'Humble'}, {id:'v14', name:'Eagle Arms'}, {id:'v15', name:'Airplane Arms'}, 
-                    {id:'v16', name:'Cactus Arms'}, {id:'v17', name:'On Tip-Toes'}, {id:'v18', name:'Bound Hands'}
-                ] 
-            },
-            { 
-                id: 'p3', name: 'Warrior II Family', category: 'Standing', level: 'Beginner', 
-                variations: [
-                    {id:'v22', name:'Reverse'}, {id:'v23', name:'Archer Arms'}, {id:'v24', name:'Reverse Prayer'}, 
-                    {id:'v25', name:'One Hand on Heart'}, {id:'v26', name:'Bound (Baddha)'}, {id:'v27', name:'Straight Leg'}
-                ] 
-            },
-            { 
-                id: 'p4', name: 'Warrior III Family', category: 'Standing', level: 'Intermediate', 
-                variations: [
-                    {id:'v30', name:'Airplane Arms'}, {id:'v31', name:'Hands at Heart'}, {id:'v32', name:'Hands Forward'}, 
-                    {id:'v33', name:'Hands Backwards'}, {id:'id34', name:'With Blocks'}
-                ] 
-            },
-            { 
-                id: 'p31', name: 'Lunge (Anjaneyasana) Family', category: 'Standing', level: 'Beginner', 
-                variations: [
-                    {id:'v46', name:'Low Lunge'}, {id:'v47', name:'High Lunge'}, {id:'v48', name:'Twisted Lunge'}, 
-                    {id:'v49', name:'Crescent Lunge'}, {id:'v50', name:'Lunge Backbend'}, {id:'v53', name:'Dragon Quad Stretch'}
-                ] 
-            },
-            { 
-                id: 'p5', name: 'Downward Dog (Adho Mukha Svanasana)', category: 'Floor', level: 'Beginner', 
-                variations: [
-                    {id:'v28', name:'Three-Legged Dog'}, {id:'v29', name:'Crouching Dog'}, {id:'v30', name:'Hand to Ankle'}, 
-                    {id:'v31', name:'Dolphin Pose'}, {id:'v33', name:'With Blocks'}
-                ] 
-            },
-            { 
-                id: 'p34', name: 'Bridge (Setu Bandha) Family', category: 'Backbends', level: 'Beginner', 
-                variations: [
-                    {id:'v76', name:'Supported (Block)'}, {id:'v77', name:'One-Legged'}, {id:'v78', name:'With Strap'}, 
-                    {id:'v82', name:'Wheel Pose (Urdhva Dhanurasana)'}
-                ] 
-            },
-            { 
-                id: 'p37', name: 'Handstand (Adho Mukha Vrksasana)', category: 'Inversions', level: 'Advanced', 
-                variations: [
-                    {id:'v94', name:'Handstand at Wall'}, {id:'v95', name:'Handstand Kick-ups'}, 
-                    {id:'v96', name:'Handstand Scissor Legs'}, {id:'v97', name:'Handstand Tuck'}, 
-                    {id:'v98', name:'One-Handed Handstand'}, {id:'v99', name:'Handstand Lotus Legs'}
-                ] 
-            },
-            { 
-                id: 'p36', name: 'Crow (Bakasana) Family', category: 'Inversions', level: 'Advanced', 
-                variations: [
-                    {id:'v89', name:'Crane (Straight Arms)'}, {id:'v90', name:'Side Crow'}, 
-                    {id:'v91', name:'One-Legged Crow'}, {id:'v92', name:'Baby Crow (Forearms)'}
-                ] 
-            }
-        ];
+    // --- 1. STANDING & BALANCE (The Foundation) ---
+    { 
+        id: 'p1', name: 'Mountain (Tadasana) Family', category: 'Standing', level: 'Beginner', 
+        variations: [
+            {id:'v1', name:'Extended (Urdhva Hastasana)'}, {id:'v2', name:'Side Bend'}, {id:'v3', name:'On Toes'}, 
+            {id:'v4', name:'Cactus Arms'}, {id:'v5', name:'Eagle Arms'}, {id:'v6', name:'Cow Face Arms'}, 
+            {id:'v7', name:'Backbend'}, {id:'v8', name:'One-Legged Balance'}, {id:'v9', name:'Twist'}, 
+            {id:'v10', name:'Reverse Prayer'}, {id:'v11', name:'Wide Stance'}, {id:'v12', name:'With Block'}
+        ] 
+    },
+    { 
+        id: 'p2', name: 'Warrior I (Virabhadrasana I) Family', category: 'Standing', level: 'Beginner', 
+        variations: [
+            {id:'v13', name:'Humble'}, {id:'v14', name:'Eagle Arms'}, {id:'v15', name:'Airplane Arms'}, 
+            {id:'v16', name:'Cactus Arms'}, {id:'v17', name:'On Tip-Toes'}, {id:'v18', name:'Bound Hands'},
+            {id:'v19', name:'Cow Face Arms'}, {id:'v20', name:'With Block'}, {id:'v21', name:'Strap Behind Back'}
+        ] 
+    },
+    { 
+        id: 'p3', name: 'Warrior II Family', category: 'Standing', level: 'Beginner', 
+        variations: [
+            {id:'v22', name:'Reverse'}, {id:'v23', name:'Archer Arms'}, {id:'v24', name:'Reverse Prayer'}, 
+            {id:'v25', name:'One Hand on Heart'}, {id:'v26', name:'Bound (Baddha)'}, {id:'v27', name:'Straight Leg'},
+            {id:'v28', name:'Peaceful Warrior'}, {id:'v29', name:'With Chair Support'}
+        ] 
+    },
+    { 
+        id: 'p4', name: 'Warrior III Family', category: 'Standing', level: 'Intermediate', 
+        variations: [
+            {id:'v30', name:'Airplane Arms'}, {id:'v31', name:'Hands at Heart'}, {id:'v32', name:'Hands Forward'}, 
+            {id:'v33', name:'Hands Backwards'}, {id:'id34', name:'With Blocks'}, {id:'v35', name:'Supported against Wall'},
+            {id:'v36', name:'Crunch (Knee to Nose)'}, {id:'v37', name:'One Legged Squat'}
+        ] 
+    },
+
+    // --- 2. LUNGE & TRIANGLE (Lateral & Rotation) ---
+    { 
+        id: 'p30', name: 'Triangle (Trikonasana) Family', category: 'Standing', level: 'Intermediate', 
+        variations: [
+            {id:'v38', name:'Extended'}, {id:'v39', name:'Revolved (Parivrtta)'}, {id:'v40', name:'Bound'}, 
+            {id:'v41', name:'Half Bound'}, {id:'v42', name:'With Block'}, {id:'v43', name:'Hand to Shin'},
+            {id:'v44', name:'Arm Overhead'}, {id:'v45', name:'Wide Leg Triangle'}
+        ] 
+    },
+    { 
+        id: 'p31', name: 'Lunge (Anjaneyasana) Family', category: 'Standing', level: 'Beginner', 
+        variations: [
+            {id:'v46', name:'Low Lunge'}, {id:'v47', name:'High Lunge'}, {id:'v48', name:'Twisted Lunge'}, 
+            {id:'v49', name:'Crescent Lunge'}, {id:'v50', name:'Lunge Backbend'}, {id:'v51', name:'Lunge Side Stretch'},
+            {id:'v52', name:'Lunge Winged (Knee Out)'}, {id:'v53', name:'Lunge with Quad Stretch (Dragon)'}
+        ] 
+    },
+
+    // --- 3. SEATED & TWIST (The Yin & Restorative Focus) ---
+    { 
+        id: 'p32', name: 'Staff (Dandasana) Family', category: 'Seated', level: 'Beginner', 
+        variations: [
+            {id:'v54', name:'Forward Fold (Paschimottanasana)'}, {id:'v55', name:'One Legged Fold'}, {id:'v56', name:'With Strap'}, 
+            {id:'v57', name:'With Bolster'}, {id:'v58', name:'Seated Twist'}, {id:'v59', name:'Seated Side Bend'},
+            {id:'v60', name:'Hands Behind Back'}, {id:'v61', name:'Wide Legged (Upavistha)'}
+        ] 
+    },
+    { 
+        id: 'p33', name: 'Butterfly (Baddha Konasana) Family', category: 'Seated', level: 'Beginner', 
+        variations: [
+            {id:'v62', name:'Flapping Wings'}, {id:'v63', name:'Forward Fold'}, {id:'v64', name:'Reclined (Supta)'}, 
+            {id:'v65', name:'With Blocks under Knees'}, {id:'v66', name:'With Bolster Under Back'}, {id:'v67', name:'Star Pose'}
+        ] 
+    },
+
+    // --- 4. PRONE & BACKBEND (Heart Openers) ---
+    { 
+        id: 'p9', name: 'Cobra (Bhujangasana) Family', category: 'Backbends', level: 'Beginner', 
+        variations: [
+            {id:'v68', name:'Baby Cobra'}, {id:'v69', name:'Sphinx (Forearms)'}, {id:'v70', name:'Up-Dog'}, 
+            {id:'v71', name:'King Cobra'}, {id:'v72', name:'Seal (Arms Wide)'}, {id:'v73', name:'Twisting Cobra'},
+            {id:'v74', name:'Cobra on Finger Tips'}, {id:'v75', name:'Cobra with Blocks'}
+        ] 
+    },
+    { 
+        id: 'p34', name: 'Bridge (Setu Bandha) Family', category: 'Backbends', level: 'Beginner', 
+        variations: [
+            {id:'v76', name:'Supported (Block)'}, {id:'v77', name:'One-Legged'}, {id:'v78', name:'With Strap'}, 
+            {id:'v79', name:'Heels Lifted'}, {id:'v80', name:'Interlaced Hands'}, {id:'v81', name:'Dynamic (Flowing)'},
+            {id:'v82', name:'Wheel Pose (Urdhva Dhanurasana)'}
+        ] 
+    },
+
+    // --- 5. INVERSIONS & ARM BALANCES (Advanced) ---
+    { 
+        id: 'p35', name: 'Headstand (Sirsasana) Family', category: 'Backbends', level: 'Advanced', 
+        variations: [
+            {id:'v83', name:'Tripod'}, {id:'v84', name:'Bound Headstand'}, {id:'v85', name:'Eagle Legs'}, 
+            {id:'v86', name:'Lotus Legs'}, {id:'v87', name:'Half Headstand'}, {id:'v88', name:'Against Wall'}
+        ] 
+    },
+    { 
+        id: 'p36', name: 'Crow (Bakasana) Family', category: 'Core', level: 'Advanced', 
+        variations: [
+            {id:'v89', name:'Crane (Straight Arms)'}, {id:'v90', name:'Side Crow'}, {id:'v91', name:'One-Legged Crow'}, 
+            {id:'v92', name:'Baby Crow (Forearms)'}, {id:'v93', name:'Crow on Blocks'}
+        ] 
+    }
+];
 
         function App() {
             const [search, setSearch] = useState('');
             const [seq, setSeq] = useState({ flow: [] });
             const [activeLevel, setActiveLevel] = useState('Beginner');
             const [selectedCategory, setSelectedCategory] = useState('All Categories');
-            const [expandedPose, setExpandedPose] = useState(null);
-            
             const [globalHoldType, setGlobalHoldType] = useState('breath');
             const [globalHoldVal, setGlobalHoldVal] = useState(5);
+            const [classLimit, setClassLimit] = useState(60);
 
-            const addPose = (poseName, category, level) => {
+            const addPose = (pose) => {
                 setSeq(s => ({
                     ...s, 
-                    flow: [...s.flow, { 
-                        name: poseName, category, level,
-                        holdType: globalHoldType, holdVal: globalHoldVal, 
-                        tempId: Date.now() 
-                    }] 
+                    flow: [...s.flow, { ...pose, holdType: globalHoldType, holdVal: globalHoldVal, tempId: Date.now() }] 
                 }));
             };
 
@@ -140,47 +173,42 @@
                             <div className="w-10 h-10 bg-[#002b1d] rounded-full flex items-center justify-center text-white font-serif text-xl font-bold">P</div>
                             <h1 className="font-serif text-3xl text-[#002b1d]">Presence Yoga</h1>
                         </div>
-                        <button onClick={() => setSeq({flow: []})} className="text-xs text-slate-400 hover:text-red-500 uppercase tracking-tighter">Clear All</button>
                     </header>
 
                     <div className="flex flex-1 overflow-hidden">
                         <aside className="w-[360px] border-r overflow-y-auto bg-white p-7 space-y-7">
+                            {/* Global Defaults UI */}
                             <section className="space-y-4 bg-slate-50 p-4 rounded-2xl border border-slate-100">
                                 <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Global Default Hold</label>
                                 <div className="flex gap-2">
                                     <button onClick={() => {setGlobalHoldType('breath'); setGlobalHoldVal(5);}} className={`flex-1 py-2 method-btn ${globalHoldType === 'breath' ? 'active' : 'bg-white'}`}>🌬️ Breath</button>
                                     <button onClick={() => {setGlobalHoldType('time'); setGlobalHoldVal(30);}} className={`flex-1 py-2 method-btn ${globalHoldType === 'time' ? 'active' : 'bg-white'}`}>⏱️ Timed</button>
                                 </div>
+                                <input type="range" min={globalHoldType === 'breath' ? "1" : "10"} max={globalHoldType === 'breath' ? "20" : "300"} value={globalHoldVal} onChange={e => setGlobalHoldVal(parseInt(e.target.value))} />
                             </section>
 
+                            {/* Pose Library UI */}
                             <section className="space-y-4 pt-4 border-t">
-                                <div className="flex bg-slate-100 p-1 rounded-xl mb-3">
+                                <div className="flex bg-slate-100 p-1 rounded-xl">
                                     {['Beginner', 'Intermediate', 'Advanced'].map(lvl => (
                                         <button key={lvl} onClick={() => setActiveLevel(lvl)} className={`flex-1 py-1 text-[9px] rounded-lg ${activeLevel === lvl ? 'bg-white shadow-sm font-bold' : 'text-slate-400'}`}>{lvl}</button>
                                     ))}
                                 </div>
-                                <input type="text" placeholder="Search poses..." className="w-full p-2 text-sm italic border-b outline-none mb-2" onChange={e => setSearch(e.target.value)} />
-                                
-                                <div className="space-y-1">
+                                <select className="w-full p-2 border rounded-xl text-sm" value={selectedCategory} onChange={e => setSelectedCategory(e.target.value)}>
+                                    {["All Categories", "Standing", "Floor", "Core", "Backbends"].map(c => <option key={c}>{c}</option>)}
+                                </select>
+                                <input type="text" placeholder="Search poses..." className="w-full p-2 text-sm italic border-b outline-none" onChange={e => setSearch(e.target.value)} />
+                                <div className="space-y-3 pt-2">
                                     {filteredList.map(p => (
-                                        <div key={p.id} className="border-b border-slate-50 py-2">
-                                            <div className="flex justify-between items-center">
-                                                <div onClick={() => setExpandedPose(expandedPose === p.id ? null : p.id)} className="flex items-center gap-2 cursor-pointer text-sm font-semibold text-slate-700 hover:text-emerald-700 flex-1">
-                                                    <span className={`text-[10px] transition-transform ${expandedPose === p.id ? 'rotate-90' : ''}`}>▶</span>
-                                                    {p.name}
-                                                </div>
-                                                <button onClick={() => addPose(p.name, p.category, p.level)} className="text-emerald-500 hover:bg-emerald-50 px-2 rounded-lg font-bold text-lg">+</button>
+                                        <div key={p.id}>
+                                            <div onClick={() => addPose(p)} className="flex justify-between items-center cursor-pointer hover:text-emerald-600 font-semibold text-slate-700 text-sm">
+                                                <span>{p.name}</span><span>+</span>
                                             </div>
-                                            {expandedPose === p.id && (
-                                                <div className="ml-6 mt-2 space-y-2 border-l-2 border-emerald-50 pl-4">
-                                                    {p.variations.map(v => (
-                                                        <div key={v.id} className="flex justify-between items-center">
-                                                            <span className="text-[12px] text-slate-500 italic">{v.name}</span>
-                                                            <button onClick={() => addPose(`${p.name} (${v.name})`, p.category, p.level)} className="text-slate-300 hover:text-emerald-500 px-2">+</button>
-                                                        </div>
-                                                    ))}
+                                            {p.variations.map(v => (
+                                                <div key={v.id} onClick={() => addPose(v)} className="ml-4 pl-3 border-l-2 border-slate-50 text-[11px] text-slate-400 cursor-pointer flex justify-between hover:text-emerald-500">
+                                                    <span>• {v.name}</span><span>+</span>
                                                 </div>
-                                            )}
+                                            ))}
                                         </div>
                                     ))}
                                 </div>
@@ -191,9 +219,9 @@
                             <div className="max-w-3xl mx-auto space-y-10">
                                 <div className="flex justify-between items-center pb-4 border-b">
                                     <h2 className="font-serif text-4xl text-slate-800 font-bold">Sequence Builder</h2>
-                                    <div className="p-4 bg-emerald-50 border-emerald-100 rounded-2xl text-center">
+                                    <div className="p-4 bg-blue-50 border-blue-100 rounded-2xl text-center min-w-[140px]">
                                         <p className="text-[10px] font-bold uppercase text-slate-400">Total Est.</p>
-                                        <p className="text-2xl font-serif font-bold text-emerald-900">{estMinutes} min</p>
+                                        <p className="text-2xl font-serif font-bold text-blue-900">{estMinutes} / {classLimit} min</p>
                                     </div>
                                 </div>
 
@@ -205,14 +233,15 @@
                                         </div>
                                         <div className="grid grid-cols-2 gap-8">
                                             <div>
-                                                <div className="flex gap-2">
+                                                <label className="text-[10px] font-bold text-slate-400 uppercase">Hold Mode</label>
+                                                <div className="flex gap-2 mt-2">
                                                     <button onClick={() => updateItem(i, 'holdType', 'breath')} className={`flex-1 py-2 method-btn ${item.holdType === 'breath' ? 'active' : 'bg-white'}`}>🌬️ Breath</button>
                                                     <button onClick={() => updateItem(i, 'holdType', 'time')} className={`flex-1 py-2 method-btn ${item.holdType === 'time' ? 'active' : 'bg-white'}`}>⏱️ Timed</button>
                                                 </div>
                                             </div>
                                             <div>
-                                                <div className="flex justify-between text-[10px] font-bold uppercase mb-2">
-                                                    <label className="text-slate-400">Hold Duration</label>
+                                                <div className="flex justify-between text-[10px] font-bold uppercase">
+                                                    <label className="text-slate-400">Duration</label>
                                                     <span className="text-emerald-700">{item.holdVal} {item.holdType === 'breath' ? 'Breaths' : 'Sec'}</span>
                                                 </div>
                                                 <input type="range" min={item.holdType === 'breath' ? "1" : "5"} max={item.holdType === 'breath' ? "20" : "300"} value={item.holdVal} onChange={e => updateItem(i, 'holdVal', parseInt(e.target.value))} />
