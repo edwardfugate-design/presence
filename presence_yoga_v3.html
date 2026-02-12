@@ -26,31 +26,110 @@
 
         // MASTER LIBRARY: Combined from your previous JS files
         const POSE_LIBRARY = [
-            // STANDING
-            { id: 'p1', name: 'Mountain Pose', category: 'Standing', level: 'Beginner', variations: [{id:'v1', name:'Extended Mountain'}, {id:'v2', name:'Side Bend'}] },
-            { id: 'p2', name: 'Warrior I', category: 'Standing', level: 'Beginner', variations: [{id:'v4', name:'Humble Warrior'}, {id:'v5', name:'Eagle Arms'}] },
-            { id: 'p3', name: 'Warrior II', category: 'Standing', level: 'Beginner', variations: [{id:'v6', name:'Reverse Warrior'}] },
-            { id: 'p4', name: 'Warrior III', category: 'Standing', level: 'Intermediate', variations: [{id:'v8', name:'Airplane Arms'}] },
-            { id: 'p26', name: 'High Lunge', category: 'Standing', level: 'Beginner', variations: [{id:'v47', name:'Twisted Lunge'}] },
-            { id: 'p27', name: 'Dancer Pose', category: 'Standing', level: 'Advanced', variations: [{id:'v48', name:'Supported Dancer'}] },
-            
-            // FLOOR & RESTORATIVE
-            { id: 'p5', name: 'Downward Dog', category: 'Floor', level: 'Beginner', variations: [{id:'v10', name:'Three-Legged Dog'}] },
-            { id: 'p13', name: 'Child\'s Pose', category: 'Floor', level: 'Beginner', variations: [{id:'v29', name:'Thread the Needle'}] },
-            { id: 'p18', name: 'Pigeon Pose', category: 'Floor', level: 'Intermediate', variations: [{id:'v36', name:'Sleeping Pigeon'}] },
-            { id: 'p28', name: 'Savasana', category: 'Floor', level: 'Beginner', variations: [{id:'v49', name:'Savasana with Bolster'}] },
-            { id: 'p29', name: 'Legs Up Wall', category: 'Floor', level: 'Beginner', variations: [] },
-            
-            // BACKBENDS
-            { id: 'p9', name: 'Cobra', category: 'Backbends', level: 'Beginner', variations: [{id:'v20', name:'Upward Dog'}] },
-            { id: 'p22', name: 'Camel Pose', category: 'Backbends', level: 'Intermediate', variations: [] },
-            { id: 'p30', name: 'Fish Pose', category: 'Backbends', level: 'Intermediate', variations: [{id:'v50', name:'Supported Fish'}] },
-            
-            // CORE
-            { id: 'p7', name: 'Plank', category: 'Core', level: 'Beginner', variations: [{id:'v14', name:'Side Plank'}] },
-            { id: 'p11', name: 'Boat Pose', category: 'Core', level: 'Intermediate', variations: [] },
-            { id: 'p24', name: 'Cat-Cow', category: 'Core', level: 'Beginner', variations: [] }
-        ];
+    // --- 1. STANDING & BALANCE (The Foundation) ---
+    { 
+        id: 'p1', name: 'Mountain (Tadasana) Family', category: 'Standing', level: 'Beginner', 
+        variations: [
+            {id:'v1', name:'Extended (Urdhva Hastasana)'}, {id:'v2', name:'Side Bend'}, {id:'v3', name:'On Toes'}, 
+            {id:'v4', name:'Cactus Arms'}, {id:'v5', name:'Eagle Arms'}, {id:'v6', name:'Cow Face Arms'}, 
+            {id:'v7', name:'Backbend'}, {id:'v8', name:'One-Legged Balance'}, {id:'v9', name:'Twist'}, 
+            {id:'v10', name:'Reverse Prayer'}, {id:'v11', name:'Wide Stance'}, {id:'v12', name:'With Block'}
+        ] 
+    },
+    { 
+        id: 'p2', name: 'Warrior I (Virabhadrasana I) Family', category: 'Standing', level: 'Beginner', 
+        variations: [
+            {id:'v13', name:'Humble'}, {id:'v14', name:'Eagle Arms'}, {id:'v15', name:'Airplane Arms'}, 
+            {id:'v16', name:'Cactus Arms'}, {id:'v17', name:'On Tip-Toes'}, {id:'v18', name:'Bound Hands'},
+            {id:'v19', name:'Cow Face Arms'}, {id:'v20', name:'With Block'}, {id:'v21', name:'Strap Behind Back'}
+        ] 
+    },
+    { 
+        id: 'p3', name: 'Warrior II Family', category: 'Standing', level: 'Beginner', 
+        variations: [
+            {id:'v22', name:'Reverse'}, {id:'v23', name:'Archer Arms'}, {id:'v24', name:'Reverse Prayer'}, 
+            {id:'v25', name:'One Hand on Heart'}, {id:'v26', name:'Bound (Baddha)'}, {id:'v27', name:'Straight Leg'},
+            {id:'v28', name:'Peaceful Warrior'}, {id:'v29', name:'With Chair Support'}
+        ] 
+    },
+    { 
+        id: 'p4', name: 'Warrior III Family', category: 'Standing', level: 'Intermediate', 
+        variations: [
+            {id:'v30', name:'Airplane Arms'}, {id:'v31', name:'Hands at Heart'}, {id:'v32', name:'Hands Forward'}, 
+            {id:'v33', name:'Hands Backwards'}, {id:'id34', name:'With Blocks'}, {id:'v35', name:'Supported against Wall'},
+            {id:'v36', name:'Crunch (Knee to Nose)'}, {id:'v37', name:'One Legged Squat'}
+        ] 
+    },
+
+    // --- 2. LUNGE & TRIANGLE (Lateral & Rotation) ---
+    { 
+        id: 'p30', name: 'Triangle (Trikonasana) Family', category: 'Standing', level: 'Intermediate', 
+        variations: [
+            {id:'v38', name:'Extended'}, {id:'v39', name:'Revolved (Parivrtta)'}, {id:'v40', name:'Bound'}, 
+            {id:'v41', name:'Half Bound'}, {id:'v42', name:'With Block'}, {id:'v43', name:'Hand to Shin'},
+            {id:'v44', name:'Arm Overhead'}, {id:'v45', name:'Wide Leg Triangle'}
+        ] 
+    },
+    { 
+        id: 'p31', name: 'Lunge (Anjaneyasana) Family', category: 'Standing', level: 'Beginner', 
+        variations: [
+            {id:'v46', name:'Low Lunge'}, {id:'v47', name:'High Lunge'}, {id:'v48', name:'Twisted Lunge'}, 
+            {id:'v49', name:'Crescent Lunge'}, {id:'v50', name:'Lunge Backbend'}, {id:'v51', name:'Lunge Side Stretch'},
+            {id:'v52', name:'Lunge Winged (Knee Out)'}, {id:'v53', name:'Lunge with Quad Stretch (Dragon)'}
+        ] 
+    },
+
+    // --- 3. SEATED & TWIST (The Yin & Restorative Focus) ---
+    { 
+        id: 'p32', name: 'Staff (Dandasana) Family', category: 'Seated', level: 'Beginner', 
+        variations: [
+            {id:'v54', name:'Forward Fold (Paschimottanasana)'}, {id:'v55', name:'One Legged Fold'}, {id:'v56', name:'With Strap'}, 
+            {id:'v57', name:'With Bolster'}, {id:'v58', name:'Seated Twist'}, {id:'v59', name:'Seated Side Bend'},
+            {id:'v60', name:'Hands Behind Back'}, {id:'v61', name:'Wide Legged (Upavistha)'}
+        ] 
+    },
+    { 
+        id: 'p33', name: 'Butterfly (Baddha Konasana) Family', category: 'Seated', level: 'Beginner', 
+        variations: [
+            {id:'v62', name:'Flapping Wings'}, {id:'v63', name:'Forward Fold'}, {id:'v64', name:'Reclined (Supta)'}, 
+            {id:'v65', name:'With Blocks under Knees'}, {id:'v66', name:'With Bolster Under Back'}, {id:'v67', name:'Star Pose'}
+        ] 
+    },
+
+    // --- 4. PRONE & BACKBEND (Heart Openers) ---
+    { 
+        id: 'p9', name: 'Cobra (Bhujangasana) Family', category: 'Backbends', level: 'Beginner', 
+        variations: [
+            {id:'v68', name:'Baby Cobra'}, {id:'v69', name:'Sphinx (Forearms)'}, {id:'v70', name:'Up-Dog'}, 
+            {id:'v71', name:'King Cobra'}, {id:'v72', name:'Seal (Arms Wide)'}, {id:'v73', name:'Twisting Cobra'},
+            {id:'v74', name:'Cobra on Finger Tips'}, {id:'v75', name:'Cobra with Blocks'}
+        ] 
+    },
+    { 
+        id: 'p34', name: 'Bridge (Setu Bandha) Family', category: 'Backbends', level: 'Beginner', 
+        variations: [
+            {id:'v76', name:'Supported (Block)'}, {id:'v77', name:'One-Legged'}, {id:'v78', name:'With Strap'}, 
+            {id:'v79', name:'Heels Lifted'}, {id:'v80', name:'Interlaced Hands'}, {id:'v81', name:'Dynamic (Flowing)'},
+            {id:'v82', name:'Wheel Pose (Urdhva Dhanurasana)'}
+        ] 
+    },
+
+    // --- 5. INVERSIONS & ARM BALANCES (Advanced) ---
+    { 
+        id: 'p35', name: 'Headstand (Sirsasana) Family', category: 'Backbends', level: 'Advanced', 
+        variations: [
+            {id:'v83', name:'Tripod'}, {id:'v84', name:'Bound Headstand'}, {id:'v85', name:'Eagle Legs'}, 
+            {id:'v86', name:'Lotus Legs'}, {id:'v87', name:'Half Headstand'}, {id:'v88', name:'Against Wall'}
+        ] 
+    },
+    { 
+        id: 'p36', name: 'Crow (Bakasana) Family', category: 'Core', level: 'Advanced', 
+        variations: [
+            {id:'v89', name:'Crane (Straight Arms)'}, {id:'v90', name:'Side Crow'}, {id:'v91', name:'One-Legged Crow'}, 
+            {id:'v92', name:'Baby Crow (Forearms)'}, {id:'v93', name:'Crow on Blocks'}
+        ] 
+    }
+];
 
         function App() {
             const [search, setSearch] = useState('');
