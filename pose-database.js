@@ -177,7 +177,21 @@ const ALL_POSES = Object.entries(POSE_DATABASE).reduce((acc, [category, poses]) 
     return acc.concat(poses.map(pose => ({ ...pose, category })));
 }, []);
 
-// Export for use in vault
+// Flatten all poses into single searchable array
+const ALL_POSES = Object.entries(POSE_DATABASE).reduce((acc, [category, poses]) => {
+    return acc.concat(poses.map(pose => ({ ...pose, category })));
+}, []);
+
+// MAKE DATA VISIBLE TO THE STUDIO (CRITICAL)
+window.poseDatabase = POSE_DATABASE;
+window.yogaLibrary = { 
+    categories: Object.entries(POSE_DATABASE).map(([name, poses]) => ({
+        name: name.charAt(0).toUpperCase() + name.slice(1),
+        poses: poses
+    }))
+};
+
+// Keep this for compatibility
 if (typeof module !== 'undefined' && module.exports) {
     module.exports = { POSE_DATABASE, ALL_POSES };
 }
