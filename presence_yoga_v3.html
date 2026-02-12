@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Presence • Complete Pose Studio</title>
+    <title>Presence • Automated Pose Studio</title>
     
     <script src="https://cdn.tailwindcss.com"></script>
     <script crossorigin src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
@@ -15,12 +15,12 @@
         body { font-family: 'Inter', sans-serif; background-color: #fcfcfc; color: #334155; }
         .font-serif { font-family: 'Cormorant Garamond', serif; }
         .method-btn { transition: all 0.2s ease; border: 1px solid #e2e8f0; font-size: 11px; border-radius: 12px; }
-        .method-btn.active { background-color: #002b1d; color: white; border-color: #002b1d; font-weight: 600; box-shadow: 0 4px 10px rgba(0,0,0,0.1); }
+        .method-btn.active { background-color: #002b1d; color: white; border-color: #002b1d; font-weight: 600; box-shadow: 0 4px 8px rgba(0,0,0,0.1); }
+        .over-time { color: #dc2626 !important; animation: shake 0.5s ease-in-out; }
+        @keyframes shake { 0%, 100% { transform: translateX(0); } 25% { transform: translateX(-4px); } 75% { transform: translateX(4px); } }
         input[type=range] { -webkit-appearance: none; background: transparent; width: 100%; }
         input[type=range]::-webkit-slider-runnable-track { height: 4px; background: #e2e8f0; border-radius: 2px; }
         input[type=range]::-webkit-slider-thumb { -webkit-appearance: none; height: 18px; width: 18px; border-radius: 50%; background: #002b1d; cursor: pointer; margin-top: -7px; border: 2px solid white; box-shadow: 0 2px 4px rgba(0,0,0,0.1); }
-        .custom-scroll::-webkit-scrollbar { width: 4px; }
-        .custom-scroll::-webkit-scrollbar-thumb { background: #e2e8f0; border-radius: 10px; }
     </style>
 </head>
 <body>
@@ -29,94 +29,44 @@
     <script type="text/babel">
         const { useState } = React;
 
-        // EXPANDED INTERNAL DATABASE
         const POSE_LIBRARY = [
-            { 
-                id: 'p1', name: 'Mountain Pose (Tadasana)', category: 'Standing', level: 'Beginner', 
-                variations: [
-                    { id: 'v1', name: 'Extended Mountain (Urdhva Hastasana)' },
-                    { id: 'v2', name: 'Mountain with Side Bend' },
-                    { id: 'v3', name: 'Mountain with Backbend' }
-                ] 
-            },
-            { 
-                id: 'p2', name: 'Warrior I (Virabhadrasana I)', category: 'Standing', level: 'Beginner', 
-                variations: [
-                    { id: 'v4', name: 'Humble Warrior' },
-                    { id: 'v5', name: 'Warrior I with Eagle Arms' }
-                ] 
-            },
-            { 
-                id: 'p3', name: 'Warrior II (Virabhadrasana II)', category: 'Standing', level: 'Beginner', 
-                variations: [
-                    { id: 'v6', name: 'Reverse Warrior (Viparita Virabhadrasana)' },
-                    { id: 'v7', name: 'Warrior II with Archer Arms' }
-                ] 
-            },
-            { 
-                id: 'p4', name: 'Downward Facing Dog', category: 'Floor', level: 'Beginner', 
-                variations: [
-                    { id: 'v8', name: 'Three-Legged Dog' },
-                    { id: 'v9', name: 'Turbo Dog' },
-                    { id: 'v10', name: 'Down Dog with Twisted Reach' }
-                ] 
-            },
-            { 
-                id: 'p5', name: 'Triangle Pose (Trikonasana)', category: 'Standing', level: 'Beginner', 
-                variations: [
-                    { id: 'v11', name: 'Revolved Triangle' },
-                    { id: 'v12', name: 'Bound Triangle' }
-                ] 
-            },
-            { 
-                id: 'p6', name: 'Plank Pose', category: 'Core', level: 'Intermediate', 
-                variations: [
-                    { id: 'v13', name: 'Side Plank (Vasisthasana)' },
-                    { id: 'v14', name: 'Forearm Plank' },
-                    { id: 'v15', name: 'Plank with Knee to Nose' }
-                ] 
-            },
-            { 
-                id: 'p7', name: 'Tree Pose (Vrksasana)', category: 'Standing', level: 'Beginner', 
-                variations: [
-                    { id: 'v16', name: 'Tree with Prayer Hands' },
-                    { id: 'v17', name: 'Tree with Swaying Branches' }
-                ] 
-            },
-            { 
-                id: 'p8', name: 'Child\'s Pose (Balasana)', category: 'Floor', level: 'Beginner', 
-                variations: [
-                    { id: 'v18', name: 'Extended Child\'s Pose' },
-                    { id: 'v19', name: 'Child\'s Pose with Side Stretch' }
-                ] 
-            },
-            { 
-                id: 'p9', name: 'Cobra Pose (Bhujangasana)', category: 'Backbends', level: 'Beginner', 
-                variations: [
-                    { id: 'v20', name: 'Baby Cobra' },
-                    { id: 'v21', name: 'Upward Facing Dog' }
-                ] 
-            }
+            { id: 'p1', name: 'Mountain Pose (Tadasana)', category: 'Standing', level: 'Beginner', variations: [{ id: 'v1', name: 'Extended Mountain' }, { id: 'v2', name: 'Mountain Side Bend' }] },
+            { id: 'p2', name: 'Warrior I (Virabhadrasana I)', category: 'Standing', level: 'Beginner', variations: [{ id: 'v4', name: 'Humble Warrior' }] },
+            { id: 'p3', name: 'Warrior II (Virabhadrasana II)', category: 'Standing', level: 'Beginner', variations: [{ id: 'v6', name: 'Reverse Warrior' }] },
+            { id: 'p4', name: 'Downward Facing Dog', category: 'Floor', level: 'Beginner', variations: [{ id: 'v8', name: 'Three-Legged Dog' }] },
+            { id: 'p5', name: 'Triangle Pose (Trikonasana)', category: 'Standing', level: 'Beginner', variations: [{ id: 'v11', name: 'Revolved Triangle' }] },
+            { id: 'p6', name: 'Plank Pose', category: 'Core', level: 'Intermediate', variations: [{ id: 'v13', name: 'Side Plank' }] },
+            { id: 'p7', name: 'Tree Pose (Vrksasana)', category: 'Standing', level: 'Beginner', variations: [{ id: 'v16', name: 'Tree with Prayer Hands' }] },
+            { id: 'p8', name: 'Child\'s Pose (Balasana)', category: 'Floor', level: 'Beginner', variations: [{ id: 'v18', name: 'Extended Child\'s Pose' }] },
+            { id: 'p9', name: 'Cobra Pose (Bhujangasana)', category: 'Backbends', level: 'Beginner', variations: [{ id: 'v21', name: 'Upward Facing Dog' }] }
         ];
-
-        const CATEGORIES = ["All Categories", "Standing", "Seated", "Floor", "Core", "Backbends", "Inversions"];
 
         function App() {
             const [search, setSearch] = useState('');
             const [seq, setSeq] = useState({ flow: [] });
             const [activeLevel, setActiveLevel] = useState('Beginner');
             const [selectedCategory, setSelectedCategory] = useState('All Categories');
+            
+            const [globalHoldType, setGlobalHoldType] = useState('breath');
+            const [globalHoldVal, setGlobalHoldVal] = useState(5);
+            const [classLimit, setClassLimit] = useState(60);
 
             const addPose = (pose) => {
                 setSeq(s => ({
                     ...s, 
-                    flow: [...s.flow, { ...pose, holdType: 'breath', holdVal: 5, tempId: Date.now() }] 
+                    flow: [...s.flow, { 
+                        ...pose, 
+                        holdType: globalHoldType, 
+                        holdVal: globalHoldVal, 
+                        tempId: Date.now() 
+                    }] 
                 }));
             };
 
             const updateItem = (index, field, value) => {
                 const newFlow = [...seq.flow];
                 if (field === 'holdType') {
+                    // Logic to reset value to a sensible default when switching modes locally
                     newFlow[index].holdVal = (value === 'breath') ? 5 : 30;
                 }
                 newFlow[index][field] = value;
@@ -130,6 +80,13 @@
                 return matchesSearch && matchesLevel && matchesCategory;
             });
 
+            const estMinutes = Math.round(seq.flow.reduce((acc, item) => {
+                const holdInSeconds = (item.holdType === 'breath' ? item.holdVal * 6 : parseInt(item.holdVal));
+                return acc + holdInSeconds + 5; // Including 5s transition
+            }, 0) / 60);
+
+            const isOverTime = estMinutes > classLimit;
+
             return (
                 <div className="flex flex-col h-screen overflow-hidden">
                     <header className="p-6 border-b flex items-center justify-between bg-white z-10 shadow-sm">
@@ -140,33 +97,52 @@
                     </header>
 
                     <div className="flex flex-1 overflow-hidden">
-                        <aside className="w-[360px] border-r overflow-y-auto bg-white p-7 space-y-7 custom-scroll">
-                            <section className="space-y-4">
-                                <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Level</label>
-                                <div className="flex bg-slate-100 p-1 rounded-xl">
-                                    {['Beginner', 'Intermediate', 'Advanced'].map(lvl => (
-                                        <button key={lvl} onClick={() => setActiveLevel(lvl)} className={`flex-1 py-1.5 text-[10px] rounded-lg ${activeLevel === lvl ? 'bg-white shadow-sm font-bold' : 'text-slate-400'}`}>{lvl}</button>
-                                    ))}
+                        <aside className="w-[360px] border-r overflow-y-auto bg-white p-7 space-y-7">
+                            <section className="space-y-4 bg-slate-50 p-4 rounded-2xl border border-slate-100">
+                                <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Global Default Hold</label>
+                                <div className="flex gap-2">
+                                    <button onClick={() => {setGlobalHoldType('breath'); setGlobalHoldVal(5);}} className={`flex-1 py-2 method-btn ${globalHoldType === 'breath' ? 'active' : 'bg-white'}`}>🌬️ Breath</button>
+                                    <button onClick={() => {setGlobalHoldType('time'); setGlobalHoldVal(30);}} className={`flex-1 py-2 method-btn ${globalHoldType === 'time' ? 'active' : 'bg-white'}`}>⏱️ Timed</button>
                                 </div>
+                                <div className="space-y-1">
+                                    <div className="flex justify-between text-[10px] font-bold uppercase">
+                                        <span>Value</span>
+                                        <span className="text-emerald-700">{globalHoldVal} {globalHoldType === 'breath' ? 'Breaths' : 'Sec'}</span>
+                                    </div>
+                                    <input type="range" min={globalHoldType === 'breath' ? "1" : "10"} max={globalHoldType === 'breath' ? "20" : "300"} step={globalHoldType === 'breath' ? "1" : "5"} value={globalHoldVal} onChange={e => setGlobalHoldVal(parseInt(e.target.value))} />
+                                </div>
+                            </section>
+
+                            <section className="space-y-4">
+                                <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Target Class Duration</label>
+                                <div className="flex justify-between text-[10px] font-bold uppercase">
+                                    <span>Goal</span>
+                                    <span className="text-blue-600">{classLimit} min</span>
+                                </div>
+                                <input type="range" min="15" max="120" step="5" value={classLimit} onChange={e => setClassLimit(parseInt(e.target.value))} />
                             </section>
 
                             <section className="space-y-4 pt-4 border-t">
                                 <h3 className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Pose Library</h3>
-                                <select className="w-full p-2.5 border rounded-xl text-sm" value={selectedCategory} onChange={e => setSelectedCategory(e.target.value)}>
-                                    {CATEGORIES.map(c => <option key={c}>{c}</option>)}
+                                <div className="flex bg-slate-100 p-1 rounded-xl mb-3">
+                                    {['Beginner', 'Intermediate', 'Advanced'].map(lvl => (
+                                        <button key={lvl} onClick={() => setActiveLevel(lvl)} className={`flex-1 py-1 text-[9px] rounded-lg ${activeLevel === lvl ? 'bg-white shadow-sm font-bold' : 'text-slate-400'}`}>{lvl}</button>
+                                    ))}
+                                </div>
+                                <select className="w-full p-2 border rounded-xl text-sm" value={selectedCategory} onChange={e => setSelectedCategory(e.target.value)}>
+                                    {["All Categories", "Standing", "Seated", "Floor", "Core", "Backbends"].map(c => <option key={c}>{c}</option>)}
                                 </select>
                                 <input type="text" placeholder="Search..." className="w-full p-2 text-sm italic border-b outline-none" onChange={e => setSearch(e.target.value)} />
                                 
-                                <div className="space-y-4 pt-2">
+                                <div className="space-y-3 pt-2">
                                     {filteredList.map(p => (
                                         <div key={p.id}>
                                             <div onClick={() => addPose(p)} className="flex justify-between items-center cursor-pointer hover:text-emerald-600 font-semibold text-slate-700 text-sm">
                                                 <span>{p.name}</span>
                                                 <span className="text-slate-200">+</span>
                                             </div>
-                                            {/* NESTED SUBCATEGORIES RESTORED */}
                                             {p.variations && p.variations.map(v => (
-                                                <div key={v.id} onClick={() => addPose(v)} className="ml-4 pl-3 border-l-2 border-slate-50 text-[11px] text-slate-400 cursor-pointer flex justify-between hover:text-emerald-500 hover:border-emerald-500 transition-all">
+                                                <div key={v.id} onClick={() => addPose(v)} className="ml-4 pl-3 border-l-2 border-slate-50 text-[11px] text-slate-400 cursor-pointer flex justify-between hover:text-emerald-500 transition-all">
                                                     <span>• {v.name}</span>
                                                     <span>+</span>
                                                 </div>
@@ -179,7 +155,16 @@
 
                         <main className="flex-1 overflow-y-auto p-12 bg-[#fafafa]">
                             <div className="max-w-3xl mx-auto space-y-10">
-                                <h2 className="font-serif text-4xl text-slate-800 font-bold">Sequence Builder</h2>
+                                <div className="flex justify-between items-center pb-4 border-b">
+                                    <h2 className="font-serif text-4xl text-slate-800 font-bold">Sequence Builder</h2>
+                                    <div className={`p-4 rounded-2xl border transition-all text-center min-w-[140px] ${isOverTime ? 'bg-red-50 border-red-200 over-time' : 'bg-blue-50 border-blue-100'}`}>
+                                        <p className="text-[10px] font-bold uppercase tracking-widest text-slate-400">Total Est.</p>
+                                        <p className={`text-2xl font-serif font-bold ${isOverTime ? 'text-red-600' : 'text-blue-900'}`}>
+                                            {estMinutes} / {classLimit} min
+                                        </p>
+                                    </div>
+                                </div>
+
                                 {seq.flow.map((item, i) => (
                                     <div key={item.tempId} className="bg-white rounded-[2.5rem] p-9 shadow-sm border border-slate-200 space-y-8">
                                         <div className="flex justify-between items-center">
@@ -189,7 +174,7 @@
 
                                         <div className="grid grid-cols-1 md:grid-cols-2 gap-10">
                                             <div className="space-y-4">
-                                                <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Hold Method</label>
+                                                <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Override This Pose</label>
                                                 <div className="flex gap-2">
                                                     <button onClick={() => updateItem(i, 'holdType', 'breath')} className={`flex-1 py-3 method-btn ${item.holdType === 'breath' ? 'active' : 'bg-white text-slate-400'}`}>🌬️ Breath</button>
                                                     <button onClick={() => updateItem(i, 'holdType', 'time')} className={`flex-1 py-3 method-btn ${item.holdType === 'time' ? 'active' : 'bg-white text-slate-400'}`}>⏱️ Timed</button>
@@ -198,7 +183,7 @@
 
                                             <div className="space-y-4">
                                                 <div className="flex justify-between text-[10px] font-bold uppercase tracking-widest">
-                                                    <label className="text-slate-400">Duration</label>
+                                                    <label className="text-slate-400">Custom Duration</label>
                                                     <span className="text-emerald-700 font-bold">{item.holdVal} {item.holdType === 'breath' ? 'Breaths' : 'Sec'}</span>
                                                 </div>
                                                 <input 
