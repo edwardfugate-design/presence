@@ -21,6 +21,7 @@
         .gap-4 { gap: 1rem; }
         .gap-8 { gap: 2rem; }
         .justify-between { justify-content: space-between; }
+        .mb-12 { margin-bottom: 3rem; }
         .mb-16 { margin-bottom: 4rem; }
         .text-6xl { font-size: 3.75rem; line-height: 1; }
         .italic { font-style: italic; }
@@ -35,13 +36,11 @@
         @media (min-width: 640px) { .sm:grid-cols-3 { grid-template-columns: repeat(3, minmax(0, 1fr)); } .md:p-12 { padding: 3rem; } .md:flex-row { flex-direction: row; } }
         @media (min-width: 1024px) { .lg:grid-cols-4 { grid-template-columns: repeat(4, minmax(0, 1fr)); } }
         
-        /* Debug Toast */
-        #debug-log { position: fixed; top: 10px; right: 10px; font-size: 10px; color: red; background: white; padding: 5px; z-index: 10000; pointer-events: none; }
+        button { border: none; background: none; cursor: pointer; -webkit-tap-highlight-color: transparent; }
     </style>
     <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@300;400;600&display=swap" rel="stylesheet">
 </head>
 <body>
-    <div id="debug-log"></div>
     <div class="loading-screen" id="loadingScreen">
         <div style="text-align: center;">
             <p style="font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.1em; opacity: 0.5;">Presence</p>
@@ -51,78 +50,90 @@
     <div id="root"></div>
 
     <script>
-        const log = (msg) => { document.getElementById('debug-log').innerText = msg; console.log(msg); };
-
         const MASTER_LIBRARY = {
             "🌧️ Weather": [
-                { id: 'rain', n: 'Rainfall', urls: ['https://cdn.freesound.org/previews/344/344430_5121236-lq.mp3'] },
-                { id: 'thunder', n: 'Thunder', urls: ['https://cdn.freesound.org/previews/162/162476_2394245-lq.mp3'] }
+                { id: 'light-rain', n: 'Light Rain', urls: ['https://cdn.freesound.org/previews/344/344430_5121236-lq.mp3'] },
+                { id: 'heavy-rain', n: 'Heavy Rain', urls: ['https://cdn.freesound.org/previews/243/243627_5121236-lq.mp3'] },
+                { id: 'thunder', n: 'Thunder Storm', urls: ['https://cdn.freesound.org/previews/162/162476_2394245-lq.mp3'] },
+                { id: 'wind', n: 'Gentle Wind', urls: ['https://cdn.freesound.org/previews/234/234226_1648170-lq.mp3'] }
             ],
             "🌊 Water": [
-                { id: 'ocean', n: 'Ocean Waves', urls: ['https://cdn.freesound.org/previews/180/180493_3283808-lq.mp3'] }
+                { id: 'ocean', n: 'Ocean Calm', urls: ['https://cdn.freesound.org/previews/180/180493_3283808-lq.mp3'] },
+                { id: 'river', n: 'River Flow', urls: ['https://cdn.freesound.org/previews/255/255537_4486188-lq.mp3'] },
+                { id: 'waterfall', n: 'Waterfall', urls: ['https://cdn.freesound.org/previews/257/257181_4486188-lq.mp3'] }
+            ],
+            "🌲 Earth": [
+                { id: 'forest', n: 'Forest', urls: ['https://cdn.freesound.org/previews/416/416062_5121236-lq.mp3'] },
+                { id: 'jungle', n: 'Jungle Night', urls: ['https://cdn.freesound.org/previews/447/447912_5674468-lq.mp3'] }
+            ],
+            "🐦 Life": [
+                { id: 'birds', n: 'Morning Birds', urls: ['https://cdn.freesound.org/previews/447/447912_5674468-lq.mp3'] },
+                { id: 'crickets', n: 'Crickets', urls: ['https://cdn.freesound.org/previews/412/412068_6975646-lq.mp3'] }
             ],
             "🔥 Fire": [
-                { id: 'fire', n: 'Campfire', urls: ['https://cdn.freesound.org/previews/320/320321_527080-lq.mp3'] }
+                { id: 'campfire', n: 'Campfire', urls: ['https://cdn.freesound.org/previews/320/320321_527080-lq.mp3'] }
+            ],
+            "🧘 Purity": [
+                { id: 'white', n: 'White Noise', urls: ['https://cdn.freesound.org/previews/360/360602_5121236-lq.mp3'] },
+                { id: 'brown', n: 'Brown Noise', urls: ['https://cdn.freesound.org/previews/360/360601_5121236-lq.mp3'] }
+            ],
+            "🏙️ Urban": [
+                { id: 'city', n: 'City Hum', urls: ['https://cdn.freesound.org/previews/268/268903_4548252-lq.mp3'] },
+                { id: 'subway', n: 'Subway Rumble', urls: ['https://cdn.freesound.org/previews/207/207924_624691-lq.mp3'] }
+            ],
+            "☕ Indoor": [
+                { id: 'cafe', n: 'Café Murmur', urls: ['https://cdn.freesound.org/previews/547/547662_9879924-lq.mp3'] },
+                { id: 'library', n: 'Library', urls: ['https://cdn.freesound.org/previews/350/350359_6264898-lq.mp3'] }
+            ],
+            "🏠 Domestic": [
+                { id: 'fan', n: 'Ceiling Fan', urls: ['https://cdn.freesound.org/previews/320/320398_527080-lq.mp3'] },
+                { id: 'clock', n: 'Clock Tick', urls: ['https://cdn.freesound.org/previews/350/350359_6264898-lq.mp3'] }
+            ],
+            "🌙 Night": [
+                { id: 'midnight', n: 'Midnight Rain', urls: ['https://cdn.freesound.org/previews/416/416710_5121236-lq.mp3'] }
             ]
         };
 
         const AudioEngine = {
-            ctx: null,
-            activeLayers: new Map(), // soundId -> HTMLAudioElement
-
-            init() {
-                if (!this.ctx) {
-                    this.ctx = new (window.AudioContext || window.webkitAudioContext)();
-                }
-                if (this.ctx.state === 'suspended') this.ctx.resume();
-            },
+            activeLayers: new Map(), // id -> Audio object
 
             toggle(soundId) {
-                this.init();
-                
                 if (this.activeLayers.has(soundId)) {
                     const audio = this.activeLayers.get(soundId);
                     audio.pause();
                     this.activeLayers.delete(soundId);
-                    log(`Stopped: ${soundId}`);
                 } else {
                     const sound = Object.values(MASTER_LIBRARY).flat().find(s => s.id === soundId);
                     const audio = new Audio(sound.urls[0]);
                     audio.loop = true;
                     audio.crossOrigin = "anonymous";
                     
-                    // The "Non-Looping" secret: random start time
+                    // The "Non-Looping" Logic
                     audio.addEventListener('loadedmetadata', () => {
                         audio.currentTime = Math.random() * audio.duration;
                     });
 
-                    const playPromise = audio.play();
-                    if (playPromise !== undefined) {
-                        playPromise.then(_ => {
-                            this.activeLayers.set(soundId, audio);
-                            log(`Playing: ${soundId}`);
-                        }).catch(e => {
-                            log(`Error: Click again to unlock audio.`);
-                        });
-                    }
+                    audio.play().catch(() => {
+                        console.log("Interaction required to start audio.");
+                    });
+                    this.activeLayers.set(soundId, audio);
                 }
             },
 
             stopAll() {
-                this.activeLayers.forEach(audio => audio.pause());
+                this.activeLayers.forEach(a => a.pause());
                 this.activeLayers.clear();
             }
         };
 
-        let state = { category: "🌧️ Weather", activeIds: [], signal: 'Neutral' };
+        let state = { category: "🌧️ Weather", activeIds: [] };
 
         function render() {
             const root = document.getElementById('root');
-            const auraColor = state.signal === 'Focus' ? '#fef3c7' : state.signal === 'Rest' ? '#dbeafe' : '#e0e7ff';
             
             root.innerHTML = `
                 <div class="min-h-screen p-6 md:p-12 max-w-5xl mx-auto pb-40">
-                    <div class="aura-field" style="background: ${auraColor};"></div>
+                    <div class="aura-field" style="background: #e0e7ff;"></div>
                     
                     <header class="flex flex-col md:flex-row justify-between items-start mb-16 gap-8">
                         <div>
@@ -133,7 +144,7 @@
 
                     <nav class="flex gap-8 mb-12 overflow-x-auto hide-scrollbar" style="border-bottom: 1px solid rgba(0,0,0,0.05);">
                         ${Object.keys(MASTER_LIBRARY).map(c => `
-                            <button onclick="setCategory('${c}')" style="padding-bottom: 1.25rem; font-size: 0.688rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.2em; white-space: nowrap; border:none; background:none; ${state.category === c ? 'border-bottom: 2px solid black; opacity: 1;' : 'opacity: 0.2;'}">${c}</button>
+                            <button onclick="setCategory('${c}')" style="padding-bottom: 1.25rem; font-size: 0.688rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.2em; white-space: nowrap; ${state.category === c ? 'border-bottom: 2px solid black; opacity: 1;' : 'opacity: 0.2;'}">${c}</button>
                         `).join('')}
                     </nav>
 
@@ -141,11 +152,11 @@
                         ${MASTER_LIBRARY[state.category].map(s => {
                             const isActive = state.activeIds.includes(s.id);
                             return `
-                            <button onclick="handleToggle('${s.id}')" style="padding: 1.5rem; border-radius: 2rem; border:none; text-align: left; transition: all 0.4s; height: 8rem; display: flex; flex-direction: column; justify-content: space-between; cursor:pointer; ${isActive ? 'background: white; box-shadow: 0 20px 40px rgba(0,0,0,0.1);' : 'background: rgba(255,255,255,0.4);'}">
+                            <button onclick="handleToggle('${s.id}')" style="padding: 1.5rem; border-radius: 2rem; text-align: left; transition: all 0.4s; height: 8rem; display: flex; flex-direction: column; justify-content: space-between; ${isActive ? 'background: white; box-shadow: 0 20px 40px rgba(0,0,0,0.1);' : 'background: rgba(255,255,255,0.4);'}">
                                 <div style="width: 0.5rem; height: 0.5rem; border-radius: 9999px; ${isActive ? 'background: #6366f1;' : 'background: rgba(0,0,0,0.1);'}"></div>
                                 <div>
                                     <h3 style="font-size: 0.875rem; font-weight: 600;">${s.n}</h3>
-                                    <p style="font-size: 0.563rem; opacity: 0.3; text-transform: uppercase;">${isActive ? 'Active' : 'Tap to Mix'}</p>
+                                    <p style="font-size: 0.563rem; opacity: 0.3; text-transform: uppercase;">${isActive ? 'Active' : 'Add to Mix'}</p>
                                 </div>
                             </button>
                         `}).join('')}
@@ -153,10 +164,8 @@
 
                     ${state.activeIds.length > 0 ? `
                         <div class="fixed bottom-10" style="left: 50%; transform: translateX(-50%); width: 90%; max-width: 28rem; background: rgba(255,255,255,0.95); backdrop-filter: blur(40px); padding: 1.5rem; border-radius: 2.5rem; box-shadow: 0 25px 50px -12px rgba(0,0,0,0.25); display: flex; justify-content: space-between; align-items: center;">
-                            <div>
-                                <p style="font-weight: 500; font-size: 0.875rem;">${state.activeIds.length} Layers Active</p>
-                            </div>
-                            <button onclick="handleStopAll()" style="background: black; color: white; padding: 0.75rem 2rem; border-radius: 9999px; font-size: 0.625rem; font-weight: 700; text-transform: uppercase; border:none; cursor:pointer;">Clear All</button>
+                            <p style="font-weight: 500; font-size: 0.875rem;">${state.activeIds.length} Layers Active</p>
+                            <button onclick="handleStopAll()" style="background: black; color: white; padding: 0.75rem 2rem; border-radius: 9999px; font-size: 0.625rem; font-weight: 700; text-transform: uppercase;">Stop All</button>
                         </div>
                     ` : ''}
                 </div>
@@ -183,9 +192,8 @@
 
         window.addEventListener('DOMContentLoaded', () => {
             render();
-            setTimeout(() => document.getElementById('loadingScreen').classList.add('hidden'), 500);
+            setTimeout(() => document.getElementById('loadingScreen').classList.add('hidden'), 300);
         });
     </script>
 </body>
 </html>
-
