@@ -5,9 +5,6 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Presence • Drishti AI Studio</title>
     
-    <script src="pose-database.js"></script>
-    <script src="yoga-library-with-variations.js"></script>
-
     <script src="https://cdn.tailwindcss.com"></script>
     <script crossorigin src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
     <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
@@ -18,59 +15,62 @@
         body { font-family: 'Inter', sans-serif; background-color: #fcfcfc; color: #334155; }
         .font-serif { font-family: 'Cormorant Garamond', serif; }
         .method-btn { transition: all 0.2s ease; border: 1px solid #e2e8f0; font-size: 11px; border-radius: 12px; }
-        .method-btn.active { background-color: #002b1d; color: white; border-color: #002b1d; font-weight: 600; }
+        .method-btn.active { background-color: #002b1d; color: white; border-color: #002b1d; font-weight: 600; box-shadow: 0 4px 10px rgba(0,0,0,0.1); }
         input[type=range] { -webkit-appearance: none; background: transparent; width: 100%; }
         input[type=range]::-webkit-slider-runnable-track { height: 4px; background: #e2e8f0; border-radius: 2px; }
         input[type=range]::-webkit-slider-thumb { -webkit-appearance: none; height: 18px; width: 18px; border-radius: 50%; background: #002b1d; cursor: pointer; margin-top: -7px; border: 2px solid white; box-shadow: 0 2px 4px rgba(0,0,0,0.1); }
+        .custom-scroll::-webkit-scrollbar { width: 4px; }
+        .custom-scroll::-webkit-scrollbar-thumb { background: #e2e8f0; border-radius: 10px; }
     </style>
 </head>
 <body>
     <div id="root"></div>
 
     <script type="text/babel">
-        const { useState, useEffect } = React;
+        const { useState } = React;
+
+        // INTERNAL POSE DATABASE
+        const POSE_LIBRARY = [
+            { id: 'p1', name: 'Mountain Pose (Tadasana)', category: 'Standing', level: 'Beginner', variations: [{ id: 'v1', name: 'Extended Mountain' }, { id: 'v2', name: 'Mountain Side Bend' }] },
+            { id: 'p2', name: 'Warrior I', category: 'Standing', level: 'Beginner', variations: [{ id: 'v3', name: 'Warrior I Humble Grip' }] },
+            { id: 'p3', name: 'Warrior II', category: 'Standing', level: 'Beginner', variations: [{ id: 'v4', name: 'Reverse Warrior' }] },
+            { id: 'p4', name: 'Downward Dog', category: 'Floor', level: 'Beginner', variations: [{ id: 'v5', name: 'Three-Legged Dog' }] },
+            { id: 'p5', name: 'Staff Pose (Dandasana)', category: 'Seated', level: 'Beginner', variations: [{ id: 'v6', name: 'Seated Forward Fold' }] },
+            { id: 'p6', name: 'Plank Pose', category: 'Core', level: 'Intermediate', variations: [{ id: 'v7', name: 'Side Plank' }] },
+            { id: 'p7', name: 'Cobra Pose', category: 'Backbends', level: 'Beginner', variations: [{ id: 'v8', name: 'Upward Facing Dog' }] },
+            { id: 'p8', name: 'Headstand', category: 'Inversions', level: 'Advanced', variations: [{ id: 'v9', name: 'Forearm Stand' }] }
+        ];
+
+        const YOGA_STYLES = ["Drishti Yoga", "Hatha", "Ashtanga", "Iyengar", "Kundalini", "Vinyasa Flow", "Power Yoga", "Yin Yoga", "Restorative", "Gentle Yoga", "Somatic Yoga"];
+        const CATEGORIES = ["All Categories", "Standing", "Seated", "Floor", "Core", "Backbends", "Inversions", "Restorative"];
+        const DRISHTI_POINTS = [
+            { name: "Nasagrai", focus: "Tip of the Nose" },
+            { name: "Ajna", focus: "Third Eye" },
+            { name: "Nabi Chakra", focus: "Navel" },
+            { name: "Hastagrai", focus: "Hand" },
+            { name: "Padayoragrai", focus: "Toes" },
+            { name: "Parsva", focus: "Sideways" },
+            { name: "Angusthamadhye", focus: "Thumbs" },
+            { name: "Urdhva", focus: "Upward" }
+        ];
 
         function App() {
-            const [library, setLibrary] = useState({});
             const [search, setSearch] = useState('');
             const [seq, setSeq] = useState({ flow: [] });
             const [activeLevel, setActiveLevel] = useState('Beginner');
             const [selectedCategory, setSelectedCategory] = useState('All Categories');
+            const [selectedStyle, setSelectedStyle] = useState('Drishti Yoga');
+            const [aiDuration, setAiDuration] = useState(60);
 
-            const drishtiPoints = [
-                { name: "Nasagrai", focus: "Tip of the Nose" },
-                { name: "Ajna", focus: "Third Eye" },
-                { name: "Nabi Chakra", focus: "Navel" },
-                { name: "Hastagrai", focus: "Hand" },
-                { name: "Padayoragrai", focus: "Toes" },
-                { name: "Parsva", focus: "Sideways" },
-                { name: "Angusthamadhye", focus: "Thumbs" },
-                { name: "Urdhva", focus: "Upward" }
-            ];
-
-            useEffect(() => {
-                const syncData = () => {
-                    // Try to load external data, otherwise use a fallback sample for testing
-                    let data = window.allPoses || window.yogaLibraryVariations || [
-                        { id: 'sample1', name: 'Mountain Pose', category: 'Standing', level: 'Beginner', variations: [{id: 'v1', name: 'Extended Mountain'}] }
-                    ];
-                    const dict = {};
-                    data.forEach(p => { if(p.id) dict[p.id] = p; });
-                    setLibrary(dict);
-                };
-                syncData();
-            }, []);
-
-            const addPose = (id) => {
+            const addPose = (pose) => {
                 setSeq(s => ({
                     ...s, 
-                    flow: [...s.flow, { id, holdType: 'breath', holdVal: 5, drishti: "Nasagrai" }] 
+                    flow: [...s.flow, { ...pose, holdType: 'breath', holdVal: 5, drishti: "Nasagrai", tempId: Date.now() }] 
                 }));
             };
 
             const updateItem = (index, field, value) => {
                 const newFlow = [...seq.flow];
-                // SMART RANGE LOGIC: When switching types, adjust the slider values
                 if (field === 'holdType') {
                     newFlow[index].holdVal = (value === 'breath') ? 5 : 30;
                 }
@@ -78,107 +78,156 @@
                 setSeq({...seq, flow: newFlow});
             };
 
-            const filteredList = Object.values(library).filter(p => {
-                const matchesSearch = p.name?.toLowerCase().includes(search.toLowerCase());
+            const filteredList = POSE_LIBRARY.filter(p => {
+                const matchesSearch = p.name.toLowerCase().includes(search.toLowerCase());
                 const matchesLevel = p.level === activeLevel;
-                const matchesCategory = selectedCategory === 'All Categories' || 
-                                       (p.category && p.category.toLowerCase() === selectedCategory.toLowerCase());
-                return matchesSearch && matchesLevel && matchesCategory && !p.isVariation && !p.parentPose;
+                const matchesCategory = selectedCategory === 'All Categories' || p.category === selectedCategory;
+                return matchesSearch && matchesLevel && matchesCategory;
             });
 
+            const estMinutes = Math.round(seq.flow.reduce((acc, item) => {
+                return acc + (item.holdType === 'breath' ? item.holdVal * 6 : parseInt(item.holdVal));
+            }, 0) / 60);
+
             return (
-                <div className="flex flex-col h-screen">
-                    <header className="p-6 border-b flex items-center justify-between bg-white shadow-sm">
+                <div className="flex flex-col h-screen overflow-hidden">
+                    <header className="p-6 border-b flex items-center justify-between bg-white z-10 shadow-sm">
                         <div className="flex items-center gap-4">
                             <div className="w-10 h-10 bg-[#002b1d] rounded-full flex items-center justify-center text-white font-serif text-xl font-bold">P</div>
-                            <h1 className="font-serif text-3xl text-[#002b1d]">Presence Yoga</h1>
+                            <div>
+                                <h1 className="font-serif text-3xl text-[#002b1d] leading-none">Presence Yoga</h1>
+                                <p className="text-[9px] uppercase tracking-widest text-emerald-600 font-bold mt-1">Drishti Sequence Studio</p>
+                            </div>
                         </div>
                     </header>
 
                     <div className="flex flex-1 overflow-hidden">
-                        {/* SIDEBAR WITH NESTED SUBCATEGORIES */}
-                        <aside className="w-[340px] border-r overflow-y-auto bg-white p-6 space-y-6">
-                            <div>
-                                <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-3 block">Filter Category</label>
-                                <select className="w-full p-2.5 border rounded-xl text-sm" value={selectedCategory} onChange={e => setSelectedCategory(e.target.value)}>
-                                    {["All Categories", "Standing", "Seated", "Floor", "Core", "Backbends", "Inversions"].map(c => <option key={c}>{c}</option>)}
-                                </select>
-                            </div>
+                        <aside className="w-[360px] border-r overflow-y-auto bg-white p-7 space-y-7 custom-scroll">
+                            {/* AI FILTERS SECTION */}
+                            <section className="space-y-5">
+                                <h3 className="text-[10px] font-bold text-slate-400 uppercase tracking-widest border-b pb-2">AI Configuration</h3>
+                                <div className="space-y-2">
+                                    <label className="text-[11px] font-semibold text-slate-500 uppercase">Style</label>
+                                    <select className="w-full p-2.5 border rounded-xl bg-slate-50 text-sm outline-none" value={selectedStyle} onChange={e => setSelectedStyle(e.target.value)}>
+                                        {YOGA_STYLES.map(s => <option key={s} value={s}>{s}</option>)}
+                                    </select>
+                                </div>
+                                <div className="space-y-2">
+                                    <label className="text-[11px] font-semibold text-slate-500 uppercase">Level</label>
+                                    <div className="flex bg-slate-100 p-1 rounded-xl border">
+                                        {['Beginner', 'Intermediate', 'Advanced'].map(lvl => (
+                                            <button key={lvl} onClick={() => setActiveLevel(lvl)} className={`flex-1 py-1.5 text-[10px] rounded-lg transition-all ${activeLevel === lvl ? 'bg-white shadow-sm text-slate-900 font-bold' : 'text-slate-400'}`}>{lvl}</button>
+                                        ))}
+                                    </div>
+                                </div>
+                                <div className="space-y-3">
+                                    <div className="flex justify-between text-[11px] font-bold">
+                                        <label className="text-slate-500 uppercase tracking-tighter">Target Duration</label>
+                                        <span className="text-emerald-700">{aiDuration}m</span>
+                                    </div>
+                                    <input type="range" min="15" max="120" step="5" value={aiDuration} onChange={e => setAiDuration(e.target.value)} className="w-full" />
+                                </div>
+                                <button className="w-full py-3 bg-[#002b1d] text-white rounded-xl text-[10px] font-bold shadow-md hover:bg-black uppercase tracking-widest transition-all">✨ Generate Sequence</button>
+                            </section>
 
-                            <div className="space-y-4 pt-4 border-t">
-                                <h3 className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Pose Library</h3>
-                                <input type="text" placeholder="Search..." className="w-full p-2 text-sm italic outline-none border-b" onChange={e => setSearch(e.target.value)} />
-                                <div className="space-y-4">
+                            <hr className="border-slate-100" />
+
+                            {/* POSE LIBRARY WITH NESTED SUBCATEGORIES */}
+                            <section className="space-y-5">
+                                <h3 className="text-[10px] font-bold text-slate-400 uppercase tracking-widest border-b pb-2">Pose Library</h3>
+                                <div className="space-y-2">
+                                    <label className="text-[11px] font-semibold text-slate-500 uppercase">Category</label>
+                                    <select className="w-full p-2.5 border rounded-xl bg-slate-50 text-sm outline-none" value={selectedCategory} onChange={e => setSelectedCategory(e.target.value)}>
+                                        {CATEGORIES.map(c => <option key={c} value={c}>{c}</option>)}
+                                    </select>
+                                </div>
+                                <input type="text" placeholder="Search library..." className="w-full p-2 text-sm italic border-b outline-none focus:border-emerald-500" onChange={e => setSearch(e.target.value)} />
+                                
+                                <div className="space-y-4 pt-2">
                                     {filteredList.map(p => (
                                         <div key={p.id} className="space-y-2">
-                                            {/* Parent Pose */}
-                                            <div onClick={() => addPose(p.id)} className="flex justify-between items-center cursor-pointer hover:text-emerald-600 font-medium text-slate-700 text-sm">
+                                            <div onClick={() => addPose(p)} className="flex justify-between items-center cursor-pointer hover:text-emerald-600 font-semibold text-slate-700 text-sm transition-colors">
                                                 <span>{p.name}</span>
                                                 <span className="text-slate-200">+</span>
                                             </div>
-                                            {/* NESTED SUBCATEGORIES RESTORED */}
                                             {p.variations && p.variations.map(v => (
-                                                <div key={v.id} onClick={() => addPose(v.id)} className="ml-4 pl-3 border-l-2 border-slate-50 text-[11px] text-slate-400 cursor-pointer flex justify-between hover:text-emerald-500 transition-all">
+                                                <div key={v.id} onClick={() => addPose(v)} className="ml-4 pl-3 border-l-2 border-slate-50 text-[11px] text-slate-400 cursor-pointer flex justify-between hover:text-emerald-500 hover:border-emerald-500 transition-all group">
                                                     <span>• {v.name}</span>
-                                                    <span>+</span>
+                                                    <span className="opacity-0 group-hover:opacity-100">+</span>
                                                 </div>
                                             ))}
                                         </div>
                                     ))}
                                 </div>
-                            </div>
+                            </section>
                         </aside>
 
                         {/* FLOW DESIGNER */}
                         <main className="flex-1 overflow-y-auto p-12 bg-[#fafafa]">
-                            <div className="max-w-3xl mx-auto space-y-8">
-                                <h2 className="font-serif text-4xl text-slate-800 font-bold mb-8">Sequence Flow</h2>
-                                {seq.flow.map((item, i) => (
-                                    <div key={i} className="bg-white rounded-[2rem] p-8 shadow-sm border border-slate-200 space-y-8">
-                                        <div className="flex justify-between items-center">
-                                            <h3 className="font-serif text-3xl text-slate-800">{i+1}. {library[item.id]?.name}</h3>
-                                            <button onClick={() => setSeq(s => ({...s, flow: s.flow.filter((_, idx) => idx !== i)}))} className="text-slate-300 hover:text-red-400">✕</button>
-                                        </div>
-
-                                        <div className="grid grid-cols-1 md:grid-cols-2 gap-10">
-                                            {/* HOLD METHOD BUTTONS */}
-                                            <div className="space-y-3">
-                                                <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Hold Method</label>
-                                                <div className="flex gap-2">
-                                                    <button onClick={() => updateItem(i, 'holdType', 'breath')} className={`flex-1 py-3 method-btn ${item.holdType === 'breath' ? 'active' : 'bg-white text-slate-400'}`}>🌬️ Breath</button>
-                                                    <button onClick={() => updateItem(i, 'holdType', 'time')} className={`flex-1 py-3 method-btn ${item.holdType === 'time' ? 'active' : 'bg-white text-slate-400'}`}>⏱️ Timed</button>
-                                                </div>
-                                            </div>
-
-                                            {/* DYNAMIC SLIDER LOGIC */}
-                                            <div className="space-y-3">
-                                                <div className="flex justify-between text-[10px] font-bold uppercase tracking-widest">
-                                                    <label className="text-slate-400">Duration</label>
-                                                    <span className="text-emerald-700 font-bold">{item.holdVal} {item.holdType === 'breath' ? 'Breaths' : 'Sec'}</span>
-                                                </div>
-                                                <input 
-                                                    type="range" 
-                                                    min={item.holdType === 'breath' ? "1" : "5"} 
-                                                    max={item.holdType === 'breath' ? "20" : "300"} 
-                                                    step={item.holdType === 'breath' ? "1" : "5"} 
-                                                    value={item.holdVal} 
-                                                    onChange={e => updateItem(i, 'holdVal', parseInt(e.target.value))}
-                                                />
-                                            </div>
-                                        </div>
-
-                                        <div className="pt-6 border-t border-slate-50 space-y-4">
-                                            <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Drishti Gaze</label>
-                                            <select 
-                                                className="w-full p-2 border-b text-sm text-blue-800 font-medium outline-none"
-                                                value={item.drishti}
-                                                onChange={e => updateItem(i, 'drishti', e.target.value)}
-                                            >
-                                                {drishtiPoints.map(d => <option key={d.name} value={d.name}>{d.name} ({d.focus})</option>)}
-                                            </select>
-                                        </div>
+                            <div className="max-w-3xl mx-auto space-y-10">
+                                <div className="flex justify-between items-center pb-4 border-b">
+                                    <h2 className="font-serif text-5xl text-slate-800 font-bold tracking-tight">Flow Design</h2>
+                                    <div className="stats-box px-7 py-4 text-center shadow-sm">
+                                        <p className="text-[10px] font-bold text-blue-400 uppercase tracking-widest">Total Est.</p>
+                                        <p className="text-2xl font-serif font-bold text-blue-900">{estMinutes} min</p>
                                     </div>
-                                ))}
+                                </div>
+
+                                <div className="space-y-8 pb-20">
+                                    {seq.flow.map((item, i) => (
+                                        <div key={item.tempId} className="bg-white rounded-[2.5rem] p-9 shadow-sm border border-slate-200 space-y-8 relative hover:shadow-md transition-all">
+                                            <div className="flex justify-between items-center">
+                                                <div className="flex items-center gap-5">
+                                                    <span className="w-10 h-10 rounded-full bg-emerald-50 text-emerald-700 flex items-center justify-center font-serif italic text-xl">{i + 1}</span>
+                                                    <h3 className="font-serif text-4xl text-slate-800">{item.name}</h3>
+                                                </div>
+                                                <button onClick={() => setSeq(s => ({...s, flow: s.flow.filter((_, idx) => idx !== i)}))} className="text-slate-300 hover:text-red-400">✕</button>
+                                            </div>
+
+                                            <div className="grid grid-cols-1 md:grid-cols-2 gap-10">
+                                                <div className="space-y-4">
+                                                    <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Hold Method</label>
+                                                    <div className="flex gap-3">
+                                                        <button onClick={() => updateItem(i, 'holdType', 'breath')} className={`flex-1 py-3.5 method-btn ${item.holdType === 'breath' ? 'active' : 'bg-white text-slate-400'}`}>🌬️ Breath</button>
+                                                        <button onClick={() => updateItem(i, 'holdType', 'time')} className={`flex-1 py-3.5 method-btn ${item.holdType === 'time' ? 'active' : 'bg-white text-slate-400'}`}>⏱️ Timed</button>
+                                                    </div>
+                                                </div>
+
+                                                <div className="space-y-4">
+                                                    <div className="flex justify-between items-center">
+                                                        <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Duration</label>
+                                                        <span className="text-sm font-bold text-emerald-700 px-3 py-1 bg-emerald-50 rounded-full">{item.holdVal} {item.holdType === 'breath' ? 'Breaths' : 'Sec'}</span>
+                                                    </div>
+                                                    <input 
+                                                        type="range" 
+                                                        min={item.holdType === 'breath' ? "1" : "5"} 
+                                                        max={item.holdType === 'breath' ? "20" : "300"} 
+                                                        step={item.holdType === 'breath' ? "1" : "5"} 
+                                                        value={item.holdVal} 
+                                                        onChange={e => updateItem(i, 'holdVal', parseInt(e.target.value))}
+                                                    />
+                                                </div>
+                                            </div>
+
+                                            <div className="pt-8 border-t border-slate-50 flex flex-col md:flex-row items-center justify-between gap-8">
+                                                <div className="w-full md:w-1/3 space-y-3">
+                                                    <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Drishti Gaze</label>
+                                                    <select 
+                                                        className="w-full p-2.5 border border-slate-100 bg-slate-50 rounded-xl text-[11px] text-blue-800 font-semibold outline-none"
+                                                        value={item.drishti}
+                                                        onChange={e => updateItem(i, 'drishti', e.target.value)}
+                                                    >
+                                                        {DRISHTI_POINTS.map(d => <option key={d.name} value={d.name}>{d.name} — {d.focus}</option>)}
+                                                    </select>
+                                                </div>
+                                                <div className="flex-1 w-full bg-[#002b1d]/[0.02] p-6 rounded-2xl border border-[#002b1d]/[0.05] text-[12px] text-slate-500 italic leading-relaxed">
+                                                    "Steady your gaze on the <strong className="text-emerald-700">{DRISHTI_POINTS.find(d => d.name === item.drishti)?.focus}</strong>. 
+                                                    Hold for {item.holdVal} {item.holdType === 'breath' ? 'deep breaths' : 'seconds'}."
+                                                </div>
+                                            </div>
+                                        </div>
+                                    ))}
+                                </div>
                             </div>
                         </main>
                     </div>
