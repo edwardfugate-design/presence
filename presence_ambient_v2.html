@@ -4,49 +4,14 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
     <title>Presence · Ambient</title>
-    
-    <!-- Preconnect to external domains for faster loading -->
     <link rel="preconnect" href="https://cdn.freesound.org">
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    
-    <!-- Inline critical CSS for instant render -->
     <style>
-        body { 
-            background: #fdfcfb; 
-            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; 
-            margin: 0;
-            overflow-x: hidden; 
-            touch-action: manipulation;
-        }
+        body { background: #fdfcfb; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; margin: 0; overflow-x: hidden; touch-action: manipulation; }
         .font-serif { font-family: 'Cormorant Garamond', serif; }
-        .aura-field { 
-            filter: blur(120px); 
-            transition: all 6s ease-in-out; 
-            position: fixed; 
-            inset: -10%; 
-            width: 120%; 
-            height: 120%; 
-            z-index: -1; 
-            opacity: 0.5;
-        }
+        .aura-field { filter: blur(120px); transition: all 6s ease-in-out; position: fixed; inset: -10%; width: 120%; height: 120%; z-index: -1; opacity: 0.5; }
         .hide-scrollbar::-webkit-scrollbar { display: none; }
-        .loading-screen {
-            position: fixed;
-            inset: 0;
-            background: #fdfcfb;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            z-index: 9999;
-            opacity: 1;
-            transition: opacity 0.3s ease-out;
-        }
-        .loading-screen.hidden {
-            opacity: 0;
-            pointer-events: none;
-        }
-        /* Tailwind utility classes we need - inlined to avoid loading full framework */
+        .loading-screen { position: fixed; inset: 0; background: #fdfcfb; display: flex; align-items: center; justify-content: center; z-index: 9999; opacity: 1; transition: opacity 0.3s ease-out; }
+        .loading-screen.hidden { opacity: 0; pointer-events: none; }
         .min-h-screen { min-height: 100vh; }
         .p-6 { padding: 1.5rem; }
         .max-w-5xl { max-width: 64rem; }
@@ -54,6 +19,7 @@
         .pb-40 { padding-bottom: 10rem; }
         .flex { display: flex; }
         .flex-col { flex-direction: column; }
+        .gap-2 { gap: 0.5rem; }
         .gap-4 { gap: 1rem; }
         .gap-8 { gap: 2rem; }
         .items-center { align-items: center; }
@@ -62,7 +28,6 @@
         .justify-between { justify-content: space-between; }
         .mb-12 { margin-bottom: 3rem; }
         .mb-16 { margin-bottom: 4rem; }
-        .mt-4 { margin-top: 1rem; }
         .text-6xl { font-size: 3.75rem; line-height: 1; }
         .italic { font-style: italic; }
         .grid { display: grid; }
@@ -70,123 +35,122 @@
         .rounded-full { border-radius: 9999px; }
         .px-6 { padding-left: 1.5rem; padding-right: 1.5rem; }
         .py-2 { padding-top: 0.5rem; padding-bottom: 0.5rem; }
-        .transition-all { transition-property: all; transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1); transition-duration: 150ms; }
+        .transition-all { transition: all 0.3s ease; }
         .fixed { position: fixed; }
         .bottom-10 { bottom: 2.5rem; }
         
-        @media (min-width: 640px) {
-            .sm\:grid-cols-3 { grid-template-columns: repeat(3, minmax(0, 1fr)); }
-            .md\:p-12 { padding: 3rem; }
-            .md\:flex-row { flex-direction: row; }
-        }
-        @media (min-width: 1024px) {
-            .lg\:grid-cols-4 { grid-template-columns: repeat(4, minmax(0, 1fr)); }
-        }
+        @media (min-width: 640px) { .sm:grid-cols-3 { grid-template-columns: repeat(3, minmax(0, 1fr)); } .md:p-12 { padding: 3rem; } .md:flex-row { flex-direction: row; } }
+        @media (min-width: 1024px) { .lg:grid-cols-4 { grid-template-columns: repeat(4, minmax(0, 1fr)); } }
     </style>
-    
-    <!-- Defer non-critical resources -->
-    <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@300;400;600&display=swap" rel="stylesheet" media="print" onload="this.media='all'">
-    
-    <!-- Load monitoring scripts async -->
-    <script src="presence-content-manager.js" defer></script>
-    <script src="presence-monitoring.js" defer></script>
-    <script src="presence-auto-integrate.js" defer></script>
+    <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@300;400;600&display=swap" rel="stylesheet">
 </head>
 <body>
-    <!-- Loading screen -->
     <div class="loading-screen" id="loadingScreen">
         <div style="text-align: center;">
             <div style="width: 40px; height: 40px; border: 3px solid #e5e7eb; border-top-color: #6366f1; border-radius: 50%; animation: spin 1s linear infinite; margin: 0 auto;"></div>
-            <p style="margin-top: 1rem; font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.1em; opacity: 0.5;">Loading Ambient...</p>
+            <p style="margin-top: 1rem; font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.1em; opacity: 0.5;">Presence</p>
         </div>
     </div>
     
     <div id="root"></div>
 
     <script>
-        // Optimized vanilla JS version - no React, no Babel, instant load
         const MASTER_LIBRARY = {
             "🌧️ Weather": [
                 { id: 'light-rain', n: 'Light Rain', urls: ['https://cdn.freesound.org/previews/344/344430_5121236-lq.mp3'] },
                 { id: 'heavy-rain', n: 'Heavy Rain', urls: ['https://cdn.freesound.org/previews/243/243627_5121236-lq.mp3'] },
                 { id: 'thunder', n: 'Thunder Storm', urls: ['https://cdn.freesound.org/previews/162/162476_2394245-lq.mp3'] },
-                { id: 'wind-gentle', n: 'Gentle Wind', urls: ['https://cdn.freesound.org/previews/234/234226_1648170-lq.mp3'] },
-                { id: 'snowfall', n: 'Snowfall', urls: ['https://cdn.freesound.org/previews/234/234226_1648170-lq.mp3'] }
+                { id: 'wind-gentle', n: 'Gentle Wind', urls: ['https://cdn.freesound.org/previews/234/234226_1648170-lq.mp3'] }
             ],
             "🌊 Water": [
                 { id: 'ocean-calm', n: 'Ocean Calm', urls: ['https://cdn.freesound.org/previews/180/180493_3283808-lq.mp3'] },
                 { id: 'river', n: 'River Flow', urls: ['https://cdn.freesound.org/previews/255/255537_4486188-lq.mp3'] },
-                { id: 'stream', n: 'Mountain Stream', urls: ['https://cdn.freesound.org/previews/391/391660_7193358-lq.mp3'] },
-                { id: 'waterfall-near', n: 'Waterfall', urls: ['https://cdn.freesound.org/previews/257/257181_4486188-lq.mp3'] },
-                { id: 'lake', n: 'Lake Lapping', urls: ['https://cdn.freesound.org/previews/180/180493_3283808-lq.mp3'] }
+                { id: 'waterfall', n: 'Waterfall', urls: ['https://cdn.freesound.org/previews/257/257181_4486188-lq.mp3'] }
             ],
             "🌲 Earth": [
                 { id: 'forest', n: 'Forest', urls: ['https://cdn.freesound.org/previews/416/416062_5121236-lq.mp3'] },
-                { id: 'jungle', n: 'Jungle', urls: ['https://cdn.freesound.org/previews/447/447912_5674468-lq.mp3'] },
-                { id: 'desert', n: 'Desert Wind', urls: ['https://cdn.freesound.org/previews/234/234226_1648170-lq.mp3'] },
-                { id: 'cave', n: 'Cave Drips', urls: ['https://cdn.freesound.org/previews/257/257181_4486188-lq.mp3'] }
+                { id: 'jungle', n: 'Jungle Night', urls: ['https://cdn.freesound.org/previews/447/447912_5674468-lq.mp3'] }
             ],
             "🐦 Life": [
-                { id: 'morning-birds', n: 'Morning Birds', urls: ['https://cdn.freesound.org/previews/447/447912_5674468-lq.mp3'] },
-                { id: 'crickets', n: 'Crickets', urls: ['https://cdn.freesound.org/previews/412/412068_6975646-lq.mp3'] },
-                { id: 'frogs', n: 'Frogs', urls: ['https://cdn.freesound.org/previews/331/331117_3932975-lq.mp3'] }
+                { id: 'birds', n: 'Morning Birds', urls: ['https://cdn.freesound.org/previews/447/447912_5674468-lq.mp3'] },
+                { id: 'crickets', n: 'Crickets', urls: ['https://cdn.freesound.org/previews/412/412068_6975646-lq.mp3'] }
             ],
             "🔥 Fire": [
-                { id: 'campfire', n: 'Campfire', urls: ['https://cdn.freesound.org/previews/320/320321_527080-lq.mp3'] },
-                { id: 'hearth', n: 'Hearth Fire', urls: ['https://cdn.freesound.org/previews/235/235968_1015240-lq.mp3'] }
+                { id: 'campfire', n: 'Campfire', urls: ['https://cdn.freesound.org/previews/320/320321_527080-lq.mp3'] }
             ],
             "🧘 Purity": [
                 { id: 'white-noise', n: 'White Noise', urls: ['https://cdn.freesound.org/previews/360/360602_5121236-lq.mp3'] },
-                { id: 'pink-noise', n: 'Pink Noise', urls: ['https://cdn.freesound.org/previews/360/360600_5121236-lq.mp3'] },
                 { id: 'brown-noise', n: 'Brown Noise', urls: ['https://cdn.freesound.org/previews/360/360601_5121236-lq.mp3'] },
-                { id: 'vagus-nerve', n: 'Vagus Nerve', urls: ['https://cdn.freesound.org/previews/680/680145_1648170-lq.mp3'], desc: '40Hz grounding' }
+                { id: 'vagus', n: 'Vagus Nerve', urls: ['https://cdn.freesound.org/previews/680/680145_1648170-lq.mp3'] }
             ],
             "🏙️ Urban": [
-                { id: 'city-hum', n: 'City Hum', urls: ['https://cdn.freesound.org/previews/268/268903_4548252-lq.mp3'] },
-                { id: 'subway', n: 'Subway Rumble', urls: ['https://cdn.freesound.org/previews/207/207924_624691-lq.mp3'] },
-                { id: 'traffic', n: 'Traffic', urls: ['https://cdn.freesound.org/previews/268/268903_4548252-lq.mp3'] }
+                { id: 'city', n: 'City Hum', urls: ['https://cdn.freesound.org/previews/268/268903_4548252-lq.mp3'] },
+                { id: 'subway', n: 'Subway Rumble', urls: ['https://cdn.freesound.org/previews/207/207924_624691-lq.mp3'] }
             ],
             "☕ Indoor": [
                 { id: 'cafe', n: 'Café Murmur', urls: ['https://cdn.freesound.org/previews/547/547662_9879924-lq.mp3'] },
-                { id: 'library', n: 'Library', urls: ['https://cdn.freesound.org/previews/350/350359_6264898-lq.mp3'] },
-                { id: 'museum', n: 'Museum', urls: ['https://cdn.freesound.org/previews/350/350359_6264898-lq.mp3'] }
+                { id: 'library', n: 'Library', urls: ['https://cdn.freesound.org/previews/350/350359_6264898-lq.mp3'] }
             ],
             "🏠 Domestic": [
                 { id: 'fan', n: 'Ceiling Fan', urls: ['https://cdn.freesound.org/previews/320/320398_527080-lq.mp3'] },
-                { id: 'ac', n: 'Air Conditioner', urls: ['https://cdn.freesound.org/previews/415/415277_5674468-lq.mp3'] },
                 { id: 'clock', n: 'Clock Tick', urls: ['https://cdn.freesound.org/previews/350/350359_6264898-lq.mp3'] }
             ],
             "🌙 Night": [
-                { id: 'midnight-forest', n: 'Midnight Forest', urls: ['https://cdn.freesound.org/previews/331/331117_3932975-lq.mp3'] },
-                { id: 'neon-rain', n: 'Neon Rain', urls: ['https://cdn.freesound.org/previews/416/416710_5121236-lq.mp3'] },
-                { id: 'stairwell', n: 'Stairwell', urls: ['https://cdn.freesound.org/previews/268/268903_4548252-lq.mp3'] }
+                { id: 'midnight', n: 'Midnight Rain', urls: ['https://cdn.freesound.org/previews/416/416710_5121236-lq.mp3'] }
             ]
         };
 
         const AudioEngine = {
-            ctx: null,
-            masterGain: null,
-            filterNode: null,
-            pannerNode: null,
-            activeLayers: [],
-            gainNodes: [],
-            driftInterval: null,
-            timerId: null,
+            ctx: null, masterGain: null, filterNode: null, 
+            activeSources: [], bufferCache: new Map(), timerId: null,
 
             init() {
                 if (!this.ctx) {
                     this.ctx = new (window.AudioContext || window.webkitAudioContext)();
                     this.filterNode = this.ctx.createBiquadFilter();
-                    this.pannerNode = this.ctx.createStereoPanner();
                     this.masterGain = this.ctx.createGain();
-                    this.filterNode.connect(this.pannerNode);
-                    this.pannerNode.connect(this.masterGain);
+                    this.filterNode.connect(this.masterGain);
                     this.masterGain.connect(this.ctx.destination);
                     this.filterNode.type = 'lowpass';
                     this.filterNode.frequency.value = 20000;
-                    this.masterGain.gain.value = 0.5;
+                    this.masterGain.gain.value = 0;
                 }
                 if (this.ctx.state === 'suspended') this.ctx.resume();
+            },
+
+            async play(soundId, onLoading) {
+                this.init();
+                this.stop();
+                onLoading(true);
+                const sound = Object.values(MASTER_LIBRARY).flat().find(s => s.id === soundId);
+                if (!sound) return;
+
+                try {
+                    for (const url of sound.urls) {
+                        let buffer;
+                        if (this.bufferCache.has(url)) { buffer = this.bufferCache.get(url); } 
+                        else {
+                            const resp = await fetch(url);
+                            const arrayBuffer = await resp.arrayBuffer();
+                            buffer = await this.ctx.decodeAudioData(arrayBuffer);
+                            this.bufferCache.set(url, buffer);
+                        }
+                        
+                        const source = this.ctx.createBufferSource();
+                        source.buffer = buffer;
+                        source.loop = true;
+                        
+                        // STOCHASTIC PLAYBACK (Removes loop feel)
+                        source.start(0, Math.random() * buffer.duration);
+                        source.playbackRate.value = 0.98 + (Math.random() * 0.04);
+                        source.detune.value = (Math.random() * 10) - 5;
+
+                        source.connect(this.filterNode);
+                        this.activeSources.push(source);
+                    }
+                    this.masterGain.gain.linearRampToValueAtTime(0.5, this.ctx.currentTime + 2);
+                    onLoading(false);
+                } catch (e) { onLoading(false); }
             },
 
             updateSignal(mode) {
@@ -197,50 +161,11 @@
                     this.filterNode.frequency.exponentialRampToValueAtTime(400, now + 2);
                 } else if (mode === 'Rest') {
                     this.filterNode.type = 'lowpass';
-                    this.filterNode.frequency.exponentialRampToValueAtTime(700, now + 2);
+                    this.filterNode.frequency.exponentialRampToValueAtTime(600, now + 2);
                 } else {
                     this.filterNode.type = 'lowpass';
                     this.filterNode.frequency.exponentialRampToValueAtTime(20000, now + 2);
                 }
-            },
-
-            async play(soundId, onLoading) {
-                this.init();
-                this.stop();
-                onLoading(true);
-
-                try {
-                    const sounds = Object.values(MASTER_LIBRARY).flat();
-                    const sound = sounds.find(s => s.id === soundId);
-                    if (!sound) return;
-
-                    for (const url of sound.urls) {
-                        const audio = new Audio(url);
-                        audio.loop = true;
-                        audio.crossOrigin = "anonymous";
-                        audio.currentTime = Math.random() * 20;
-                        const source = this.ctx.createMediaElementSource(audio);
-                        const gain = this.ctx.createGain();
-                        gain.gain.value = 0;
-                        source.connect(gain);
-                        gain.connect(this.filterNode);
-                        audio.play();
-                        gain.gain.linearRampToValueAtTime(0.35, this.ctx.currentTime + 2);
-                        this.activeLayers.push(audio);
-                        this.gainNodes.push(gain);
-                    }
-                    this.startDrift();
-                    onLoading(false);
-                } catch (e) {
-                    console.error(e);
-                    onLoading(false);
-                }
-            },
-
-            startDrift() {
-                this.driftInterval = setInterval(() => {
-                    this.pannerNode.pan.linearRampToValueAtTime(Math.random() * 1.4 - 0.7, this.ctx.currentTime + 4);
-                }, 5000);
             },
 
             setTimer(mins, onEnd) {
@@ -259,30 +184,17 @@
             },
 
             stop() {
-                clearInterval(this.driftInterval);
                 if (this.timerId) clearTimeout(this.timerId);
-                this.activeLayers.forEach(a => {
-                    a.pause();
-                    a.src = "";
-                });
-                this.activeLayers = [];
-                this.gainNodes = [];
-                if (this.masterGain) this.masterGain.gain.value = 0.5;
+                if (this.masterGain) this.masterGain.gain.value = 0;
+                this.activeSources.forEach(s => { try { s.stop(); } catch(e){} });
+                this.activeSources = [];
             }
         };
 
-        // App State
-        let state = {
-            category: "🌧️ Weather",
-            playing: null,
-            loading: false,
-            signal: 'Neutral',
-            timer: null
-        };
+        let state = { category: "🌧️ Weather", playing: null, loading: false, signal: 'Neutral', timer: null };
 
         function render() {
             const root = document.getElementById('root');
-            
             const auraColor = state.signal === 'Focus' ? '#fef3c7' : state.signal === 'Rest' ? '#dbeafe' : '#e0e7ff';
             
             root.innerHTML = `
@@ -291,16 +203,17 @@
                     
                     <header class="flex flex-col md:flex-row justify-between items-start mb-16 gap-8">
                         <div>
-                            <h1 class="text-6xl font-serif italic" style="font-weight: 200; letter-spacing: -0.02em;">presence</h1>
+                            <h1 class="text-6xl font-serif italic" style="font-weight: 200;">presence</h1>
                             <p style="font-size: 0.625rem; text-transform: uppercase; letter-spacing: 0.4em; opacity: 0.3; margin-top: 1rem;">Ambient Soundscapes</p>
                         </div>
 
                         <div class="flex flex-col gap-4 items-end">
-                            <div class="flex" style="background: rgba(0,0,0,0.05); padding: 0.25rem; border-radius: 9999px; backdrop-filter: blur(20px); border: 1px solid rgba(0,0,0,0.05);">
+                            <div class="flex" style="background: rgba(0,0,0,0.05); padding: 0.25rem; border-radius: 9999px; backdrop-filter: blur(20px);">
                                 ${['Neutral', 'Focus', 'Rest'].map(m => `
-                                    <button onclick="setSignal('${m}')" class="px-6 py-2 rounded-full transition-all" style="font-size: 0.625rem; text-transform: uppercase; letter-spacing: 0.1em; ${state.signal === m ? 'background: white; box-shadow: 0 1px 2px rgba(0,0,0,0.1); font-weight: 700;' : 'opacity: 0.3;'}">${m}</button>
+                                    <button onclick="setSignal('${m}')" class="px-6 py-2 rounded-full transition-all" style="font-size: 0.625rem; text-transform: uppercase; ${state.signal === m ? 'background: white; box-shadow: 0 2px 4px rgba(0,0,0,0.1); font-weight: 700;' : 'opacity: 0.3;'}">${m}</button>
                                 `).join('')}
                             </div>
+                            
                             ${state.playing ? `
                                 <div class="flex gap-2">
                                     ${[15, 30, 60].map(m => `
@@ -313,105 +226,57 @@
 
                     <nav class="flex gap-8 mb-12 overflow-x-auto hide-scrollbar" style="border-bottom: 1px solid rgba(0,0,0,0.05);">
                         ${Object.keys(MASTER_LIBRARY).map(c => `
-                            <button onclick="setCategory('${c}')" style="padding-bottom: 1.25rem; font-size: 0.688rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.2em; white-space: nowrap; transition: all 0.15s; ${state.category === c ? 'border-bottom: 2px solid black; opacity: 1;' : 'opacity: 0.2;'}">${c}</button>
+                            <button onclick="setCategory('${c}')" style="padding-bottom: 1.25rem; font-size: 0.688rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.2em; white-space: nowrap; ${state.category === c ? 'border-bottom: 2px solid black; opacity: 1;' : 'opacity: 0.2;'}">${c}</button>
                         `).join('')}
                     </nav>
 
                     <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4">
                         ${MASTER_LIBRARY[state.category].map(s => `
-                            <button onclick="toggleSound('${s.id}')" style="padding: 1.5rem; border-radius: 2rem; text-align: left; transition: all 0.5s; height: 8rem; display: flex; flex-direction: column; justify-content: space-between; ${state.playing === s.id ? 'background: white; box-shadow: 0 25px 50px -12px rgba(0,0,0,0.25); transform: scale(1.02);' : 'background: rgba(255,255,255,0.4);'}">
+                            <button onclick="toggleSound('${s.id}')" style="padding: 1.5rem; border-radius: 2rem; text-align: left; transition: all 0.4s; height: 8rem; display: flex; flex-direction: column; justify-content: space-between; ${state.playing === s.id ? 'background: white; box-shadow: 0 20px 40px rgba(0,0,0,0.1); transform: scale(1.02);' : 'background: rgba(255,255,255,0.4);'}">
                                 <div style="width: 0.5rem; height: 0.5rem; border-radius: 9999px; ${state.playing === s.id ? 'background: #6366f1; animation: pulse 2s infinite;' : 'background: rgba(0,0,0,0.1);'}"></div>
                                 <div>
-                                    <h3 style="font-size: 0.875rem; font-weight: 600; letter-spacing: -0.025em; line-height: 1.25;">${s.n}</h3>
-                                    <p style="font-size: 0.563rem; opacity: 0.3; margin-top: 0.25rem; text-transform: uppercase; letter-spacing: 0.1em;">${s.desc || 'Infinite'}</p>
+                                    <h3 style="font-size: 0.875rem; font-weight: 600;">${s.n}</h3>
+                                    <p style="font-size: 0.563rem; opacity: 0.3; text-transform: uppercase;">Seamless Presence</p>
                                 </div>
                             </button>
                         `).join('')}
                     </div>
 
                     ${(state.playing || state.loading) ? `
-                        <div class="fixed bottom-10" style="left: 50%; transform: translateX(-50%); width: 90%; max-width: 28rem; background: rgba(255,255,255,0.95); backdrop-filter: blur(40px); padding: 1.5rem; border-radius: 2.5rem; box-shadow: 0 25px 50px -12px rgba(0,0,0,0.25); border: 1px solid rgba(255,255,255,0.5); display: flex; justify-content: space-between; align-items: center;">
+                        <div class="fixed bottom-10" style="left: 50%; transform: translateX(-50%); width: 90%; max-width: 28rem; background: rgba(255,255,255,0.95); backdrop-filter: blur(40px); padding: 1.5rem; border-radius: 2.5rem; box-shadow: 0 25px 50px -12px rgba(0,0,0,0.25); display: flex; justify-content: space-between; align-items: center;">
                             <div style="display: flex; align-items: center; gap: 1rem;">
                                 <div style="width: 2.5rem; height: 2.5rem; border-radius: 9999px; background: #eef2ff; display: flex; align-items: center; justify-content: center;">
                                     <div style="width: 0.5rem; height: 0.5rem; background: #6366f1; border-radius: 9999px; animation: ping 1s infinite;"></div>
                                 </div>
                                 <div>
-                                    <p style="font-size: 0.563rem; text-transform: uppercase; letter-spacing: 0.1em; opacity: 0.4;">${state.loading ? 'Loading...' : 'Layered Soundscape'}</p>
-                                    <p style="font-weight: 500; font-size: 0.875rem;">${state.timer ? `${state.timer}m fade-out set` : 'Infinite · Non-Repeating'}</p>
+                                    <p style="font-size: 0.563rem; text-transform: uppercase; opacity: 0.4;">${state.loading ? 'Syncing Layers...' : 'Non-Looping Field'}</p>
+                                    <p style="font-weight: 500; font-size: 0.875rem;">${state.timer ? `${state.timer}m remaining` : 'Infinite Session'}</p>
                                 </div>
                             </div>
-                            <button onclick="stopAll()" style="background: black; color: white; padding: 0.75rem 2rem; border-radius: 9999px; font-size: 0.625rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.1em;">Stop</button>
+                            <button onclick="stopAll()" style="background: black; color: white; padding: 0.75rem 2rem; border-radius: 9999px; font-size: 0.625rem; font-weight: 700; text-transform: uppercase;">Stop</button>
                         </div>
                     ` : ''}
                 </div>
             `;
         }
 
-        function setCategory(cat) {
-            state.category = cat;
-            render();
-        }
-
-        function setSignal(sig) {
-            state.signal = sig;
-            AudioEngine.updateSignal(sig);
-            render();
-        }
-
-        function setTimer(mins) {
-            state.timer = mins;
-            AudioEngine.setTimer(mins, () => {
-                state.timer = null;
-                state.playing = null;
-                render();
-            });
-            render();
-        }
-
+        function setCategory(cat) { state.category = cat; render(); }
+        function setSignal(sig) { state.signal = sig; AudioEngine.updateSignal(sig); render(); }
+        function setTimer(mins) { state.timer = mins; AudioEngine.setTimer(mins, () => { state.timer = null; state.playing = null; render(); }); render(); }
         function toggleSound(id) {
-            if (state.playing === id) {
-                AudioEngine.stop();
-                state.playing = null;
-                state.timer = null;
-            } else {
-                state.playing = id;
-                AudioEngine.play(id, (loading) => {
-                    state.loading = loading;
-                    render();
-                });
-            }
+            if (state.playing === id) { stopAll(); } 
+            else { state.playing = id; AudioEngine.play(id, (l) => { state.loading = l; render(); }); }
             render();
         }
+        function stopAll() { AudioEngine.stop(); state.playing = null; state.timer = null; render(); }
 
-        function stopAll() {
-            AudioEngine.stop();
-            state.playing = null;
-            state.timer = null;
-            render();
-        }
-
-        // Add CSS animations
         const style = document.createElement('style');
-        style.textContent = `
-            @keyframes spin {
-                to { transform: rotate(360deg); }
-            }
-            @keyframes pulse {
-                0%, 100% { opacity: 1; }
-                50% { opacity: 0.5; }
-            }
-            @keyframes ping {
-                75%, 100% { transform: scale(2); opacity: 0; }
-            }
-        `;
+        style.textContent = `@keyframes spin { to { transform: rotate(360deg); } } @keyframes pulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.5; } } @keyframes ping { 75%, 100% { transform: scale(2); opacity: 0; } }`;
         document.head.appendChild(style);
 
-        // Initial render and hide loading screen
         window.addEventListener('DOMContentLoaded', () => {
             render();
-            setTimeout(() => {
-                document.getElementById('loadingScreen').classList.add('hidden');
-            }, 100);
+            setTimeout(() => document.getElementById('loadingScreen').classList.add('hidden'), 300);
         });
     </script>
 </body>
