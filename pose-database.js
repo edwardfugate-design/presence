@@ -4,7 +4,7 @@
  */
 
 const POSE_DATABASE = {
-    // STANDING POSES (80+)
+    // STANDING POSES
     standing: [
         { id: 1, name: "Mountain Pose", sanskrit: "Tadasana", level: "Beginner", muscles: ["Core", "Legs"], benefits: ["Posture", "Balance"], duration: 30 },
         { id: 2, name: "Warrior I", sanskrit: "Virabhadrasana I", level: "Beginner", muscles: ["Legs", "Core", "Shoulders"], benefits: ["Strength", "Focus"], duration: 30 },
@@ -26,7 +26,6 @@ const POSE_DATABASE = {
         { id: 18, name: "Wide-Legged Forward Fold", sanskrit: "Prasarita Padottanasana", level: "Beginner", muscles: ["Hamstrings", "Inner Thighs"], benefits: ["Stretch", "Inversion"], duration: 30 },
         { id: 19, name: "Pyramid Pose", sanskrit: "Parsvottanasana", level: "Intermediate", muscles: ["Hamstrings", "Hips"], benefits: ["Balance", "Stretch"], duration: 30 },
         { id: 20, name: "Revolved Triangle", sanskrit: "Parivrtta Trikonasana", level: "Intermediate", muscles: ["Legs", "Spine", "Core"], benefits: ["Twist", "Balance"], duration: 30 },
-        // Additional standing poses...
         { id: 21, name: "Standing Split", sanskrit: "Urdhva Prasarita Eka Padasana", level: "Advanced", muscles: ["Hamstrings", "Balance"], benefits: ["Flexibility", "Focus"], duration: 30 },
         { id: 22, name: "Dancer Pose", sanskrit: "Natarajasana", level: "Intermediate", muscles: ["Legs", "Back", "Shoulders"], benefits: ["Balance", "Backbend"], duration: 30 },
         { id: 23, name: "Revolved Side Angle", sanskrit: "Parivrtta Parsvakonasana", level: "Intermediate", muscles: ["Legs", "Core", "Spine"], benefits: ["Twist", "Strength"], duration: 30 },
@@ -34,7 +33,7 @@ const POSE_DATABASE = {
         { id: 25, name: "Figure Four", sanskrit: "Eka Pada Utkatasana", level: "Intermediate", muscles: ["Hips", "Glutes", "Legs"], benefits: ["Hip Opening", "Balance"], duration: 30 },
     ],
 
-    // SEATED POSES (60+)
+    // SEATED POSES
     seated: [
         { id: 101, name: "Easy Pose", sanskrit: "Sukhasana", level: "Beginner", muscles: ["Hips", "Back"], benefits: ["Meditation", "Calm"], duration: 300 },
         { id: 102, name: "Staff Pose", sanskrit: "Dandasana", level: "Beginner", muscles: ["Core", "Back"], benefits: ["Posture", "Foundation"], duration: 30 },
@@ -58,7 +57,7 @@ const POSE_DATABASE = {
         { id: 120, name: "Marichi's Pose", sanskrit: "Marichyasana", level: "Intermediate", muscles: ["Hamstrings", "Spine"], benefits: ["Twist", "Stretch"], duration: 45 },
     ],
 
-    // BACKBENDS (40+)
+    // BACKBENDS
     backbends: [
         { id: 201, name: "Cobra Pose", sanskrit: "Bhujangasana", level: "Beginner", muscles: ["Back", "Chest"], benefits: ["Backbend", "Energy"], duration: 30 },
         { id: 202, name: "Upward Facing Dog", sanskrit: "Urdhva Mukha Svanasana", level: "Beginner", muscles: ["Back", "Arms", "Chest"], benefits: ["Backbend", "Strength"], duration: 30 },
@@ -77,7 +76,7 @@ const POSE_DATABASE = {
         { id: 215, name: "Supported Bridge", sanskrit: "Setu Bandha Variation", level: "Beginner", muscles: ["Back", "Chest"], benefits: ["Restorative", "Heart Opening"], duration: 180 },
     ],
 
-    // INVERSIONS (35+)
+    // INVERSIONS
     inversions: [
         { id: 301, name: "Downward Facing Dog", sanskrit: "Adho Mukha Svanasana", level: "Beginner", muscles: ["Shoulders", "Hamstrings", "Back"], benefits: ["Inversion", "Stretch"], duration: 60 },
         { id: 302, name: "Dolphin Pose", sanskrit: "Ardha Pincha Mayurasana", level: "Beginner", muscles: ["Shoulders", "Core"], benefits: ["Inversion", "Strength"], duration: 45 },
@@ -96,7 +95,7 @@ const POSE_DATABASE = {
         { id: 315, name: "Feathered Peacock", sanskrit: "Pincha Mayurasana Variation", level: "Advanced", muscles: ["Shoulders", "Core"], benefits: ["Inversion", "Grace"], duration: 30 },
     ],
 
-    // TWISTS (30+)
+    // TWISTS
     twists: [
         { id: 401, name: "Supine Twist", sanskrit: "Supta Matsyendrasana", level: "Beginner", muscles: ["Spine", "Hips"], benefits: ["Twist", "Release"], duration: 60 },
         { id: 402, name: "Revolved Triangle", sanskrit: "Parivrtta Trikonasana", level: "Intermediate", muscles: ["Spine", "Legs"], benefits: ["Twist", "Balance"], duration: 30 },
@@ -110,7 +109,7 @@ const POSE_DATABASE = {
         { id: 410, name: "Twisted Lizard", sanskrit: "Parivrtta Utthan Pristhasana", level: "Intermediate", muscles: ["Hips", "Spine"], benefits: ["Twist", "Hip Opening"], duration: 45 },
     ],
 
-    // RESTORATIVE (40+)
+    // RESTORATIVE
     restorative: [
         { id: 501, name: "Child's Pose", sanskrit: "Balasana", level: "Beginner", muscles: ["Back", "Hips"], benefits: ["Rest", "Calm"], duration: 120 },
         { id: 502, name: "Extended Child's Pose", sanskrit: "Utthita Balasana", level: "Beginner", muscles: ["Back", "Shoulders"], benefits: ["Rest", "Stretch"], duration: 120 },
@@ -129,7 +128,7 @@ const POSE_DATABASE = {
         { id: 515, name: "Thread the Needle", sanskrit: "Parsva Balasana", level: "Beginner", muscles: ["Shoulders", "Upper Back"], benefits: ["Twist", "Release"], duration: 90 },
     ],
 
-    // CORE (25+)
+    // CORE
     core: [
         { id: 601, name: "Boat Pose", sanskrit: "Navasana", level: "Intermediate", muscles: ["Core", "Hip Flexors"], benefits: ["Strength", "Balance"], duration: 30 },
         { id: 602, name: "Half Boat", sanskrit: "Ardha Navasana", level: "Beginner", muscles: ["Core"], benefits: ["Strength"], duration: 30 },
@@ -143,7 +142,7 @@ const POSE_DATABASE = {
         { id: 610, name: "Reverse Plank", sanskrit: "Purvottanasana", level: "Intermediate", muscles: ["Core", "Back", "Wrists"], benefits: ["Strength", "Backbend"], duration: 30 },
     ],
 
-    // HIP OPENERS (35+)
+    // HIP OPENERS
     hipOpeners: [
         { id: 701, name: "Pigeon Pose", sanskrit: "Eka Pada Rajakapotasana", level: "Intermediate", muscles: ["Hips", "Glutes"], benefits: ["Hip Opening", "Release"], duration: 90 },
         { id: 702, name: "Lizard Pose", sanskrit: "Utthan Pristhasana", level: "Intermediate", muscles: ["Hips", "Hip Flexors"], benefits: ["Hip Opening", "Stretch"], duration: 60 },
@@ -157,7 +156,7 @@ const POSE_DATABASE = {
         { id: 710, name: "Half Pigeon", sanskrit: "Ardha Kapotasana", level: "Beginner", muscles: ["Hips"], benefits: ["Hip Opening"], duration: 90 },
     ],
 
-    // BALANCE (30+)
+    // BALANCE
     balance: [
         { id: 801, name: "Tree Pose", sanskrit: "Vrksasana", level: "Beginner", muscles: ["Legs", "Core"], benefits: ["Balance", "Focus"], duration: 60 },
         { id: 802, name: "Eagle Pose", sanskrit: "Garudasana", level: "Intermediate", muscles: ["Legs", "Balance"], benefits: ["Balance", "Concentration"], duration: 45 },
@@ -172,29 +171,28 @@ const POSE_DATABASE = {
     ]
 };
 
-// Flatten all poses into single searchable array
-const ALL_POSES = Object.entries(POSE_DATABASE).reduce((acc, [category, poses]) => {
+// --- DATA PROCESSING & GLOBAL EXPOSURE ---
+
+// Create the flattened list once
+const FLATTENED_POSES = Object.entries(POSE_DATABASE).reduce((acc, [category, poses]) => {
     return acc.concat(poses.map(pose => ({ ...pose, category })));
 }, []);
 
-// Flatten all poses into single searchable array
-const ALL_POSES = Object.entries(POSE_DATABASE).reduce((acc, [category, poses]) => {
-    return acc.concat(poses.map(pose => ({ ...pose, category })));
-}, []);
+// Export for Yoga V3
+window.allPoses = FLATTENED_POSES;
 
-// MAKE DATA VISIBLE TO THE STUDIO (CRITICAL)
-// MAKE DATA VISIBLE TO THE STUDIO
-window.poseDatabase = POSE_DATABASE;
+// Export for The Vault
+window.ALL_POSES = FLATTENED_POSES;
 
-// Flatten the database for easy searching
-window.allPoses = Object.entries(POSE_DATABASE).reduce((acc, [category, poses]) => {
-    return acc.concat(poses.map(pose => ({ ...pose, category })));
-}, []);
+// Export raw database
+window.POSE_DATABASE = POSE_DATABASE;
 
-// Keep this for compatibility
+// Node.js Compatibility
 if (typeof module !== 'undefined' && module.exports) {
     module.exports = { 
-        POSE_DATABASE: window.poseDatabase, 
-        ALL_POSES: window.allPoses 
+        POSE_DATABASE: POSE_DATABASE, 
+        ALL_POSES: FLATTENED_POSES 
     };
 }
+
+console.log(`🧘 Database Loaded: ${FLATTENED_POSES.length} poses ready across all apps.`);
