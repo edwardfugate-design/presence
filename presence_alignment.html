@@ -4,30 +4,16 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Presence • Alignment Lab</title>
-    
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://unpkg.com/react@18/umd/react.development.js"></script>
     <script src="https://unpkg.com/react-dom@18/umd/react-dom.development.js"></script>
     <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
-
+    
     <script src="pose-database.js"></script>
 
     <style>
-        body { background-color: #fcfcfd; color: #1e1b4b; }
-        .bio-card {
-            background: rgba(255, 255, 255, 0.7);
-            backdrop-filter: blur(12px);
-            border: 1px solid rgba(99, 102, 241, 0.1);
-            box-shadow: 0 4px 20px -5px rgba(0, 0, 0, 0.05);
-        }
-        .stat-label {
-            text-transform: uppercase;
-            letter-spacing: 0.1em;
-            font-size: 0.65rem;
-            font-weight: 800;
-            color: #6366f1;
-            opacity: 0.8;
-        }
+        body { background-color: #fcfcfd; margin: 0; padding: 0; }
+        .bio-card { background: white; border: 1px solid #eef2ff; border-radius: 2rem; box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1); }
     </style>
 </head>
 <body>
@@ -36,121 +22,75 @@
     <script type="text/babel">
         const { useState, useEffect } = React;
 
-        const DETAILED_ALIGNMENT = {
-            "warrior i": {
-                checkpoints: [
-                    { joint: 'front_knee', ideal: 90, label: 'Front Knee Angle' },
-                    { joint: 'hip_alignment', ideal: 0, label: 'Hip Square' }
-                ]
-            },
-            "downward facing dog": {
-                checkpoints: [
-                    { joint: 'shoulder', ideal: 180, label: 'Shoulder Flexion' },
-                    { joint: 'heel', ideal: 0, label: 'Heel to Ground' }
-                ]
-            }
-        };
-
         function AlignmentLab() {
             const [masterData, setMasterData] = useState([]);
-            const [selectedPose, setSelectedPose] = useState(null);
-            const [searchQuery, setSearchQuery] = useState('');
-            const [angles, setAngles] = useState({});
+            const [status, setStatus] = useState('connecting');
 
-            // ===== ONE MASTER CONNECTION LOGIC =====
             useEffect(() => {
-                const checkConnection = setInterval(() => {
+                // Check for data every 500ms
+                const timer = setInterval(() => {
                     const vault = window.ALL_POSES || window.allPoses;
-                    if (vault && vault.length > 0) {
+                    
+                    if (vault && Array.isArray(vault) && vault.length > 0) {
                         setMasterData(vault);
-                        setSelectedPose(vault[0]);
-                        clearInterval(checkConnection);
-                        console.log("✅ Lab Connected to " + vault.length + " poses.");
+                        setStatus('ready');
+                        clearInterval(timer);
                     }
-                }, 100);
-                return () => clearInterval(checkConnection);
+                }, 500);
+
+                // If after 5 seconds nothing happens, show an error
+                const timeout = setTimeout(() => {
+                    if (masterData.length === 0) setStatus('error');
+                }, 5000);
+
+                return () => { clearInterval(timer); clearTimeout(timeout); };
             }, []);
 
-            useEffect(() => {
-                if (selectedPose) {
-                    const details = DETAILED_ALIGNMENT[selectedPose.name.toLowerCase()];
-                    const initialAngles = {};
-                    if (details) {
-                        details.checkpoints.forEach(cp => initialAngles[cp.joint] = cp.ideal);
-                    }
-                    setAngles(initialAngles);
-                }
-            }, [selectedPose]);
-
-            const getFilteredResults = () => {
-                if (searchQuery.length < 2) return [];
-                return masterData.filter(p => 
-                    p.name.toLowerCase().includes(searchQuery.toLowerCase()) || 
-                    p.sanskrit.toLowerCase().includes(searchQuery.toLowerCase())
-                ).slice(0, 6);
-            };
-
-            // LOADING SCREEN (While waiting for pose-database.js)
-            if (masterData.length === 0) {
+            if (status === 'connecting') {
                 return (
-                    <div className="min-h-screen flex flex-col items-center justify-center bg-indigo-50/50">
-                        <div className="w-10 h-10 border-4 border-indigo-200 border-t-indigo-600 rounded-full animate-spin mb-4"></div>
-                        <h2 className="text-xl font-serif text-indigo-900">Connecting to Vault...</h2>
+                    <div className="h-screen flex items-center justify-center bg-indigo-50">
+                        <div className="text-center">
+                            <div className="w-12 h-12 border-4 border-indigo-600 border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
+                            <p className="text-indigo-900 font-medium">Syncing Biometric Vault...</p>
+                        </div>
                     </div>
                 );
             }
 
+            if (status === 'error') {
+                return (
+                    <div className="h-screen flex items-center justify-center bg-red-50 p-6">
+                        <div className="max-w-md bg-white p-8 rounded-3xl shadow-xl border border-red-100">
+                            <h2 className="text-2xl font-bold text-red-600 mb-4">Connection Failed</h2>
+                            <p className="text-gray-600 mb-6 text-sm">The Lab can't see your 500+ poses. This is usually because <b>pose-database.js</b> has a typo or isn't in this folder.</p>
+                            <button onClick={() => location.reload()} className="w-full bg-indigo-600 text-white py-3 rounded-xl font-bold">Try Again</button>
+                        </div>
+                    </div>
+                );
+            }
+
+            // If we are here, status is 'ready'
             return (
-                <div className="min-h-screen p-4 md:p-10">
-                    <div className="max-w-6xl mx-auto">
-                        <header className="mb-12 flex flex-col md:flex-row md:items-center justify-between gap-6">
-                            <div>
-                                <h1 className="font-serif text-4xl text-indigo-950 tracking-tight">presence</h1>
-                                <p className="text-indigo-400 font-medium tracking-widest text-[10px] uppercase mt-1">Alignment Laboratory</p>
-                            </div>
-                            
-                            <div className="relative w-full max-w-md">
-                                <input 
-                                    type="text"
-                                    placeholder="Search 500+ poses..."
-                                    className="w-full bg-white border border-indigo-100 rounded-2xl px-6 py-4 outline-none focus:ring-2 ring-indigo-500/10 text-indigo-900 shadow-sm"
-                                    value={searchQuery}
-                                    onChange={(e) => setSearchQuery(e.target.value)}
-                                />
-                                {getFilteredResults().length > 0 && (
-                                    <div className="absolute z-50 w-full mt-2 bg-white border border-indigo-50 rounded-2xl shadow-2xl overflow-hidden">
-                                        {getFilteredResults().map(pose => (
-                                            <div 
-                                                key={pose.id}
-                                                className="p-4 hover:bg-indigo-50 cursor-pointer border-b border-indigo-50 last:border-0"
-                                                onClick={() => { setSelectedPose(pose); setSearchQuery(''); }}
-                                            >
-                                                <div className="text-sm font-bold text-indigo-900">{pose.name}</div>
-                                                <div className="text-[10px] text-indigo-400 italic">{pose.sanskrit}</div>
-                                            </div>
-                                        ))}
-                                    </div>
-                                )}
-                            </div>
-                        </header>
+                <div className="p-8 max-w-6xl mx-auto">
+                    <h1 className="text-4xl font-serif text-indigo-950 mb-8">presence • lab</h1>
+                    <div className="bio-card p-10">
+                        <h2 className="text-2xl text-indigo-900">Vault Online</h2>
+                        <p className="text-indigo-400 mt-2">Connected to {masterData.length} poses.</p>
+                        <div className="mt-8 grid grid-cols-1 md:grid-cols-2 gap-4">
+                            {masterData.slice(0, 4).map(pose => (
+                                <div key={pose.id} className="p-4 bg-indigo-50 rounded-xl border border-indigo-100">
+                                    <div className="font-bold">{pose.name}</div>
+                                    <div className="text-xs italic text-indigo-400">{pose.sanskrit}</div>
+                                </div>
+                            ))}
+                        </div>
+                    </div>
+                </div>
+            );
+        }
 
-                        {selectedPose && (
-                            <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
-                                <div className="lg:col-span-8 space-y-6">
-                                    <div className="bio-card rounded-[2.5rem] p-8 md:p-12">
-                                        <div className="flex justify-between items-start mb-12">
-                                            <div>
-                                                <span className="stat-label">Biometric focus</span>
-                                                <h2 className="font-serif text-5xl text-indigo-950 mt-3">{selectedPose.name}</h2>
-                                                <p className="text-indigo-400 font-mono text-xl mt-1 italic">{selectedPose.sanskrit}</p>
-                                            </div>
-                                            <div className="bg-indigo-950 text-white px-5 py-2 rounded-full text-[10px] font-bold tracking-widest uppercase">
-                                                {selectedPose.level}
-                                            </div>
-                                        </div>
-
-                                        <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-                                            {selectedPose.muscles.map(muscle => (
-                                                <div key={muscle} className="bg-white p-5 rounded-3xl border border-indigo-50 shadow-sm">
-                                                    <div className="stat-label mb-2">Target</div>
-                                                    <div className="text-sm font-bold text
+        const root = ReactDOM.createRoot(document.getElementById('root'));
+        root.render(<AlignmentLab />);
+    </script>
+</body>
+</html>
