@@ -54,23 +54,42 @@
 
     // BRIDGE TO EXTERNAL LIBRARIES
     // This allows the app to use either of your database files automatically
-    const getMasterLibrary = () => {
-        // 1. Try to get the variations library first, then the standard database
-        const rawData = window.yogaLibraryData || window.POSE_DATABASE || window.POSE_LIBRARY || {};
-        
-        // 2. Check if the data is wrapped in a "categories" array (Common in your files)
-        if (rawData.categories && Array.isArray(rawData.categories)) {
-            const flattened = {};
-            rawData.categories.forEach(category => {
-                category.poses.forEach(pose => {
-                    // Use the pose ID or name as the key
-                    const id = pose.id || pose.name.toLowerCase().replace(/\s+/g, '-');
-                    flattened[id] = { ...pose, categoryName: category.name };
-                });
-            });
-            return flattened;
-        }
+   const getMasterLibrary = () => {
+        // 1. Gather all potential sources into one array
+        const sources = [
+            window.yogaLibraryData, 
+            window.POSE_DATABASE, 
+            window.POSE_LIBRARY,
+            window.allPoses // Added this as a fallback
+        ].filter(Boolean); // Only look at sources that actually exist
 
+        let flattened = {};
+
+        sources.forEach(source => {
+            // Case A: The source is an array of poses directly
+            if (Array.isArray(source)) {
+                source.forEach(pose => {
+                    const id = pose.id || pose.name?.toLowerCase().replace(/\s+/g, '-');
+                    if (id) flattened[id] = pose;
+                });
+            } 
+            // Case B: The source has a .categories array (Your pose-database.js structure)
+            else if (source.categories && Array.isArray(source.categories)) {
+                source.categories.forEach(category => {
+                    category.poses?.forEach(pose => {
+                        const id = pose.id || pose.name?.toLowerCase().replace(/\s+/g, '-');
+                        if (id) flattened[id] = { ...pose, categoryName: category.name };
+                    });
+                });
+            }
+            // Case C: The source is an object where keys are pose IDs
+            else if (typeof source === 'object') {
+                Object.assign(flattened, source);
+            }
+        });
+
+        return flattened;
+    };
         // 3. If it's already a flat object of poses, return it
         if (Object.keys(rawData).length > 0) {
             return rawData;
