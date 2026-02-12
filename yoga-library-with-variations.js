@@ -403,4 +403,14 @@ function getAllPosesWithVariations() {
 // Export
 if (typeof module !== 'undefined' && module.exports) {
   module.exports = { POSE_LIBRARY, getAllPosesWithVariations };
+} return allPoses;
+}
+
+// 1. BROADCAST THE DATA TO THE STUDIO (Add these lines)
+window.yogaLibraryData = POSE_LIBRARY;
+window.yogaLibraryVariations = getAllPosesWithVariations();
+
+// 2. The Export lines (Keep these as they were)
+if (typeof module !== 'undefined' && module.exports) {
+  module.exports = { POSE_LIBRARY, getAllPosesWithVariations };
 }
