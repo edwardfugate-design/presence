@@ -376,41 +376,33 @@ const POSE_LIBRARY = {
   // Add 50+ more base poses following this pattern
 };
 
-// Helper function to get all poses including variations
+// This function turns your library into a flat list the app can read
 function getAllPosesWithVariations() {
   const allPoses = [];
   
-  Object.values(POSE_LIBRARY).forEach(pose => {
-    // Add main pose
-    allPoses.push(pose);
-    
-    // Add all variations
-    if (pose.variations && pose.variations.length > 0) {
-      pose.variations.forEach(variation => {
-        allPoses.push({
-          ...variation,
-          parentPose: pose.id,
-          family: pose.family,
-          isVariation: true
+  if (typeof POSE_LIBRARY !== 'undefined') {
+    Object.values(POSE_LIBRARY).forEach(pose => {
+      // Add main pose
+      allPoses.push(pose);
+      
+      // Add all variations
+      if (pose.variations && pose.variations.length > 0) {
+        pose.variations.forEach(variation => {
+          allPoses.push({
+            ...variation,
+            parentPose: pose.id,
+            family: pose.family,
+            isVariation: true
+          });
         });
-      });
-    }
-  });
-  
+      }
+    });
+  }
   return allPoses;
 }
 
-// Export
-if (typeof module !== 'undefined' && module.exports) {
-  module.exports = { POSE_LIBRARY, getAllPosesWithVariations };
-} return allPoses;
-}
-
-// 1. BROADCAST THE DATA TO THE STUDIO (Add these lines)
-window.yogaLibraryData = POSE_LIBRARY;
+// CRITICAL: This is the "Wire" that connects to the HTML
 window.yogaLibraryVariations = getAllPosesWithVariations();
+window.POSE_LIBRARY = typeof POSE_LIBRARY !== 'undefined' ? POSE_LIBRARY : {};
 
-// 2. The Export lines (Keep these as they were)
-if (typeof module !== 'undefined' && module.exports) {
-  module.exports = { POSE_LIBRARY, getAllPosesWithVariations };
-}
+console.log("Yoga Library Loaded! Total Poses:", window.yogaLibraryVariations.length);
