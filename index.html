@@ -13,6 +13,7 @@
             --dawn-start: #f8f9fa; --dawn-mid: #e9ecef; --dawn-end: #dee2e6;
             --text-whisper: #6c757d; --text-soft: #495057; --text-present: #212529;
             --accent-focus: #6366f1;
+            --monastery-gold: #d4af37;
         }
         * {
             -webkit-tap-highlight-color: transparent;
@@ -28,9 +29,7 @@
             touch-action: pan-y;
             padding: env(safe-area-inset-top) env(safe-area-inset-right) env(safe-area-inset-bottom) env(safe-area-inset-left);
         }
-        html {
-            height: -webkit-fill-available;
-        }
+        html { height: -webkit-fill-available; }
         .aura-field {
             position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%);
             width: 80vw; height: 80vw; filter: blur(100px); z-index: -1;
@@ -40,62 +39,39 @@
         .nav-card {
             background: rgba(255,255,255,0.4); border: 1px solid rgba(0,0,0,0.05);
             transition: all 0.3s ease; backdrop-filter: blur(10px);
-            text-decoration: none;
-            display: block;
-            min-height: 44px;
+            text-decoration: none; display: block; text-align: center;
         }
         @media (hover: hover) {
             .nav-card:hover { background: white; transform: translateY(-4px); border-color: rgba(0,0,0,0.1); }
         }
         .nav-card:active { background: white; transform: scale(0.98); }
-        .nav-card { text-align: center; }
         .stat-label { font-size: 1rem; font-weight: 500; color: var(--text-present); }
         .card-description { font-size: 0.875rem; font-weight: 300; color: var(--text-soft); margin-top: 0.5rem; }
+        .premium-card { border: 1px solid rgba(212, 175, 55, 0.4) !important; }
+        .premium-label { color: var(--monastery-gold) !important; }
         .toggle-switch {
-            position: relative;
-            display: inline-block;
-            width: 52px;
-            height: 28px;
-            background: rgba(0,0,0,0.1);
-            border-radius: 14px;
-            cursor: pointer;
-            transition: all 0.3s;
+            position: relative; display: inline-block; width: 52px; height: 28px;
+            background: rgba(0,0,0,0.1); border-radius: 14px; cursor: pointer; transition: all 0.3s;
         }
-        .toggle-switch.active {
-            background: var(--accent-focus);
-        }
+        .toggle-switch.active { background: var(--accent-focus); }
         .toggle-knob {
-            position: absolute;
-            top: 2px;
-            left: 2px;
-            width: 24px;
-            height: 24px;
-            background: white;
-            border-radius: 50%;
-            transition: all 0.3s;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+            position: absolute; top: 2px; left: 2px; width: 24px; height: 24px;
+            background: white; border-radius: 50%; transition: all 0.3s; box-shadow: 0 2px 4px rgba(0,0,0,0.2);
         }
-        .toggle-switch.active .toggle-knob {
-            left: 26px;
-        }
+        .toggle-switch.active .toggle-knob { left: 26px; }
         .monitoring-banner {
-            background: rgba(255,255,255,0.6);
-            backdrop-filter: blur(10px);
-            border: 1px solid rgba(0,0,0,0.05);
-            border-radius: 1rem;
-            padding: 1rem 1.5rem;
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            gap: 1rem;
-            margin-bottom: 2rem;
+            background: rgba(255,255,255,0.6); backdrop-filter: blur(10px);
+            border: 1px solid rgba(0,0,0,0.05); border-radius: 1rem;
+            padding: 1rem 1.5rem; display: flex; align-items: center; justify-content: space-between;
+            gap: 1rem; margin-bottom: 2rem;
+        }
+        .section-header {
+            width: 100%; max-width: 1152px; font-size: 0.7rem; text-transform: uppercase; 
+            letter-spacing: 0.2em; color: var(--text-whisper); margin: 3rem 0 1rem 1rem;
         }
         @media (max-width: 640px) {
             .mobile-title { font-size: 2.5rem !important; }
-            .monitoring-banner {
-                flex-direction: column;
-                text-align: center;
-            }
+            .monitoring-banner { flex-direction: column; text-align: center; }
         }
     </style>
 </head>
@@ -107,7 +83,6 @@
         <div class="stat-label mt-4" id="statsDisplay">0.0 hours cultivated</div>
     </header>
 
-    <!-- Monitoring Toggle Banner -->
     <div class="monitoring-banner w-full max-w-6xl">
         <div class="flex-1">
             <div style="font-size: 0.9rem; font-weight: 500; color: var(--text-present); margin-bottom: 0.25rem;">Practice Tracking</div>
@@ -124,135 +99,88 @@
         <button id="ritualBtn" onclick="toggleSignal('ritual')" class="px-6 sm:px-8 py-3 rounded-full border border-black/5 text-[10px] uppercase tracking-widest transition-all min-h-[44px]">Ritual</button>
     </div>
 
-    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6 w-full max-w-6xl">
-        <!-- Core Practice -->
-        <a href="presence_yoga_v3.html" class="nav-card p-6 sm:p-10 rounded-[2rem]">
-            <div class="stat-label mb-4">Studio</div>
-            <div class="card-description">Create Practice</div>
-        </a>
-        <a href="presence_meditation.html" class="nav-card p-6 sm:p-10 rounded-[2rem]">
-            <div class="stat-label mb-4">Meditation</div>
-            <div class="card-description">Timed Session</div>
-        </a>
-        <a href="presence_guided.html" class="nav-card p-6 sm:p-10 rounded-[2rem]">
-            <div class="stat-label mb-4">Guided</div>
-            <div class="card-description">Voice Sessions</div>
-        </a>
-        <a href="presence_breathwork.html" class="nav-card p-6 sm:p-10 rounded-[2rem]">
-            <div class="stat-label mb-4">Breathwork</div>
-            <div class="card-description">Regulation</div>
-        </a>
-        
-        <!-- Deep Practice -->
-        <a href="presence_bodyscan.html" class="nav-card p-6 sm:p-10 rounded-[2rem]">
-            <div class="stat-label mb-4">Body Scan</div>
-            <div class="card-description">Awareness</div>
-        </a>
-        <a href="presence_sleep.html" class="nav-card p-6 sm:p-10 rounded-[2rem]">
-            <div class="stat-label mb-4">Sleep</div>
-            <div class="card-description">Rest & Recovery</div>
-        </a>
-        <a href="presence_ambient_v2.html" class="nav-card p-6 sm:p-10 rounded-[2rem]">
-            <div class="stat-label mb-4">Ambient</div>
-            <div class="card-description">Soundscapes</div>
-        </a>
-        <a href="presence_alignment.html" class="nav-card p-6 sm:p-10 rounded-[2rem]">
-            <div class="stat-label mb-4">Alignment Lab</div>
-            <div class="card-description">Biomechanics</div>
-        </a>
-        <a href="presence_movement.html" class="nav-card p-6 sm:p-10 rounded-[2rem]">
-            <div class="stat-label mb-4">Movement</div>
-            <div class="card-description">Quick Breaks</div>
-        </a>
-        
-        <!-- Organization -->
-        <a href="presence_rituals.html" class="nav-card p-6 sm:p-10 rounded-[2rem]">
-            <div class="stat-label mb-4">Rituals</div>
-            <div class="card-description">Custom Sequences</div>
-        </a>
-        <a href="presence_vault.html" class="nav-card p-6 sm:p-10 rounded-[2rem]">
-            <div class="stat-label mb-4">The Vault</div>
-            <div class="card-description">Pose Library</div>
-        </a>
-        <a href="presence_flow.html" class="nav-card p-6 sm:p-10 rounded-[2rem]">
-            <div class="stat-label mb-4">Intents</div>
-            <div class="card-description">Set Direction</div>
-        </a>
-        
-        <!-- Reflection & Growth -->
-        <a href="presence_journal.html" class="nav-card p-6 sm:p-10 rounded-[2rem]">
-            <div class="stat-label mb-4">Journal</div>
-            <div class="card-description">Reflection</div>
-        </a>
-        <a href="presence_insights.html" class="nav-card p-6 sm:p-10 rounded-[2rem]">
-            <div class="stat-label mb-4">Insights</div>
-            <div class="card-description">Progress</div>
-        </a>
-        <a href="presence_settings.html" class="nav-card p-6 sm:p-10 rounded-[2rem]">
-            <div class="stat-label mb-4">Settings</div>
-            <div class="card-description">Data & Preferences</div>
-        </a>
+    <div class="w-full max-w-6xl">
+        <div class="section-header">Sacred Sanctuaries</div>
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-6 mb-12">
+            <a href="monastery-best-in-class.html" class="nav-card premium-card p-6 sm:p-10 rounded-[2rem]">
+                <div class="stat-label premium-label mb-2">Digital Monastery</div>
+                <div class="card-description">Interactive Zen Garden & Halls</div>
+            </a>
+            <a href="Mudra Guide.html" class="nav-card premium-card p-6 sm:p-10 rounded-[2rem]">
+                <div class="stat-label premium-label mb-2">Mudra Encyclopedia</div>
+                <div class="card-description">100+ Sacred Hand Gestures</div>
+            </a>
+        </div>
+
+        <div class="section-header">Active Practice</div>
+        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6 mb-12">
+            <a href="presence_yoga_v3.html" class="nav-card p-6 sm:p-10 rounded-[2rem]"><div class="stat-label">Studio</div><div class="card-description">Yoga & Flow</div></a>
+            <a href="presence_meditation.html" class="nav-card p-6 sm:p-10 rounded-[2rem]"><div class="stat-label">Meditation</div><div class="card-description">Timed Session</div></a>
+            <a href="presence_guided.html" class="nav-card p-6 sm:p-10 rounded-[2rem]"><div class="stat-label">Guided</div><div class="card-description">Voice Sessions</div></a>
+            <a href="presence_breathwork.html" class="nav-card p-6 sm:p-10 rounded-[2rem]"><div class="stat-label">Breathwork</div><div class="card-description">Regulation</div></a>
+            <a href="presence_bodyscan.html" class="nav-card p-6 sm:p-10 rounded-[2rem]"><div class="stat-label">Body Scan</div><div class="card-description">Awareness</div></a>
+            <a href="presence_sleep.html" class="nav-card p-6 sm:p-10 rounded-[2rem]"><div class="stat-label">Sleep</div><div class="card-description">Rest & Recovery</div></a>
+        </div>
+
+        <div class="section-header">Deep Work</div>
+        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6 mb-12">
+            <a href="presence_ambient_v2.html" class="nav-card p-6 sm:p-10 rounded-[2rem]"><div class="stat-label">Ambient</div><div class="card-description">Soundscapes</div></a>
+            <a href="presence_alignment.html" class="nav-card p-6 sm:p-10 rounded-[2rem]"><div class="stat-label">Alignment Lab</div><div class="card-description">Biomechanics</div></a>
+            <a href="presence_movement.html" class="nav-card p-6 sm:p-10 rounded-[2rem]"><div class="stat-label">Movement</div><div class="card-description">Quick Breaks</div></a>
+            <a href="presence_rituals.html" class="nav-card p-6 sm:p-10 rounded-[2rem]"><div class="stat-label">Rituals</div><div class="card-description">Custom Sequences</div></a>
+            <a href="presence_vault.html" class="nav-card p-6 sm:p-10 rounded-[2rem]"><div class="stat-label">The Vault</div><div class="card-description">Pose Library</div></a>
+            <a href="presence_flow.html" class="nav-card p-6 sm:p-10 rounded-[2rem]"><div class="stat-label">Intents</div><div class="card-description">Set Direction</div></a>
+        </div>
+
+        <div class="section-header">System</div>
+        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
+            <a href="presence_journal.html" class="nav-card p-6 sm:p-10 rounded-[2rem]"><div class="stat-label">Journal</div><div class="card-description">Reflection</div></a>
+            <a href="presence_insights.html" class="nav-card p-6 sm:p-10 rounded-[2rem]"><div class="stat-label">Insights</div><div class="card-description">Progress</div></a>
+            <a href="presence_settings.html" class="nav-card p-6 sm:p-10 rounded-[2rem]"><div class="stat-label">Settings</div><div class="card-description">Preferences</div></a>
+        </div>
     </div>
 
     <script>
-        // Monitoring state management
         const MONITORING_KEY = 'presence_monitoring_enabled';
-        
         function isMonitoringEnabled() {
             const enabled = localStorage.getItem(MONITORING_KEY);
-            return enabled === null || enabled === 'true'; // Default to true
+            return enabled === null || enabled === 'true';
         }
-
         function toggleMonitoring() {
             const currentState = isMonitoringEnabled();
             const newState = !currentState;
             localStorage.setItem(MONITORING_KEY, newState);
             updateMonitoringUI();
-            
-            // Show feedback
             const status = document.getElementById('trackingStatus');
-            status.textContent = newState 
-                ? 'Track your practice time and build insights' 
-                : 'Practice tracking disabled • No data collected';
+            status.textContent = newState ? 'Track your practice time and build insights' : 'Practice tracking disabled • No data collected';
             status.style.color = newState ? 'var(--text-whisper)' : '#ef4444';
         }
-
         function updateMonitoringUI() {
             const enabled = isMonitoringEnabled();
             const toggle = document.getElementById('monitoringToggle');
-            
-            if (enabled) {
-                toggle.classList.add('active');
-            } else {
-                toggle.classList.remove('active');
-            }
+            enabled ? toggle.classList.add('active') : toggle.classList.remove('active');
         }
-
-        // Signal state management
         const signals = {
             still: localStorage.getItem('presence_still') === 'true',
             flow: localStorage.getItem('presence_flow') === 'true',
             ritual: localStorage.getItem('presence_ritual') === 'true'
         };
-
         function toggleSignal(s) {
             signals[s] = !signals[s];
             localStorage.setItem(`presence_${s}`, signals[s]);
             updateUI();
         }
-
         function updateUI() {
             const totalMins = parseFloat(localStorage.getItem('totalPracticeMinutes') || '0');
             const monitoringEnabled = isMonitoringEnabled();
-            
+            const display = document.getElementById('statsDisplay');
             if (monitoringEnabled && totalMins > 0) {
-                document.getElementById('statsDisplay').textContent = `${(totalMins/60).toFixed(1)} hours cultivated`;
+                display.textContent = `${(totalMins/60).toFixed(1)} hours cultivated`;
             } else if (!monitoringEnabled) {
-                document.getElementById('statsDisplay').textContent = 'tracking disabled';
+                display.textContent = 'tracking disabled';
             } else {
-                document.getElementById('statsDisplay').textContent = '0.0 hours cultivated';
+                display.textContent = '0.0 hours cultivated';
             }
-
             Object.keys(signals).forEach(key => {
                 const btn = document.getElementById(`${key}Btn`);
                 if (signals[key]) {
@@ -263,13 +191,11 @@
                     btn.style.color = 'var(--text-soft)';
                 }
             });
-
-            // Update Aura Strength
             const strength = (signals.still?1:0) + (signals.flow?1:0) + (signals.ritual?1:0);
-            document.getElementById('aura').style.opacity = 0.1 + (strength * 0.15);
-            document.getElementById('aura').style.transform = `translate(-50%, -50%) scale(${1 + (strength * 0.2)})`;
+            const aura = document.getElementById('aura');
+            aura.style.opacity = 0.1 + (strength * 0.15);
+            aura.style.transform = `translate(-50%, -50%) scale(${1 + (strength * 0.2)})`;
         }
-
         window.onload = function() {
             updateMonitoringUI();
             updateUI();
