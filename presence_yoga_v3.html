@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Presence • Automated Pose Studio</title>
+    <title>Presence • Yoga Studio v3</title>
     
     <script src="https://cdn.tailwindcss.com"></script>
     <script crossorigin src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
@@ -29,60 +29,35 @@
     <script type="text/babel">
         const { useState } = React;
 
-       const POSE_LIBRARY = [
-    { 
-        id: 'p1', name: 'Mountain Pose (Tadasana)', category: 'Standing', level: 'Beginner', 
-        variations: [{ id: 'v1', name: 'Extended Mountain' }, { id: 'v2', name: 'Mountain Side Bend' }, { id: 'v3', name: 'Palm Tree Pose' }] 
-    },
-    { 
-        id: 'p2', name: 'Warrior I (Virabhadrasana I)', category: 'Standing', level: 'Beginner', 
-        variations: [{ id: 'v4', name: 'Humble Warrior' }, { id: 'v5', name: 'Warrior I Eagle Arms' }] 
-    },
-    { 
-        id: 'p3', name: 'Warrior II (Virabhadrasana II)', category: 'Standing', level: 'Beginner', 
-        variations: [{ id: 'v6', name: 'Reverse Warrior' }, { id: 'v7', name: 'Warrior II Archer Arms' }] 
-    },
-    { 
-        id: 'p4', name: 'Warrior III (Virabhadrasana III)', category: 'Standing', level: 'Intermediate', 
-        variations: [{ id: 'v8', name: 'Warrior III Airplane Arms' }, { id: 'v9', name: 'Warrior III Supported' }] 
-    },
-    { 
-        id: 'p5', name: 'Downward Facing Dog', category: 'Floor', level: 'Beginner', 
-        variations: [{ id: 'v10', name: 'Three-Legged Dog' }, { id: 'v11', name: 'Down Dog Knee-to-Nose' }] 
-    },
-    { 
-        id: 'p6', name: 'Triangle (Trikonasana)', category: 'Standing', level: 'Beginner', 
-        variations: [{ id: 'v12', name: 'Revolved Triangle' }, { id: 'v13', name: 'Bound Triangle' }] 
-    },
-    { 
-        id: 'p7', name: 'Plank Pose', category: 'Core', level: 'Intermediate', 
-        variations: [{ id: 'v14', name: 'Side Plank' }, { id: 'v15', name: 'Forearm Plank' }, { id: 'v16', name: 'Wild Thing' }] 
-    },
-    { 
-        id: 'p8', name: 'Tree Pose (Vrksasana)', category: 'Standing', level: 'Beginner', 
-        variations: [{ id: 'v17', name: 'Tree with Prayer Hands' }, { id: 'v18', name: 'Tree Side Lean' }] 
-    },
-    { 
-        id: 'p9', name: 'Cobra (Bhujangasana)', category: 'Backbends', level: 'Beginner', 
-        variations: [{ id: 'v19', name: 'Baby Cobra' }, { id: 'v20', name: 'Upward Facing Dog' }, { id: 'v21', name: 'King Cobra' }] 
-    },
-    { 
-        id: 'p10', name: 'Bridge Pose (Setu Bandha)', category: 'Backbends', level: 'Beginner', 
-        variations: [{ id: 'v22', name: 'One-Legged Bridge' }, { id: 'v23', name: 'Supported Bridge (Block)' }] 
-    },
-    { 
-        id: 'p11', name: 'Boat Pose (Navasana)', category: 'Core', level: 'Intermediate', 
-        variations: [{ id: 'v24', name: 'Half Boat' }, { id: 'v25', name: 'Twisted Boat' }] 
-    },
-    { 
-        id: 'p12', name: 'Crow Pose (Bakasana)', category: 'Core', level: 'Advanced', 
-        variations: [{ id: 'v26', name: 'Side Crow' }, { id: 'v27', name: 'One-Legged Crow' }] 
-    },
-    { 
-        id: 'p13', name: 'Child\'s Pose (Balasana)', category: 'Floor', level: 'Beginner', 
-        variations: [{ id: 'v28', name: 'Extended Child\'s' }, { id: 'v29', name: 'Thread the Needle' }] 
-    }
-];
+        // ALL POSES ARE NOW CORRECTLY PLACED HERE
+        const POSE_LIBRARY = [
+            { id: 'p1', name: 'Mountain Pose (Tadasana)', category: 'Standing', level: 'Beginner', variations: [{ id: 'v1', name: 'Extended Mountain' }, { id: 'v2', name: 'Mountain Side Bend' }, { id: 'v3', name: 'Palm Tree Pose' }] },
+            { id: 'p2', name: 'Warrior I (Virabhadrasana I)', category: 'Standing', level: 'Beginner', variations: [{ id: 'v4', name: 'Humble Warrior' }, { id: 'v5', name: 'Warrior I Eagle Arms' }] },
+            { id: 'p3', name: 'Warrior II (Virabhadrasana II)', category: 'Standing', level: 'Beginner', variations: [{ id: 'v6', name: 'Reverse Warrior' }, { id: 'v7', name: 'Warrior II Archer Arms' }] },
+            { id: 'p4', name: 'Warrior III (Virabhadrasana III)', category: 'Standing', level: 'Intermediate', variations: [{ id: 'v8', name: 'Warrior III Airplane Arms' }, { id: 'v9', name: 'Warrior III Supported' }] },
+            { id: 'p5', name: 'Downward Facing Dog', category: 'Floor', level: 'Beginner', variations: [{ id: 'v10', name: 'Three-Legged Dog' }, { id: 'v11', name: 'Down Dog Knee-to-Nose' }] },
+            { id: 'p6', name: 'Triangle (Trikonasana)', category: 'Standing', level: 'Beginner', variations: [{ id: 'v12', name: 'Revolved Triangle' }, { id: 'v13', name: 'Bound Triangle' }] },
+            { id: 'p7', name: 'Plank Pose', category: 'Core', level: 'Intermediate', variations: [{ id: 'v14', name: 'Side Plank' }, { id: 'v15', name: 'Forearm Plank' }, { id: 'v16', name: 'Wild Thing' }] },
+            { id: 'p8', name: 'Tree Pose (Vrksasana)', category: 'Standing', level: 'Beginner', variations: [{ id: 'v17', name: 'Tree with Prayer Hands' }, { id: 'v18', name: 'Tree Side Lean' }] },
+            { id: 'p9', name: 'Cobra (Bhujangasana)', category: 'Backbends', level: 'Beginner', variations: [{ id: 'v19', name: 'Baby Cobra' }, { id: 'v20', name: 'Upward Facing Dog' }, { id: 'v21', name: 'King Cobra' }] },
+            { id: 'p10', name: 'Bridge Pose (Setu Bandha)', category: 'Backbends', level: 'Beginner', variations: [{ id: 'v22', name: 'One-Legged Bridge' }, { id: 'v23', name: 'Supported Bridge (Block)' }] },
+            { id: 'p11', name: 'Boat Pose (Navasana)', category: 'Core', level: 'Intermediate', variations: [{ id: 'v24', name: 'Half Boat' }, { id: 'v25', name: 'Twisted Boat' }] },
+            { id: 'p12', name: 'Crow Pose (Bakasana)', category: 'Core', level: 'Advanced', variations: [{ id: 'v26', name: 'Side Crow' }, { id: 'v27', name: 'One-Legged Crow' }] },
+            { id: 'p13', name: 'Child\'s Pose (Balasana)', category: 'Floor', level: 'Beginner', variations: [{ id: 'v28', name: 'Extended Child\'s' }, { id: 'v29', name: 'Thread the Needle' }] },
+            { id: 'p14', name: 'Chair Pose (Utkatasana)', category: 'Standing', level: 'Intermediate', variations: [{ id: 'v30', name: 'Revolved Chair' }, { id: 'v31', name: 'Chair on Tip-Toes' }] },
+            { id: 'p15', name: 'Eagle Pose (Garudasana)', category: 'Standing', level: 'Intermediate', variations: [{ id: 'v32', name: 'Humble Eagle (Folded)' }] },
+            { id: 'p16', name: 'Half Moon (Ardha Chandrasana)', category: 'Standing', level: 'Intermediate', variations: [{ id: 'v33', name: 'Sugarcane Pose (Chapasana)' }, { id: 'v34', name: 'Revolved Half Moon' }] },
+            { id: 'p17', name: 'Pyramid Pose (Parsvottanasana)', category: 'Standing', level: 'Intermediate', variations: [{ id: 'v35', name: 'Pyramid with Reverse Prayer' }] },
+            { id: 'p18', name: 'Pigeon Pose', category: 'Floor', level: 'Intermediate', variations: [{ id: 'v36', name: 'Sleeping Pigeon' }, { id: 'v37', name: 'King Pigeon' }] },
+            { id: 'p19', name: 'Butterfly Pose', category: 'Seated', level: 'Beginner', variations: [{ id: 'v38', name: 'Reclined Bound Angle' }] },
+            { id: 'p20', name: 'Happy Baby', category: 'Floor', level: 'Beginner', variations: [{ id: 'v39', name: 'Happy Baby Side Rock' }] },
+            { id: 'p21', name: 'Lizard Pose', category: 'Floor', level: 'Intermediate', variations: [{ id: 'v40', name: 'Twisted Lizard' }, { id: 'v41', name: 'Lizard on Forearms' }] },
+            { id: 'p22', name: 'Camel Pose (Ustrasana)', category: 'Backbends', level: 'Intermediate', variations: [{ id: 'v42', name: 'Half Camel' }] },
+            { id: 'p23', name: 'Wheel Pose (Chakrasana)', category: 'Backbends', level: 'Advanced', variations: [{ id: 'v43', name: 'One-Legged Wheel' }] },
+            { id: 'p24', name: 'Cat-Cow Flow', category: 'Core', level: 'Beginner', variations: [{ id: 'v44', name: 'Cat-Cow with Side Wag' }] },
+            { id: 'p25', name: 'Locust Pose (Salabhasana)', category: 'Backbends', level: 'Beginner', variations: [{ id: 'v45', name: 'Full Locust' }, { id: 'v46', name: 'Superperson' }] }
+        ];
+
         function App() {
             const [search, setSearch] = useState('');
             const [seq, setSeq] = useState({ flow: [] });
@@ -104,57 +79,10 @@
                     }] 
                 }));
             };
-{ 
-    id: 'p14', name: 'Chair Pose (Utkatasana)', category: 'Standing', level: 'Intermediate', 
-    variations: [{ id: 'v30', name: 'Revolved Chair' }, { id: 'v31', name: 'Chair on Tip-Toes' }] 
-},
-{ 
-    id: 'p15', name: 'Eagle Pose (Garudasana)', category: 'Standing', level: 'Intermediate', 
-    variations: [{ id: 'v32', name: 'Humble Eagle (Folded)' }] 
-},
-{ 
-    id: 'p16', name: 'Half Moon (Ardha Chandrasana)', category: 'Standing', level: 'Intermediate', 
-    variations: [{ id: 'v33', name: 'Sugarcane Pose (Chapasana)' }, { id: 'v34', name: 'Revolved Half Moon' }] 
-},
-{ 
-    id: 'p17', name: 'Pyramid Pose (Parsvottanasana)', category: 'Standing', level: 'Intermediate', 
-    variations: [{ id: 'v35', name: 'Pyramid with Reverse Prayer' }] 
-},
-            { 
-    id: 'p18', name: 'Pigeon Pose (Eka Pada Rajakapotasana)', category: 'Floor', level: 'Intermediate', 
-    variations: [{ id: 'v36', name: 'Sleeping Pigeon' }, { id: 'v37', name: 'King Pigeon' }] 
-},
-{ 
-    id: 'p19', name: 'Butterfly Pose (Baddha Konasana)', category: 'Seated', level: 'Beginner', 
-    variations: [{ id: 'v38', name: 'Reclined Bound Angle' }] 
-},
-{ 
-    id: 'p20', name: 'Happy Baby (Ananda Balasana)', category: 'Floor', level: 'Beginner', 
-    variations: [{ id: 'v39', name: 'Happy Baby Side Rock' }] 
-},
-{ 
-    id: 'p21', name: 'Lizard Pose (Utthan Pristhasana)', category: 'Floor', level: 'Intermediate', 
-    variations: [{ id: 'v40', name: 'Twisted Lizard' }, { id: 'v41', name: 'Lizard on Forearms' }] 
-},{ 
-    id: 'p22', name: 'Camel Pose (Ustrasana)', category: 'Backbends', level: 'Intermediate', 
-    variations: [{ id: 'v42', name: 'Half Camel' }] 
-},
-{ 
-    id: 'p23', name: 'Wheel Pose (Chakrasana)', category: 'Backbends', level: 'Advanced', 
-    variations: [{ id: 'v43', name: 'One-Legged Wheel' }] 
-},
-{ 
-    id: 'p24', name: 'Cat-Cow Flow', category: 'Core', level: 'Beginner', 
-    variations: [{ id: 'v44', name: 'Cat-Cow with Side Wag' }] 
-},
-{ 
-    id: 'p25', name: 'Locust Pose (Salabhasana)', category: 'Backbends', level: 'Beginner', 
-    variations: [{ id: 'v45', name: 'Full Locust (Arms Back)' }, { id: 'v46', name: 'Superperson (Arms Forward)' }] 
-},
+
             const updateItem = (index, field, value) => {
                 const newFlow = [...seq.flow];
                 if (field === 'holdType') {
-                    // Logic to reset value to a sensible default when switching modes locally
                     newFlow[index].holdVal = (value === 'breath') ? 5 : 30;
                 }
                 newFlow[index][field] = value;
@@ -170,7 +98,7 @@
 
             const estMinutes = Math.round(seq.flow.reduce((acc, item) => {
                 const holdInSeconds = (item.holdType === 'breath' ? item.holdVal * 6 : parseInt(item.holdVal));
-                return acc + holdInSeconds + 5; // Including 5s transition
+                return acc + holdInSeconds + 5; 
             }, 0) / 60);
 
             const isOverTime = estMinutes > classLimit;
