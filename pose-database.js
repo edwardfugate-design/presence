@@ -183,23 +183,18 @@ const ALL_POSES = Object.entries(POSE_DATABASE).reduce((acc, [category, poses]) 
 }, []);
 
 // MAKE DATA VISIBLE TO THE STUDIO (CRITICAL)
+// MAKE DATA VISIBLE TO THE STUDIO
 window.poseDatabase = POSE_DATABASE;
-window.yogaLibrary = { 
-    categories: Object.entries(POSE_DATABASE).map(([name, poses]) => ({
-        name: name.charAt(0).toUpperCase() + name.slice(1),
-        poses: poses
-    }))
-};
+
+// Flatten the database for easy searching
+window.allPoses = Object.entries(POSE_DATABASE).reduce((acc, [category, poses]) => {
+    return acc.concat(poses.map(pose => ({ ...pose, category })));
+}, []);
 
 // Keep this for compatibility
 if (typeof module !== 'undefined' && module.exports) {
-    module.exports = { POSE_DATABASE, ALL_POSES };
-}
-// 1. MAKE DATA VISIBLE TO THE STUDIO (Add these 2 lines)
-window.poseDatabase = POSE_DATABASE;
-window.allPoses = ALL_POSES;
-
-// 2. The lines you just mentioned (Keep these at the very bottom)
-if (typeof module !== 'undefined' && module.exports) {
-    module.exports = { POSE_DATABASE, ALL_POSES };
+    module.exports = { 
+        POSE_DATABASE: window.poseDatabase, 
+        ALL_POSES: window.allPoses 
+    };
 }
