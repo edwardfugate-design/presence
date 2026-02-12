@@ -195,3 +195,11 @@ window.yogaLibrary = {
 if (typeof module !== 'undefined' && module.exports) {
     module.exports = { POSE_DATABASE, ALL_POSES };
 }
+// 1. MAKE DATA VISIBLE TO THE STUDIO (Add these 2 lines)
+window.poseDatabase = POSE_DATABASE;
+window.allPoses = ALL_POSES;
+
+// 2. The lines you just mentioned (Keep these at the very bottom)
+if (typeof module !== 'undefined' && module.exports) {
+    module.exports = { POSE_DATABASE, ALL_POSES };
+}
