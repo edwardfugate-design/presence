@@ -3,27 +3,19 @@
 <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
-    <title>Presence · Ambient Mixer</title>
+    <title>Presence · Complete Mixer</title>
     <style>
-        body { background: #fdfcfb; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; margin: 0; overflow-x: hidden; touch-action: manipulation; color: #1a1a1a; }
+        body { background: #fdfcfb; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; margin: 0; overflow-x: hidden; color: #1a1a1a; }
         .font-serif { font-family: 'Cormorant Garamond', serif; }
-        .aura-field { filter: blur(120px); transition: all 6s ease-in-out; position: fixed; inset: -10%; width: 120%; height: 120%; z-index: -1; opacity: 0.5; }
+        .aura-field { filter: blur(120px); transition: all 6s ease-in-out; position: fixed; inset: -10%; width: 120%; height: 120%; z-index: -1; opacity: 0.4; background: #e0e7ff; }
         .hide-scrollbar::-webkit-scrollbar { display: none; }
-        .loading-screen { position: fixed; inset: 0; background: #fdfcfb; display: flex; align-items: center; justify-content: center; z-index: 9999; opacity: 1; transition: opacity 0.3s ease-out; }
-        .loading-screen.hidden { opacity: 0; pointer-events: none; }
-        .min-h-screen { min-height: 100vh; }
         .p-6 { padding: 1.5rem; }
         .max-w-5xl { max-width: 64rem; }
         .mx-auto { margin-left: auto; margin-right: auto; }
-        .pb-64 { padding-bottom: 16rem; }
+        .pb-64 { padding-bottom: 20rem; }
         .flex { display: flex; }
         .flex-col { flex-direction: column; }
         .gap-4 { gap: 1rem; }
-        .justify-between { justify-content: space-between; }
-        .mb-12 { margin-bottom: 3rem; }
-        .mb-16 { margin-bottom: 4rem; }
-        .text-6xl { font-size: 3.75rem; line-height: 1; }
-        .italic { font-style: italic; }
         .grid { display: grid; }
         .grid-cols-2 { grid-template-columns: repeat(2, minmax(0, 1fr)); }
         
@@ -32,142 +24,133 @@
         
         button { border: none; background: none; cursor: pointer; -webkit-tap-highlight-color: transparent; }
         
-        /* Range Slider Styling */
         input[type=range] { -webkit-appearance: none; width: 100%; background: transparent; }
-        input[type=range]:focus { outline: none; }
-        input[type=range]::-webkit-slider-runnable-track { width: 100%; height: 4px; cursor: pointer; background: rgba(0,0,0,0.1); border-radius: 2px; }
-        input[type=range]::-webkit-slider-thumb { height: 16px; width: 16px; border-radius: 50%; background: #000; cursor: pointer; -webkit-appearance: none; margin-top: -6px; }
+        input[type=range]::-webkit-slider-runnable-track { width: 100%; height: 4px; background: rgba(0,0,0,0.1); border-radius: 2px; }
+        input[type=range]::-webkit-slider-thumb { height: 16px; width: 16px; border-radius: 50%; background: #000; -webkit-appearance: none; margin-top: -6px; }
 
-        .mixer-panel { position: fixed; bottom: 0; left: 0; right: 0; background: rgba(255,255,255,0.9); backdrop-filter: blur(30px); border-top: 1px solid rgba(0,0,0,0.05); padding: 1.5rem; z-index: 1000; max-height: 40vh; overflow-y: auto; }
+        .mixer-panel { position: fixed; bottom: 0; left: 0; right: 0; background: rgba(255,255,255,0.95); backdrop-filter: blur(20px); border-top: 1px solid rgba(0,0,0,0.1); padding: 2rem; z-index: 1000; box-shadow: 0 -10px 30px rgba(0,0,0,0.05); }
+        .active-dot { width: 8px; height: 8px; border-radius: 50%; background: #6366f1; box-shadow: 0 0 10px #6366f1; animation: pulse 2s infinite; }
+        @keyframes pulse { 0% { opacity: 1; } 50% { opacity: 0.3; } 100% { opacity: 1; } }
     </style>
     <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@300;400;600&display=swap" rel="stylesheet">
 </head>
 <body>
-    <div class="loading-screen" id="loadingScreen"><p>Presence</p></div>
     <div id="root"></div>
 
     <script>
         const MASTER_LIBRARY = {
             "🌧️ Weather": [
-                { id: 'light-rain', n: 'Light Rain', urls: ['https://cdn.freesound.org/previews/344/344430_5121236-lq.mp3'] },
-                { id: 'heavy-rain', n: 'Heavy Rain', urls: ['https://cdn.freesound.org/previews/243/243627_5121236-lq.mp3'] },
-                { id: 'thunder', n: 'Thunder Storm', urls: ['https://cdn.freesound.org/previews/162/162476_2394245-lq.mp3'] },
-                { id: 'wind', n: 'Gentle Wind', urls: ['https://cdn.freesound.org/previews/234/234226_1648170-lq.mp3'] }
+                { id: 'lrain', n: 'Light Rain', u: 'https://actions.google.com/sounds/v1/weather/light_rain_on_windowsill.ogg' },
+                { id: 'hrain', n: 'Heavy Rain', u: 'https://actions.google.com/sounds/v1/weather/rain_heavy_loud.ogg' },
+                { id: 'thun', n: 'Thunder', u: 'https://actions.google.com/sounds/v1/weather/thunder_crack.ogg' },
+                { id: 'wind', n: 'Wind', u: 'https://actions.google.com/sounds/v1/weather/wind_howling_at_window.ogg' }
             ],
             "🌊 Water": [
-                { id: 'ocean', n: 'Ocean Calm', urls: ['https://cdn.freesound.org/previews/180/180493_3283808-lq.mp3'] },
-                { id: 'river', n: 'River Flow', urls: ['https://cdn.freesound.org/previews/255/255537_4486188-lq.mp3'] },
-                { id: 'waterfall', n: 'Waterfall', urls: ['https://cdn.freesound.org/previews/257/257181_4486188-lq.mp3'] }
+                { id: 'ocean', n: 'Ocean Waves', u: 'https://actions.google.com/sounds/v1/water/waves_crashing_on_shore.ogg' },
+                { id: 'river', n: 'Gentle River', u: 'https://actions.google.com/sounds/v1/water/river_flowing.ogg' },
+                { id: 'stream', n: 'Stream', u: 'https://actions.google.com/sounds/v1/water/water_trickle.ogg' }
             ],
             "🌲 Earth": [
-                { id: 'forest', n: 'Forest', urls: ['https://cdn.freesound.org/previews/416/416062_5121236-lq.mp3'] },
-                { id: 'jungle', n: 'Jungle Night', urls: ['https://cdn.freesound.org/previews/447/447912_5674468-lq.mp3'] }
-            ],
-            "🐦 Life": [
-                { id: 'birds', n: 'Morning Birds', urls: ['https://cdn.freesound.org/previews/447/447912_5674468-lq.mp3'] },
-                { id: 'crickets', n: 'Crickets', urls: ['https://cdn.freesound.org/previews/412/412068_6975646-lq.mp3'] }
+                { id: 'forest', n: 'Forest', u: 'https://actions.google.com/sounds/v1/ambiences/forest_ambience.ogg' },
+                { id: 'night', n: 'Night Life', u: 'https://actions.google.com/sounds/v1/ambiences/cricket_chirping.ogg' }
             ],
             "🔥 Fire": [
-                { id: 'campfire', n: 'Campfire', urls: ['https://cdn.freesound.org/previews/320/320321_527080-lq.mp3'] }
-            ],
-            "🧘 Purity": [
-                { id: 'white', n: 'White Noise', urls: ['https://cdn.freesound.org/previews/360/360602_5121236-lq.mp3'] },
-                { id: 'brown', n: 'Brown Noise', urls: ['https://cdn.freesound.org/previews/360/360601_5121236-lq.mp3'] }
-            ],
-            "🏙️ Urban": [
-                { id: 'city', n: 'City Hum', urls: ['https://cdn.freesound.org/previews/268/268903_4548252-lq.mp3'] },
-                { id: 'subway', n: 'Subway Rumble', urls: ['https://cdn.freesound.org/previews/207/207924_624691-lq.mp3'] }
+                { id: 'fire', n: 'Campfire', u: 'https://actions.google.com/sounds/v1/ambiences/fireplace_crackling.ogg' }
             ],
             "☕ Indoor": [
-                { id: 'cafe', n: 'Café Murmur', urls: ['https://cdn.freesound.org/previews/547/547662_9879924-lq.mp3'] },
-                { id: 'library', n: 'Library', urls: ['https://cdn.freesound.org/previews/350/350359_6264898-lq.mp3'] }
+                { id: 'cafe', n: 'Cafe', u: 'https://actions.google.com/sounds/v1/ambiences/coffee_shop.ogg' },
+                { id: 'office', n: 'Quiet Office', u: 'https://actions.google.com/sounds/v1/ambiences/office_ambience.ogg' }
             ],
             "🏠 Domestic": [
-                { id: 'fan', n: 'Ceiling Fan', urls: ['https://cdn.freesound.org/previews/320/320398_527080-lq.mp3'] },
-                { id: 'clock', n: 'Clock Tick', urls: ['https://cdn.freesound.org/previews/350/350359_6264898-lq.mp3'] }
+                { id: 'fan', n: 'Electric Fan', u: 'https://actions.google.com/sounds/v1/mechanical/fan_running.ogg' },
+                { id: 'clock', n: 'Grandfather Clock', u: 'https://actions.google.com/sounds/v1/mechanical/clock_ticking.ogg' }
             ],
-            "🌙 Night": [
-                { id: 'midnight', n: 'Midnight Rain', urls: ['https://cdn.freesound.org/previews/416/416710_5121236-lq.mp3'] }
+            "🏙️ Urban": [
+                { id: 'city', n: 'City Street', u: 'https://actions.google.com/sounds/v1/ambiences/city_ambience.ogg' }
             ]
         };
 
         const AudioEngine = {
-            activeLayers: new Map(), // id -> { audio, name }
+            active: new Map(), 
 
-            toggle(soundId) {
-                if (this.activeLayers.has(soundId)) {
-                    this.activeLayers.get(soundId).audio.pause();
-                    this.activeLayers.delete(soundId);
+            toggle(id) {
+                if (this.active.has(id)) {
+                    const layer = this.active.get(id);
+                    layer.audio.pause();
+                    this.active.delete(id);
                 } else {
-                    const sound = Object.values(MASTER_LIBRARY).flat().find(s => s.id === soundId);
-                    const audio = new Audio(sound.urls[0]);
+                    const sound = Object.values(MASTER_LIBRARY).flat().find(s => s.id === id);
+                    const audio = new Audio(sound.u);
                     audio.loop = true;
                     audio.volume = 0.5;
-                    audio.crossOrigin = "anonymous";
-                    audio.addEventListener('loadedmetadata', () => audio.currentTime = Math.random() * audio.duration);
-                    audio.play().catch(() => console.log("Unlock required"));
-                    this.activeLayers.set(soundId, { audio, name: sound.n });
+                    // Play immediately to trigger browser permission
+                    const p = audio.play();
+                    if (p) p.catch(e => console.log("Click again to play"));
+                    this.active.set(id, { audio, name: sound.n });
                 }
+                render();
             },
 
-            setVolume(soundId, val) {
-                if (this.activeLayers.has(soundId)) {
-                    this.activeLayers.get(soundId).audio.volume = val;
+            setVol(id, v) {
+                if (this.active.has(id)) {
+                    this.active.get(id).audio.volume = v;
+                    render();
                 }
             },
 
             stopAll() {
-                this.activeLayers.forEach(l => l.audio.pause());
-                this.activeLayers.clear();
+                this.active.forEach(l => l.audio.pause());
+                this.active.clear();
+                render();
             }
         };
 
-        let state = { category: "🌧️ Weather", activeIds: [] };
+        let currentCat = "🌧️ Weather";
 
         function render() {
             const root = document.getElementById('root');
-            const activeItems = Array.from(AudioEngine.activeLayers.entries());
+            const layers = Array.from(AudioEngine.active.entries());
 
             root.innerHTML = `
                 <div class="min-h-screen p-6 md:p-12 max-w-5xl mx-auto pb-64">
-                    <div class="aura-field" style="background: #e0e7ff;"></div>
-                    <header class="mb-16">
+                    <div class="aura-field"></div>
+                    <header class="mb-12">
                         <h1 class="text-6xl font-serif italic" style="font-weight: 200;">presence</h1>
-                        <p style="font-size: 0.625rem; text-transform: uppercase; letter-spacing: 0.4em; opacity: 0.3; margin-top: 1rem;">Personal Ambient Mixer</p>
+                        <p style="font-size: 0.65rem; text-transform: uppercase; letter-spacing: 0.3em; opacity: 0.4;">Mix your atmosphere</p>
                     </header>
 
-                    <nav class="flex gap-8 mb-12 overflow-x-auto hide-scrollbar" style="border-bottom: 1px solid rgba(0,0,0,0.05);">
+                    <nav class="flex gap-6 mb-12 overflow-x-auto hide-scrollbar" style="border-bottom: 1px solid rgba(0,0,0,0.05);">
                         ${Object.keys(MASTER_LIBRARY).map(c => `
-                            <button onclick="setCategory('${c}')" style="padding-bottom: 1.25rem; font-size: 0.688rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.2em; white-space: nowrap; ${state.category === c ? 'border-bottom: 2px solid black; opacity: 1;' : 'opacity: 0.2;'}">${c}</button>
+                            <button onclick="currentCat='${c}';render();" style="padding-bottom: 1rem; font-size: 0.7rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.1em; white-space: nowrap; ${currentCat === c ? 'border-bottom: 2px solid #000; opacity: 1;' : 'opacity: 0.3;'}">${c}</button>
                         `).join('')}
                     </nav>
 
-                    <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4">
-                        ${MASTER_LIBRARY[state.category].map(s => {
-                            const isActive = AudioEngine.activeLayers.has(s.id);
+                    <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-6">
+                        ${MASTER_LIBRARY[currentCat].map(s => {
+                            const isPlaying = AudioEngine.active.has(s.id);
                             return `
-                            <button onclick="handleToggle('${s.id}')" style="padding: 1.5rem; border-radius: 2rem; text-align: left; transition: all 0.4s; height: 8rem; display: flex; flex-direction: column; justify-content: space-between; ${isActive ? 'background: white; box-shadow: 0 20px 40px rgba(0,0,0,0.1);' : 'background: rgba(255,255,255,0.4);'}">
-                                <div style="width: 0.5rem; height: 0.5rem; border-radius: 9999px; ${isActive ? 'background: #6366f1;' : 'background: rgba(0,0,0,0.1);'}"></div>
-                                <h3 style="font-size: 0.875rem; font-weight: 600;">${s.n}</h3>
+                            <button onclick="AudioEngine.toggle('${s.id}')" style="padding: 1.5rem; border-radius: 1.5rem; text-align: left; transition: all 0.3s; height: 9rem; display: flex; flex-direction: column; justify-content: space-between; ${isPlaying ? 'background: white; box-shadow: 0 15px 30px rgba(0,0,0,0.08); transform: translateY(-4px);' : 'background: rgba(255,255,255,0.5);'}">
+                                <div class="${isPlaying ? 'active-dot' : ''}" style="${!isPlaying ? 'width:8px; height:8px; background:rgba(0,0,0,0.1); border-radius:50%;' : ''}"></div>
+                                <h3 style="font-size: 0.9rem; font-weight: 600;">${s.n}</h3>
                             </button>
                         `}).join('')}
                     </div>
 
-                    ${activeItems.length > 0 ? `
+                    ${layers.length > 0 ? `
                         <div class="mixer-panel">
                             <div class="max-w-xl mx-auto">
                                 <div class="flex justify-between items-center mb-6">
-                                    <p style="font-size: 0.625rem; font-weight: 800; text-transform: uppercase; letter-spacing: 0.1em;">Active Mixer</p>
-                                    <button onclick="handleStopAll()" style="font-size: 0.625rem; font-weight: 800; text-transform: uppercase; color: #ef4444;">Clear All</button>
+                                    <span style="font-size: 0.6rem; font-weight: 800; text-transform: uppercase; letter-spacing: 0.2em;">Active Scene</span>
+                                    <button onclick="AudioEngine.stopAll()" style="color: #ef4444; font-size: 0.6rem; font-weight: 800; text-transform: uppercase;">Stop All</button>
                                 </div>
                                 <div class="flex flex-col gap-6">
-                                    ${activeItems.map(([id, layer]) => `
+                                    ${layers.map(([id, l]) => `
                                         <div class="flex flex-col gap-2">
                                             <div class="flex justify-between" style="font-size: 0.75rem; font-weight: 500;">
-                                                <span>${layer.name}</span>
-                                                <span style="opacity: 0.4;">${Math.round(layer.audio.volume * 100)}%</span>
+                                                <span>${l.name}</span>
+                                                <span style="opacity: 0.5;">${Math.round(l.audio.volume * 100)}%</span>
                                             </div>
-                                            <input type="range" min="0" max="1" step="0.01" value="${layer.audio.volume}" oninput="updateVol('${id}', this.value)">
+                                            <input type="range" min="0" max="1" step="0.01" value="${l.audio.volume}" oninput="AudioEngine.setVol('${id}', this.value)">
                                         </div>
                                     `).join('')}
                                 </div>
@@ -178,15 +161,7 @@
             `;
         }
 
-        function setCategory(cat) { state.category = cat; render(); }
-        function handleToggle(id) { AudioEngine.toggle(id); render(); }
-        function updateVol(id, val) { AudioEngine.setVolume(id, val); render(); }
-        function handleStopAll() { AudioEngine.stopAll(); render(); }
-
-        window.addEventListener('DOMContentLoaded', () => {
-            render();
-            setTimeout(() => document.getElementById('loadingScreen').classList.add('hidden'), 500);
-        });
+        window.onload = render;
     </script>
 </body>
 </html>
