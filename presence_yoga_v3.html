@@ -25,7 +25,6 @@
         input[type=range]::-webkit-slider-runnable-track { width: 100%; height: 4px; background: #e2e8f0; border-radius: 2px; }
         input[type=range]::-webkit-slider-thumb { -webkit-appearance: none; height: 16px; width: 16px; border-radius: 50%; background: #002b1d; cursor: pointer; margin-top: -6px; border: 2px solid white; box-shadow: 0 2px 4px rgba(0,0,0,0.1); }
         
-        /* Thin scrollbar for the library */
         .custom-scroll::-webkit-scrollbar { width: 4px; }
         .custom-scroll::-webkit-scrollbar-thumb { background: #e2e8f0; border-radius: 10px; }
     </style>
@@ -46,11 +45,8 @@
             const [aiDuration, setAiDuration] = useState(60);
 
             const yogaStyles = [
-                "Drishti Yoga", "Hatha", "Ashtanga", "Iyengar", "Kundalini", "Sivananda", 
-                "Vinyasa Flow", "Power Yoga", "Rocket Yoga", "Jivamukti", 
-                "Baptiste Power", "Yin Yoga", "Restorative", "Gentle Yoga", 
-                "Chair Yoga", "Therapeutic", "Somatic Yoga", "Bikram", 
-                "Hot Vinyasa", "Hot Power", "Inferno Hot Pilates"
+                "Drishti Yoga", "Hatha", "Ashtanga", "Iyengar", "Kundalini", "Vinyasa Flow", 
+                "Power Yoga", "Yin Yoga", "Restorative", "Gentle Yoga"
             ];
 
             const categories = ["All Categories", "Standing", "Seated", "Floor", "Core", "Backbends", "Inversions", "Restorative"];
@@ -87,6 +83,10 @@
 
             const updateItem = (index, field, value) => {
                 const newFlow = [...seq.flow];
+                // Reset value if switching types to keep it within range
+                if (field === 'holdType') {
+                    newFlow[index].holdVal = (value === 'breath') ? 5 : 30;
+                }
                 newFlow[index][field] = value;
                 setSeq({...seq, flow: newFlow});
             };
@@ -96,6 +96,7 @@
                 const matchesLevel = p.level === activeLevel;
                 const matchesCategory = selectedCategory === 'All Categories' || 
                                        (p.category && p.category.toLowerCase() === selectedCategory.toLowerCase());
+                // Show ONLY roots in the main map; variations are nested
                 return matchesSearch && matchesLevel && matchesCategory && !p.isVariation && !p.parentPose;
             });
 
@@ -110,67 +111,37 @@
                             <div className="w-10 h-10 bg-[#002b1d] rounded-full flex items-center justify-center text-white font-serif text-xl font-bold">P</div>
                             <h1 className="font-serif text-3xl text-[#002b1d]">Presence Yoga</h1>
                         </div>
-                        <div className="text-[10px] uppercase tracking-[0.3em] text-slate-400 font-bold">Drishti Studio • Vault V3</div>
                     </header>
 
                     <div className="flex flex-1 overflow-hidden">
-                        {/* FULL SIDEBAR RESTORED */}
+                        {/* SIDEBAR WITH NESTED SUBCATEGORIES */}
                         <aside className="w-[360px] border-r overflow-y-auto bg-white p-7 space-y-7 custom-scroll">
-                            <section className="space-y-5">
-                                <h3 className="text-[10px] font-bold text-slate-400 uppercase tracking-widest border-b pb-2">AI Sequencing</h3>
-                                
-                                <div className="space-y-2">
-                                    <label className="text-[11px] font-semibold text-slate-500 uppercase">Style</label>
-                                    <select className="w-full p-2.5 border rounded-xl bg-slate-50 text-sm outline-none" value={selectedStyle} onChange={e => setSelectedStyle(e.target.value)}>
-                                        {yogaStyles.map(s => <option key={s} value={s}>{s}</option>)}
-                                    </select>
+                            <section className="space-y-4">
+                                <h3 className="text-[10px] font-bold text-slate-400 uppercase tracking-widest border-b pb-2">AI Filters</h3>
+                                <select className="w-full p-2.5 border rounded-xl bg-slate-50 text-sm outline-none" value={selectedCategory} onChange={e => setSelectedCategory(e.target.value)}>
+                                    {categories.map(c => <option key={c} value={c}>{c}</option>)}
+                                </select>
+                                <div className="flex bg-slate-100 p-1 rounded-xl border">
+                                    {['Beginner', 'Intermediate', 'Advanced'].map(lvl => (
+                                        <button key={lvl} onClick={() => setActiveLevel(lvl)} className={`flex-1 py-1.5 text-[10px] rounded-lg ${activeLevel === lvl ? 'bg-white shadow-sm font-bold' : 'text-slate-400'}`}>{lvl}</button>
+                                    ))}
                                 </div>
-
-                                <div className="space-y-2">
-                                    <label className="text-[11px] font-semibold text-slate-500 uppercase">Level</label>
-                                    <div className="flex bg-slate-100 p-1 rounded-xl border">
-                                        {['Beginner', 'Intermediate', 'Advanced'].map(lvl => (
-                                            <button key={lvl} onClick={() => setActiveLevel(lvl)} className={`flex-1 py-1.5 text-[10px] rounded-lg transition-all ${activeLevel === lvl ? 'bg-white shadow-sm text-slate-900 font-bold' : 'text-slate-400'}`}>{lvl}</button>
-                                        ))}
-                                    </div>
-                                </div>
-
-                                <div className="space-y-3">
-                                    <div className="flex justify-between text-[11px] font-bold">
-                                        <label className="text-slate-500 uppercase tracking-tighter">Class Duration</label>
-                                        <span className="text-emerald-700">{aiDuration} min</span>
-                                    </div>
-                                    <input type="range" min="15" max="120" step="5" value={aiDuration} onChange={e => setAiDuration(e.target.value)} className="w-full" />
-                                </div>
-
-                                <button className="w-full py-3 bg-[#002b1d] text-white rounded-xl text-xs font-bold shadow-md hover:bg-black transition-all">
-                                    ✨ Generate AI Flow
-                                </button>
                             </section>
-
-                            <hr className="border-slate-100" />
 
                             <section className="space-y-4">
                                 <h3 className="text-[10px] font-bold text-slate-400 uppercase tracking-widest border-b pb-2">Pose Library</h3>
-                                
-                                <div className="space-y-2">
-                                    <label className="text-[11px] font-semibold text-slate-500 uppercase">Filter Category</label>
-                                    <select className="w-full p-2.5 border rounded-xl bg-slate-50 text-sm outline-none" value={selectedCategory} onChange={e => setSelectedCategory(e.target.value)}>
-                                        {categories.map(c => <option key={c} value={c}>{c}</option>)}
-                                    </select>
-                                </div>
-
-                                <input type="text" placeholder="Search poses..." className="w-full p-2 text-sm italic outline-none border-b" onChange={e => setSearch(e.target.value)} />
-                                
-                                <div className="space-y-3 pt-2">
+                                <input type="text" placeholder="Search..." className="w-full p-2 text-sm italic outline-none border-b" onChange={e => setSearch(e.target.value)} />
+                                <div className="space-y-4 pt-2">
                                     {filteredList.map(p => (
                                         <div key={p.id} className="space-y-2">
-                                            <div onClick={() => addPose(p.id)} className="flex justify-between items-center cursor-pointer hover:text-emerald-600 transition-colors">
-                                                <span className="text-sm font-medium text-slate-700">{p.name}</span>
-                                                <span className="text-slate-200 font-bold">+</span>
+                                            {/* Main Parent Pose */}
+                                            <div onClick={() => addPose(p.id)} className="flex justify-between items-center cursor-pointer hover:text-emerald-600 font-medium text-slate-700 text-sm">
+                                                <span>{p.name}</span>
+                                                <span className="text-slate-200">+</span>
                                             </div>
+                                            {/* RESTORED SUBCATEGORIES (Variations) */}
                                             {p.variations && p.variations.map(v => (
-                                                <div key={v.id} onClick={() => addPose(v.id)} className="ml-4 pl-3 border-l text-[11px] text-slate-400 cursor-pointer flex justify-between hover:text-emerald-500">
+                                                <div key={v.id} onClick={() => addPose(v.id)} className="ml-4 pl-3 border-l text-[11px] text-slate-400 cursor-pointer flex justify-between hover:text-emerald-500 hover:border-emerald-500 transition-all">
                                                     <span>• {v.name}</span>
                                                     <span>+</span>
                                                 </div>
@@ -187,54 +158,44 @@
                                 <div className="flex justify-between items-center">
                                     <h2 className="font-serif text-4xl text-slate-800 font-bold">Sequence Flow</h2>
                                     <div className="stats-box px-6 py-3 text-center">
-                                        <p className="text-[9px] font-bold text-blue-400 uppercase">Estimated Total</p>
+                                        <p className="text-[9px] font-bold text-blue-400 uppercase">Est. Practice</p>
                                         <p className="text-xl font-serif font-bold text-blue-900">{estMinutes} min</p>
                                     </div>
                                 </div>
 
                                 <div className="space-y-8">
                                     {seq.flow.map((item, i) => (
-                                        <div key={i} className="bg-white rounded-[2rem] p-8 shadow-sm border border-slate-200 space-y-8 group transition-all hover:shadow-md relative">
+                                        <div key={i} className="bg-white rounded-[2rem] p-8 shadow-sm border border-slate-200 space-y-8 group relative">
                                             <div className="flex justify-between items-center">
                                                 <div className="flex items-center gap-4">
                                                     <span className="text-slate-300 font-serif italic text-2xl">{i + 1}.</span>
                                                     <h3 className="font-serif text-3xl text-slate-800">{library[item.id]?.name}</h3>
                                                 </div>
-                                                <button onClick={() => setSeq(s => ({...s, flow: s.flow.filter((_, idx) => idx !== i)}))} className="text-slate-200 hover:text-red-400 transition-colors">✕</button>
+                                                <button onClick={() => setSeq(s => ({...s, flow: s.flow.filter((_, idx) => idx !== i)}))} className="text-slate-200 hover:text-red-400">✕</button>
                                             </div>
 
                                             <div className="grid grid-cols-1 md:grid-cols-2 gap-10">
-                                                {/* SEPARATE BUTTONS FOR METHOD */}
                                                 <div className="space-y-4">
                                                     <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Hold Method</label>
                                                     <div className="flex gap-2">
-                                                        <button 
-                                                            onClick={() => updateItem(i, 'holdType', 'breath')}
-                                                            className={`flex-1 py-3 rounded-xl text-xs method-btn ${item.holdType === 'breath' ? 'active shadow-lg shadow-emerald-100' : 'bg-white text-slate-400'}`}
-                                                        >
-                                                            🌬️ Breath Count
-                                                        </button>
-                                                        <button 
-                                                            onClick={() => updateItem(i, 'holdType', 'time')}
-                                                            className={`flex-1 py-3 rounded-xl text-xs method-btn ${item.holdType === 'time' ? 'active shadow-lg shadow-emerald-100' : 'bg-white text-slate-400'}`}
-                                                        >
-                                                            ⏱️ Timed Hold
-                                                        </button>
+                                                        <button onClick={() => updateItem(i, 'holdType', 'breath')} className={`flex-1 py-3 rounded-xl text-xs method-btn ${item.holdType === 'breath' ? 'active shadow-lg shadow-emerald-100' : 'bg-white text-slate-400'}`}>🌬️ Breath</button>
+                                                        <button onClick={() => updateItem(i, 'holdType', 'time')} className={`flex-1 py-3 rounded-xl text-xs method-btn ${item.holdType === 'time' ? 'active shadow-lg shadow-emerald-100' : 'bg-white text-slate-400'}`}>⏱️ Timed</button>
                                                     </div>
                                                 </div>
 
                                                 <div className="space-y-4">
                                                     <div className="flex justify-between items-center text-[10px] font-bold uppercase tracking-widest">
                                                         <label className="text-slate-400">Duration</label>
-                                                        <span className="text-emerald-700">{item.holdVal} {item.holdType === 'breath' ? 'Breaths' : 'Sec'}</span>
+                                                        <span className="text-emerald-700 font-bold">{item.holdVal} {item.holdType === 'breath' ? 'Breaths' : 'Sec'}</span>
                                                     </div>
+                                                    {/* UPDATED DYNAMIC SLIDER RANGE */}
                                                     <input 
                                                         type="range" 
                                                         min={item.holdType === 'breath' ? "1" : "5"} 
-                                                        max={item.holdType === 'breath' ? "20" : "180"} 
+                                                        max={item.holdType === 'breath' ? "20" : "300"} 
                                                         step={item.holdType === 'breath' ? "1" : "5"} 
                                                         value={item.holdVal} 
-                                                        onChange={e => updateItem(i, 'holdVal', e.target.value)}
+                                                        onChange={e => updateItem(i, 'holdVal', parseInt(e.target.value))}
                                                         className="w-full"
                                                     />
                                                 </div>
@@ -242,17 +203,17 @@
 
                                             <div className="pt-6 border-t border-slate-50 flex items-center justify-between gap-8">
                                                 <div className="flex-1 space-y-2">
-                                                    <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Gaze (Drishti)</label>
+                                                    <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Drishti Point</label>
                                                     <select 
                                                         className="w-full p-2 border-b border-slate-100 bg-transparent text-sm text-blue-800 font-medium outline-none"
                                                         value={item.drishti}
                                                         onChange={e => updateItem(i, 'drishti', e.target.value)}
                                                     >
-                                                        {drishtiPoints.map(d => <option key={d.name} value={d.name}>{d.name} — {d.focus}</option>)}
+                                                        {drishtiPoints.map(d => <option key={d.name} value={d.name}>{d.name} ({d.focus})</option>)}
                                                     </select>
                                                 </div>
                                                 <div className="flex-1 bg-slate-50 p-4 rounded-xl text-[11px] text-slate-500 italic">
-                                                    "Fix your gaze on the <strong>{drishtiPoints.find(d => d.name === item.drishti)?.focus}</strong> while holding for {item.holdVal} {item.holdType === 'breath' ? 'breaths' : 'seconds'}."
+                                                    "Fix your gaze on the <strong>{drishtiPoints.find(d => d.name === item.drishti)?.focus}</strong> for {item.holdVal} {item.holdType === 'breath' ? 'breaths' : 'seconds'}."
                                                 </div>
                                             </div>
                                         </div>
