@@ -55,17 +55,29 @@
     // BRIDGE TO EXTERNAL LIBRARIES
     // This allows the app to use either of your database files automatically
     const getMasterLibrary = () => {
-        const lib = window.yogaLibraryData || window.POSE_LIBRARY || window.POSE_DATABASE || {};
-        // If it's the POSE_DATABASE format, flatten categories for the search logic
-        if (window.POSE_DATABASE && !window.yogaLibraryData) {
-            return Object.values(window.POSE_DATABASE).flat().reduce((acc, pose) => {
-                acc[pose.id] = pose;
-                return acc;
-            }, {});
+        // 1. Try to get the variations library first, then the standard database
+        const rawData = window.yogaLibraryData || window.POSE_DATABASE || window.POSE_LIBRARY || {};
+        
+        // 2. Check if the data is wrapped in a "categories" array (Common in your files)
+        if (rawData.categories && Array.isArray(rawData.categories)) {
+            const flattened = {};
+            rawData.categories.forEach(category => {
+                category.poses.forEach(pose => {
+                    // Use the pose ID or name as the key
+                    const id = pose.id || pose.name.toLowerCase().replace(/\s+/g, '-');
+                    flattened[id] = { ...pose, categoryName: category.name };
+                });
+            });
+            return flattened;
         }
-        return lib;
-    };
 
+        // 3. If it's already a flat object of poses, return it
+        if (Object.keys(rawData).length > 0) {
+            return rawData;
+        }
+
+        return {};
+    };
     function PresenceYoga() {
       const [theme, setTheme] = useState('light');
       const [selectedLevel, setSelectedLevel] = useState('Beginner');
