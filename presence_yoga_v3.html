@@ -51,31 +51,36 @@
         const Trash = () => <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M3 6h18m-2 0v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6m3 0V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2"/></svg>;
 
         // --- DATA ENGINE ---
-        const getMasterLibrary = () => {
-            const sources = [
-                window.yogaLibraryData, 
-                window.POSE_DATABASE, 
-                window.POSE_LIBRARY,
-                window.allPoses
-            ].filter(Boolean);
+        cconst getMasterLibrary = () => {
+            // This looks specifically for the ALL_POSES array you created in pose-database.js
+            const sourceArray = window.allPoses || window.ALL_POSES;
+            
+            if (sourceArray && Array.isArray(sourceArray)) {
+                const flattened = {};
+                sourceArray.forEach(pose => {
+                    // We use the ID (1, 2, 101, etc.) as the key
+                    const id = pose.id || pose.name.toLowerCase().replace(/\s+/g, '-');
+                    flattened[id] = pose;
+                });
+                return flattened;
+            }
 
-            let flattened = {};
-            sources.forEach(source => {
-                if (Array.isArray(source)) {
-                    source.forEach(pose => {
-                        const id = pose.id || (pose.name ? pose.name.toLowerCase().replace(/\s+/g, '-') : Math.random());
-                        flattened[id] = pose;
-                    });
-                } else if (source.categories) {
-                    source.categories.forEach(cat => {
-                        cat.poses?.forEach(pose => {
-                            const id = pose.id || (pose.name ? pose.name.toLowerCase().replace(/\s+/g, '-') : Math.random());
-                            flattened[id] = { ...pose, categoryName: cat.name };
+            // Fallback: If ALL_POSES isn't ready, loop through the poseDatabase keys (standing, seated, etc.)
+            const rawDB = window.poseDatabase || window.POSE_DATABASE;
+            if (rawDB) {
+                const flattened = {};
+                Object.keys(rawDB).forEach(category => {
+                    if (Array.isArray(rawDB[category])) {
+                        rawDB[category].forEach(pose => {
+                            const id = pose.id || pose.name.toLowerCase().replace(/\s+/g, '-');
+                            flattened[id] = { ...pose, categoryName: category };
                         });
-                    });
-                }
-            });
-            return flattened;
+                    }
+                });
+                return flattened;
+            }
+
+            return {};
         };
 
         function App() {
