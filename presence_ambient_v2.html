@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
-    <title>Presence · Ambient</title>
+    <title>Presence · Ambient Mixer</title>
     <style>
         body { background: #fdfcfb; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; margin: 0; overflow-x: hidden; touch-action: manipulation; color: #1a1a1a; }
         .font-serif { font-family: 'Cormorant Garamond', serif; }
@@ -15,11 +15,10 @@
         .p-6 { padding: 1.5rem; }
         .max-w-5xl { max-width: 64rem; }
         .mx-auto { margin-left: auto; margin-right: auto; }
-        .pb-40 { padding-bottom: 10rem; }
+        .pb-64 { padding-bottom: 16rem; }
         .flex { display: flex; }
         .flex-col { flex-direction: column; }
         .gap-4 { gap: 1rem; }
-        .gap-8 { gap: 2rem; }
         .justify-between { justify-content: space-between; }
         .mb-12 { margin-bottom: 3rem; }
         .mb-16 { margin-bottom: 4rem; }
@@ -27,26 +26,24 @@
         .italic { font-style: italic; }
         .grid { display: grid; }
         .grid-cols-2 { grid-template-columns: repeat(2, minmax(0, 1fr)); }
-        .rounded-full { border-radius: 9999px; }
-        .px-6 { padding-left: 1.5rem; padding-right: 1.5rem; }
-        .py-2 { padding-top: 0.5rem; padding-bottom: 0.5rem; }
-        .fixed { position: fixed; }
-        .bottom-10 { bottom: 2.5rem; }
         
-        @media (min-width: 640px) { .sm:grid-cols-3 { grid-template-columns: repeat(3, minmax(0, 1fr)); } .md:p-12 { padding: 3rem; } .md:flex-row { flex-direction: row; } }
+        @media (min-width: 640px) { .sm:grid-cols-3 { grid-template-columns: repeat(3, minmax(0, 1fr)); } .md:p-12 { padding: 3rem; } }
         @media (min-width: 1024px) { .lg:grid-cols-4 { grid-template-columns: repeat(4, minmax(0, 1fr)); } }
         
         button { border: none; background: none; cursor: pointer; -webkit-tap-highlight-color: transparent; }
+        
+        /* Range Slider Styling */
+        input[type=range] { -webkit-appearance: none; width: 100%; background: transparent; }
+        input[type=range]:focus { outline: none; }
+        input[type=range]::-webkit-slider-runnable-track { width: 100%; height: 4px; cursor: pointer; background: rgba(0,0,0,0.1); border-radius: 2px; }
+        input[type=range]::-webkit-slider-thumb { height: 16px; width: 16px; border-radius: 50%; background: #000; cursor: pointer; -webkit-appearance: none; margin-top: -6px; }
+
+        .mixer-panel { position: fixed; bottom: 0; left: 0; right: 0; background: rgba(255,255,255,0.9); backdrop-filter: blur(30px); border-top: 1px solid rgba(0,0,0,0.05); padding: 1.5rem; z-index: 1000; max-height: 40vh; overflow-y: auto; }
     </style>
     <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@300;400;600&display=swap" rel="stylesheet">
 </head>
 <body>
-    <div class="loading-screen" id="loadingScreen">
-        <div style="text-align: center;">
-            <p style="font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.1em; opacity: 0.5;">Presence</p>
-        </div>
-    </div>
-    
+    <div class="loading-screen" id="loadingScreen"><p>Presence</p></div>
     <div id="root"></div>
 
     <script>
@@ -95,33 +92,32 @@
         };
 
         const AudioEngine = {
-            activeLayers: new Map(), // id -> Audio object
+            activeLayers: new Map(), // id -> { audio, name }
 
             toggle(soundId) {
                 if (this.activeLayers.has(soundId)) {
-                    const audio = this.activeLayers.get(soundId);
-                    audio.pause();
+                    this.activeLayers.get(soundId).audio.pause();
                     this.activeLayers.delete(soundId);
                 } else {
                     const sound = Object.values(MASTER_LIBRARY).flat().find(s => s.id === soundId);
                     const audio = new Audio(sound.urls[0]);
                     audio.loop = true;
+                    audio.volume = 0.5;
                     audio.crossOrigin = "anonymous";
-                    
-                    // The "Non-Looping" Logic
-                    audio.addEventListener('loadedmetadata', () => {
-                        audio.currentTime = Math.random() * audio.duration;
-                    });
+                    audio.addEventListener('loadedmetadata', () => audio.currentTime = Math.random() * audio.duration);
+                    audio.play().catch(() => console.log("Unlock required"));
+                    this.activeLayers.set(soundId, { audio, name: sound.n });
+                }
+            },
 
-                    audio.play().catch(() => {
-                        console.log("Interaction required to start audio.");
-                    });
-                    this.activeLayers.set(soundId, audio);
+            setVolume(soundId, val) {
+                if (this.activeLayers.has(soundId)) {
+                    this.activeLayers.get(soundId).audio.volume = val;
                 }
             },
 
             stopAll() {
-                this.activeLayers.forEach(a => a.pause());
+                this.activeLayers.forEach(l => l.audio.pause());
                 this.activeLayers.clear();
             }
         };
@@ -130,16 +126,14 @@
 
         function render() {
             const root = document.getElementById('root');
-            
+            const activeItems = Array.from(AudioEngine.activeLayers.entries());
+
             root.innerHTML = `
-                <div class="min-h-screen p-6 md:p-12 max-w-5xl mx-auto pb-40">
+                <div class="min-h-screen p-6 md:p-12 max-w-5xl mx-auto pb-64">
                     <div class="aura-field" style="background: #e0e7ff;"></div>
-                    
-                    <header class="flex flex-col md:flex-row justify-between items-start mb-16 gap-8">
-                        <div>
-                            <h1 class="text-6xl font-serif italic" style="font-weight: 200;">presence</h1>
-                            <p style="font-size: 0.625rem; text-transform: uppercase; letter-spacing: 0.4em; opacity: 0.3; margin-top: 1rem;">Layered Ambient Spaces</p>
-                        </div>
+                    <header class="mb-16">
+                        <h1 class="text-6xl font-serif italic" style="font-weight: 200;">presence</h1>
+                        <p style="font-size: 0.625rem; text-transform: uppercase; letter-spacing: 0.4em; opacity: 0.3; margin-top: 1rem;">Personal Ambient Mixer</p>
                     </header>
 
                     <nav class="flex gap-8 mb-12 overflow-x-auto hide-scrollbar" style="border-bottom: 1px solid rgba(0,0,0,0.05);">
@@ -150,22 +144,34 @@
 
                     <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4">
                         ${MASTER_LIBRARY[state.category].map(s => {
-                            const isActive = state.activeIds.includes(s.id);
+                            const isActive = AudioEngine.activeLayers.has(s.id);
                             return `
                             <button onclick="handleToggle('${s.id}')" style="padding: 1.5rem; border-radius: 2rem; text-align: left; transition: all 0.4s; height: 8rem; display: flex; flex-direction: column; justify-content: space-between; ${isActive ? 'background: white; box-shadow: 0 20px 40px rgba(0,0,0,0.1);' : 'background: rgba(255,255,255,0.4);'}">
                                 <div style="width: 0.5rem; height: 0.5rem; border-radius: 9999px; ${isActive ? 'background: #6366f1;' : 'background: rgba(0,0,0,0.1);'}"></div>
-                                <div>
-                                    <h3 style="font-size: 0.875rem; font-weight: 600;">${s.n}</h3>
-                                    <p style="font-size: 0.563rem; opacity: 0.3; text-transform: uppercase;">${isActive ? 'Active' : 'Add to Mix'}</p>
-                                </div>
+                                <h3 style="font-size: 0.875rem; font-weight: 600;">${s.n}</h3>
                             </button>
                         `}).join('')}
                     </div>
 
-                    ${state.activeIds.length > 0 ? `
-                        <div class="fixed bottom-10" style="left: 50%; transform: translateX(-50%); width: 90%; max-width: 28rem; background: rgba(255,255,255,0.95); backdrop-filter: blur(40px); padding: 1.5rem; border-radius: 2.5rem; box-shadow: 0 25px 50px -12px rgba(0,0,0,0.25); display: flex; justify-content: space-between; align-items: center;">
-                            <p style="font-weight: 500; font-size: 0.875rem;">${state.activeIds.length} Layers Active</p>
-                            <button onclick="handleStopAll()" style="background: black; color: white; padding: 0.75rem 2rem; border-radius: 9999px; font-size: 0.625rem; font-weight: 700; text-transform: uppercase;">Stop All</button>
+                    ${activeItems.length > 0 ? `
+                        <div class="mixer-panel">
+                            <div class="max-w-xl mx-auto">
+                                <div class="flex justify-between items-center mb-6">
+                                    <p style="font-size: 0.625rem; font-weight: 800; text-transform: uppercase; letter-spacing: 0.1em;">Active Mixer</p>
+                                    <button onclick="handleStopAll()" style="font-size: 0.625rem; font-weight: 800; text-transform: uppercase; color: #ef4444;">Clear All</button>
+                                </div>
+                                <div class="flex flex-col gap-6">
+                                    ${activeItems.map(([id, layer]) => `
+                                        <div class="flex flex-col gap-2">
+                                            <div class="flex justify-between" style="font-size: 0.75rem; font-weight: 500;">
+                                                <span>${layer.name}</span>
+                                                <span style="opacity: 0.4;">${Math.round(layer.audio.volume * 100)}%</span>
+                                            </div>
+                                            <input type="range" min="0" max="1" step="0.01" value="${layer.audio.volume}" oninput="updateVol('${id}', this.value)">
+                                        </div>
+                                    `).join('')}
+                                </div>
+                            </div>
                         </div>
                     ` : ''}
                 </div>
@@ -173,26 +179,13 @@
         }
 
         function setCategory(cat) { state.category = cat; render(); }
-        
-        function handleToggle(id) {
-            if (state.activeIds.includes(id)) {
-                state.activeIds = state.activeIds.filter(i => i !== id);
-            } else {
-                state.activeIds.push(id);
-            }
-            AudioEngine.toggle(id);
-            render();
-        }
-
-        function handleStopAll() {
-            AudioEngine.stopAll();
-            state.activeIds = [];
-            render();
-        }
+        function handleToggle(id) { AudioEngine.toggle(id); render(); }
+        function updateVol(id, val) { AudioEngine.setVolume(id, val); render(); }
+        function handleStopAll() { AudioEngine.stopAll(); render(); }
 
         window.addEventListener('DOMContentLoaded', () => {
             render();
-            setTimeout(() => document.getElementById('loadingScreen').classList.add('hidden'), 300);
+            setTimeout(() => document.getElementById('loadingScreen').classList.add('hidden'), 500);
         });
     </script>
 </body>
