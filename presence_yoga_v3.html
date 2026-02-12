@@ -7,7 +7,6 @@
     
     <script src="pose-database.js"></script>
     <script src="yoga-library-with-variations.js"></script>
-
     <script src="https://cdn.tailwindcss.com"></script>
     <script crossorigin src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
     <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
@@ -15,27 +14,20 @@
     
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@400;600&family=Inter:wght@300;400;600&display=swap');
-        
-        body { font-family: 'Inter', sans-serif; background-color: #f8fafc; }
+        body { font-family: 'Inter', sans-serif; background-color: #ffffff; color: #334155; }
         .font-serif { font-family: 'Cormorant Garamond', serif; }
         
-        /* Custom scrollbar to match the sleek UI */
-        ::-webkit-scrollbar { width: 5px; }
-        ::-webkit-scrollbar-track { background: transparent; }
-        ::-webkit-scrollbar-thumb { background: #e2e8f0; border-radius: 10px; }
-
-        .stats-box { background-color: #eff6ff; border: 1px solid #dbeafe; border-radius: 16px; }
-        
-        /* Smooth transitions for the range slider */
-        input[type=range]::-webkit-slider-thumb {
-            -webkit-appearance: none;
-            height: 18px;
-            width: 18px;
-            border-radius: 50%;
-            background: #3b82f6;
-            cursor: pointer;
-            box-shadow: 0 0 10px rgba(59, 130, 246, 0.3);
+        /* Stats Box Styling from your screenshot */
+        .stats-box { 
+            background-color: #f0f4ff; 
+            border: 1px solid #dbeafe; 
+            border-radius: 12px; 
+            padding: 24px;
         }
+
+        /* Scrollbar */
+        ::-webkit-scrollbar { width: 4px; }
+        ::-webkit-scrollbar-thumb { background: #e2e8f0; border-radius: 10px; }
     </style>
 </head>
 <body>
@@ -53,9 +45,21 @@
             const [duration, setDuration] = useState(60);
             const [selectedStyle, setSelectedStyle] = useState('Hatha');
 
+            // The full list from your screen print
+            const yogaStyles = [
+               // Classical & Popular
+    "Hatha", "Ashtanga", "Iyengar", "Vinyasa Flow", "Power Yoga", "Yin Yoga",
+    // Spiritual & Energetic
+    "Kundalini", "Sivananda", "Jivamukti", "Yoga Nidra", "Nada Yoga", "Tantric Yoga",
+    // Modern & Fusion
+    "Rocket Yoga", "Baptiste Power", "Budokon", "Acro Yoga", "Aerial Yoga", "CorePower",
+    // Therapeutic & Accessible
+    "Restorative", "Gentle Yoga", "Chair Yoga", "Therapeutic", "Somatic Yoga", "Prenatal", "Trauma-Informed",
+    // Heat-Based
+    "Bikram", "Hot Vinyasa", "Inferno Hot Pilates"
+];
             useEffect(() => {
                 const syncData = () => {
-                    // Pulls from your attached .js files
                     const data = window.allPoses || window.yogaLibraryVariations || [];
                     if (data.length > 0) {
                         const dict = {};
@@ -64,209 +68,190 @@
                     }
                 };
                 syncData();
-                const timer = setInterval(syncData, 2000);
-                return () => clearInterval(timer);
             }, []);
 
-            const styleInfo = {
-                'Hatha': 'Classical yoga emphasizing alignment, balance, and breath hold.',
-                'Vinyasa': 'Dynamic flow connecting movement with breath at a faster pace.',
-                'Yin': 'Meditative practice with long-held floor poses targeting deep tissues.'
-            };
-
-            // Filtering logic for the Sidebar
-            const filteredList = Object.values(library).filter(p => {
-                const matchesSearch = p.name?.toLowerCase().includes(search.toLowerCase());
-                const matchesLevel = p.level === activeLevel;
-                
-                let matchesStyle = true;
-                if (selectedStyle === 'Yin') {
-                    matchesStyle = ['restorative', 'seated', 'floor', 'hipOpeners'].includes(p.category?.toLowerCase());
-                } else if (selectedStyle === 'Vinyasa') {
-                    matchesStyle = ['standing', 'vinyasa', 'core', 'backbends'].includes(p.category?.toLowerCase());
-                }
-
-                return matchesSearch && matchesLevel && matchesStyle && !p.isVariation;
-            });
+            // Filter for the Sidebar Pose Library (Parent Poses Only)
+            const mainList = Object.values(library).filter(p => 
+                !p.isVariation && !p.parentPose &&
+                p.name?.toLowerCase().includes(search.toLowerCase())
+            );
 
             const totalPoses = seq.flow.length;
-            const estimatedSeconds = seq.flow.reduce((acc, id) => acc + (library[id]?.duration || 0), 0);
-            const estimatedMinutes = Math.round(estimatedSeconds / 60);
+            const estSeconds = seq.flow.reduce((acc, id) => acc + (library[id]?.duration || 0), 0);
+            const estMinutes = Math.round(estSeconds / 60) || (totalPoses * 5); // Default to 5m if no duration set
 
             return (
-                <div className="flex flex-col h-screen overflow-hidden">
+                <div className="flex flex-col h-screen">
                     {/* Header */}
-                    <header className="p-6 bg-white border-b flex items-center gap-5 z-10">
-                        <div className="w-12 h-12 bg-[#002b1d] rounded-full flex items-center justify-center text-white font-serif text-2xl font-bold shadow-lg">P</div>
+                    <header className="p-6 border-b flex items-center gap-4">
+                        <div className="w-12 h-12 bg-[#002b1d] rounded-full flex items-center justify-center text-white font-serif text-2xl font-bold">P</div>
                         <div>
-                            <h1 className="font-serif text-4xl text-[#002b1d] leading-none">Presence Yoga</h1>
-                            <p className="text-[10px] uppercase tracking-[0.3em] text-slate-400 mt-1 font-bold">The Vault • AI Studio</p>
+                            <h1 className="font-serif text-4xl text-[#002b1d] leading-tight">Presence Yoga</h1>
+                            <p className="text-sm text-slate-500 font-light">AI-Powered Sequence Studio</p>
                         </div>
                     </header>
 
                     <div className="flex flex-1 overflow-hidden">
-                        {/* Left Sidebar: Controls & Library */}
-                        <aside className="w-[380px] bg-white border-r flex flex-col shadow-sm">
-                            <div className="p-8 space-y-8 overflow-y-auto">
-                                <section className="space-y-6">
-                                    <h3 className="text-[10px] font-bold tracking-[0.2em] text-slate-400 uppercase border-b pb-2">AI Sequencing</h3>
-                                    
-                                    <div className="space-y-2">
-                                        <label className="text-sm text-slate-600 font-semibold">Style</label>
-                                        <select 
-                                            className="w-full p-3 border border-slate-200 rounded-xl bg-slate-50 text-slate-700 outline-none focus:ring-2 focus:ring-blue-500 transition-all"
-                                            value={selectedStyle}
-                                            onChange={(e) => setSelectedStyle(e.target.value)}
-                                        >
-                                            <option>Hatha</option>
-                                            <option>Vinyasa</option>
-                                            <option>Yin</option>
-                                        </select>
-                                        <p className="text-[11px] italic text-slate-400 leading-relaxed">{styleInfo[selectedStyle]}</p>
+                        {/* LEFT SIDEBAR */}
+                        <aside className="w-[400px] border-r overflow-y-auto flex flex-col bg-white">
+                            <div className="p-8 space-y-6">
+                                <h3 className="text-[11px] font-bold tracking-[0.2em] text-slate-400 uppercase">AI Sequencing</h3>
+                                
+                                {/* Category */}
+                                <div className="space-y-2">
+                                    <label className="text-sm text-slate-600">Category</label>
+                                    <select className="w-full p-3 border rounded-lg bg-white text-slate-700 outline-none appearance-none border-slate-200">
+                                        <option>All Categories</option>
+                                    </select>
+                                </div>
+
+                                {/* Style - Populated with your full list */}
+                                <div className="space-y-2">
+                                    <label className="text-sm text-slate-600">Style</label>
+                                    <select 
+                                        className="w-full p-3 border rounded-lg bg-white text-slate-700 outline-none border-slate-200"
+                                        value={selectedStyle}
+                                        onChange={(e) => setSelectedStyle(e.target.value)}
+                                    >
+                                        {yogaStyles.map(s => <option key={s} value={s}>{s}</option>)}
+                                    </select>
+                                    <p className="text-[11px] italic text-slate-400">Classical yoga emphasizing alignment and breath</p>
+                                </div>
+
+                                {/* Level Toggle from screenshot */}
+                                <div className="space-y-2">
+                                    <label className="text-sm text-slate-600">Level</label>
+                                    <div className="flex gap-2">
+                                        {['Beginner', 'Intermediate', 'Advanced'].map(lvl => (
+                                            <button 
+                                                key={lvl}
+                                                onClick={() => setActiveLevel(lvl)}
+                                                className={`flex-1 py-2 px-1 text-xs rounded-md border transition-all ${activeLevel === lvl ? 'bg-[#e2e8f0] border-slate-300 text-slate-900 font-semibold' : 'bg-slate-50 border-transparent text-slate-400'}`}
+                                            >
+                                                {lvl}
+                                            </button>
+                                        ))}
                                     </div>
+                                </div>
 
-                                    <div className="space-y-2">
-                                        <label className="text-sm text-slate-600 font-semibold block">Level</label>
-                                        <div className="flex bg-slate-100 p-1 rounded-xl border border-slate-200">
-                                            {['Beginner', 'Intermediate', 'Advanced'].map(lvl => (
-                                                <button 
-                                                    key={lvl}
-                                                    onClick={() => setActiveLevel(lvl)}
-                                                    className={`flex-1 py-2 text-[10px] rounded-lg transition-all ${activeLevel === lvl ? 'bg-white shadow-sm text-slate-900 font-bold' : 'text-slate-400 hover:text-slate-600'}`}
-                                                >
-                                                    {lvl}
-                                                </button>
-                                            ))}
-                                        </div>
-                                    </div>
-
-                                    <div className="space-y-4">
-                                        <label className="text-sm text-slate-600 font-semibold flex justify-between">
-                                            <span>Target Duration</span>
-                                            <span className="text-blue-600 font-bold">{duration} min</span>
-                                        </label>
-                                        <input 
-                                            type="range" min="15" max="120" step="5" value={duration}
-                                            onChange={(e) => setDuration(e.target.value)}
-                                            className="w-full h-1.5 bg-slate-200 rounded-lg appearance-none cursor-pointer"
-                                        />
-                                        <div className="flex justify-between text-[10px] text-slate-400 font-bold">
-                                            <span>15 MIN</span>
-                                            <span>120 MIN</span>
-                                        </div>
-                                    </div>
-
-                                    <button className="w-full py-4 bg-[#002b1d] text-white rounded-2xl font-bold flex items-center justify-center gap-3 shadow-xl hover:bg-black transition-all active:scale-95">
-                                        <span className="text-lg">✨</span> Generate Sequence
-                                    </button>
-                                </section>
-
-                                <hr className="border-slate-100" />
-
-                                <section className="space-y-4 pb-10">
-                                    <h3 className="text-[10px] font-bold tracking-[0.2em] text-slate-400 uppercase">Pose Browser</h3>
+                                {/* Minutes Slider from screenshot */}
+                                <div className="space-y-4">
+                                    <label className="text-sm text-slate-600">Minutes</label>
                                     <input 
-                                        type="text" placeholder="Search poses..." 
-                                        className="w-full p-2 border-b border-slate-200 outline-none text-sm italic focus:border-blue-500"
+                                        type="range" min="15" max="120" value={duration}
+                                        onChange={(e) => setDuration(e.target.value)}
+                                        className="w-full h-1.5 bg-slate-200 rounded-lg appearance-none accent-blue-600"
+                                    />
+                                    <div className="flex justify-between text-[11px] text-slate-400 font-medium">
+                                        <span>15</span>
+                                        <span className="text-slate-900 font-bold">{duration} min</span>
+                                        <span>120</span>
+                                    </div>
+                                </div>
+
+                                <button className="w-full py-4 bg-[#002b1d] text-white rounded-xl font-bold flex items-center justify-center gap-2 shadow-sm hover:bg-black transition-all">
+                                    <span className="text-lg">✨</span> Generate Sequence
+                                </button>
+
+                                <hr className="my-8 border-slate-100" />
+
+                                {/* Sub-Category Pose Library (RESTORED) */}
+                                <div className="space-y-4">
+                                    <h3 className="text-[11px] font-bold tracking-[0.2em] text-slate-400 uppercase">Pose Library</h3>
+                                    <input 
+                                        type="text" placeholder="Search poses & variations..." 
+                                        className="w-full p-2 border-b border-slate-100 outline-none text-sm italic italic"
                                         onChange={(e) => setSearch(e.target.value)}
                                     />
-                                    <div className="space-y-4">
-                                        {filteredList.map(p => (
-                                            <div key={p.id} className="group">
+                                    <div className="space-y-5 max-h-[400px] overflow-y-auto pr-2">
+                                        {mainList.map(p => (
+                                            <div key={p.id} className="space-y-2">
                                                 <div 
                                                     onClick={() => setSeq(s => ({...s, flow: [...s.flow, p.id]}))}
-                                                    className="flex justify-between items-center cursor-pointer hover:text-blue-600"
+                                                    className="flex justify-between items-center cursor-pointer hover:text-blue-600 group"
                                                 >
                                                     <span className="text-sm font-semibold text-slate-700">{p.name}</span>
-                                                    <span className="text-slate-300 group-hover:text-blue-500 font-bold">+</span>
+                                                    <span className="text-slate-200 group-hover:text-blue-500 text-lg">+</span>
                                                 </div>
+                                                {/* Variations nested underneath */}
                                                 {p.variations && p.variations.map(v => (
                                                     <div 
                                                         key={v.id} 
                                                         onClick={() => setSeq(s => ({...s, flow: [...s.flow, v.id]}))}
-                                                        className="ml-4 mt-2 text-[11px] text-slate-400 cursor-pointer flex justify-between hover:text-blue-500"
+                                                        className="ml-4 pl-3 border-l-2 border-slate-50 text-xs text-slate-400 cursor-pointer flex justify-between hover:text-blue-500 hover:border-blue-200 transition-all group"
                                                     >
                                                         <span>• {v.name}</span>
-                                                        <span className="opacity-0 hover:opacity-100">+</span>
+                                                        <span className="opacity-0 group-hover:opacity-100">+</span>
                                                     </div>
                                                 ))}
                                             </div>
                                         ))}
                                     </div>
-                                </section>
+                                </div>
                             </div>
                         </aside>
 
-                        {/* Main Stage: Flow Designer */}
+                        {/* MAIN CONTENT */}
                         <main className="flex-1 overflow-y-auto p-12 bg-white">
                             <div className="max-w-3xl mx-auto space-y-10">
-                                <div className="flex justify-between items-end border-b pb-6">
-                                    <div>
-                                        <h2 className="font-serif text-4xl text-slate-800 font-bold">Sequence Flow</h2>
-                                        <p className="text-slate-400 text-sm mt-1">Design your practice path pose by pose.</p>
-                                    </div>
-                                    <div className="flex bg-slate-100 p-1.5 rounded-xl border border-slate-200">
+                                {/* Header Toggle from screenshot */}
+                                <div className="flex justify-between items-center">
+                                    <h2 className="font-serif text-3xl text-slate-800">Sequence Flow</h2>
+                                    <div className="flex gap-4">
                                         <button 
                                             onClick={() => setViewMode('structural')}
-                                            className={`px-5 py-2 text-xs rounded-lg transition-all ${viewMode === 'structural' ? 'bg-white shadow-sm font-bold text-slate-900' : 'text-slate-400'}`}
+                                            className={`text-sm px-4 py-2 rounded-lg transition-all ${viewMode === 'structural' ? 'bg-[#e2e8f0] text-slate-900 font-semibold' : 'text-slate-400'}`}
                                         >
                                             Structural
                                         </button>
                                         <button 
                                             onClick={() => setViewMode('teaching')}
-                                            className={`px-5 py-2 text-xs rounded-lg transition-all ${viewMode === 'teaching' ? 'bg-white shadow-sm font-bold text-slate-900' : 'text-slate-400'}`}
+                                            className={`text-sm px-4 py-2 rounded-lg transition-all ${viewMode === 'teaching' ? 'bg-[#e2e8f0] text-slate-900 font-semibold' : 'text-slate-400'}`}
                                         >
                                             Teaching Script
                                         </button>
                                     </div>
                                 </div>
 
-                                {/* Blue Stats Box */}
-                                <div className="stats-box p-8 grid grid-cols-3 gap-8">
-                                    <div>
-                                        <p className="text-[10px] font-bold text-blue-400 uppercase tracking-widest mb-1">Total Poses</p>
-                                        <p className="text-2xl font-serif font-bold text-blue-900">{totalPoses}</p>
+                                {/* Blue Stats Box from screenshot */}
+                                <div className="stats-box flex flex-col gap-3">
+                                    <h4 className="text-[11px] font-bold tracking-widest text-blue-800 uppercase">Sequence Stats</h4>
+                                    <div className="flex justify-between items-center text-sm">
+                                        <span className="text-blue-700">Total Poses:</span>
+                                        <span className="font-bold text-blue-900">{totalPoses}</span>
                                     </div>
-                                    <div className="border-x border-blue-100 px-8">
-                                        <p className="text-[10px] font-bold text-blue-400 uppercase tracking-widest mb-1">Est. Duration</p>
-                                        <p className="text-2xl font-serif font-bold text-blue-900">{estimatedMinutes} min</p>
+                                    <div className="flex justify-between items-center text-sm">
+                                        <span className="text-blue-700">Estimated Duration:</span>
+                                        <span className="font-bold text-blue-900">{estMinutes} min</span>
                                     </div>
-                                    <div className="pl-8">
-                                        <p className="text-[10px] font-bold text-blue-400 uppercase tracking-widest mb-1">Difficulty</p>
-                                        <p className="text-2xl font-serif font-bold text-blue-900">{activeLevel}</p>
+                                    <div className="flex justify-between items-center text-sm">
+                                        <span className="text-blue-700">Difficulty:</span>
+                                        <span className="font-bold text-blue-900">{activeLevel}</span>
                                     </div>
                                 </div>
 
-                                {/* Flow List */}
+                                {/* Flow Area */}
                                 <div className="space-y-6">
                                     {seq.flow.map((id, i) => (
-                                        <div key={i} className="flex items-start gap-8 p-6 rounded-2xl hover:bg-slate-50 transition-all group relative">
-                                            <span className="font-serif italic text-slate-200 text-3xl mt-1">{String(i + 1).padStart(2, '0')}</span>
+                                        <div key={i} className="flex items-center gap-8 p-4 border-b border-slate-50 group">
+                                            <span className="font-serif italic text-slate-200 text-3xl">{i + 1}</span>
                                             <div className="flex-1">
-                                                <h3 className="font-bold text-slate-800 text-xl">{library[id]?.name || "Pose Not Found"}</h3>
-                                                <div className="flex gap-4 mt-1 text-[10px] font-bold uppercase tracking-wider text-slate-400">
-                                                    <span>{library[id]?.level}</span>
-                                                    <span>•</span>
-                                                    <span className="text-blue-500">{library[id]?.duration}s Hold</span>
-                                                </div>
+                                                <h3 className="font-bold text-slate-800 text-lg">{library[id]?.name}</h3>
                                                 {viewMode === 'teaching' && (
-                                                    <div className="mt-4 p-4 bg-white border border-slate-100 rounded-xl text-sm text-slate-500 leading-relaxed italic border-l-4 border-l-blue-400">
-                                                        "Gently arrive in {library[id]?.name}. Focus on your foundation, feel the earth beneath you, and allow your breath to expand into the space you're creating..."
-                                                    </div>
+                                                    <p className="text-sm text-slate-500 italic mt-2 leading-relaxed">
+                                                        "Move with intention into {library[id]?.name}, finding stability through your foundation..."
+                                                    </p>
                                                 )}
                                             </div>
                                             <button 
                                                 onClick={() => setSeq(s => ({...s, flow: s.flow.filter((_, idx) => idx !== i)}))}
-                                                className="opacity-0 group-hover:opacity-100 transition-opacity p-2 text-slate-300 hover:text-red-500"
-                                            >
-                                                ✕
-                                            </button>
+                                                className="opacity-0 group-hover:opacity-100 text-slate-300 hover:text-red-500"
+                                            >✕</button>
                                         </div>
                                     ))}
-
                                     {seq.flow.length === 0 && (
-                                        <div className="py-32 text-center border-2 border-dashed border-slate-100 rounded-[3rem]">
-                                            <p className="font-serif text-2xl text-slate-300 italic">Add poses from the library to begin...</p>
+                                        <div className="text-center py-20 border-2 border-dashed border-slate-100 rounded-3xl">
+                                            <p className="font-serif text-2xl text-slate-300 italic">Select poses to begin your flow</p>
                                         </div>
                                     )}
                                 </div>
