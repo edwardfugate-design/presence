@@ -2,6 +2,7 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Presence • Yoga Studio v3</title>
     
     <script src="pose-database.js"></script>
@@ -13,10 +14,25 @@
     <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
     
     <style>
-        @import url('https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@400;600&display=swap');
+        @import url('https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@400;600&family=Inter:wght@300;400;600&display=swap');
+        
+        body { font-family: 'Inter', sans-serif; }
         .font-serif { font-family: 'Cormorant Garamond', serif; }
-        .pose-card { transition: all 0.2s ease; }
-        .pose-card:hover { transform: translateX(5px); border-color: #059669; }
+        
+        .pose-card { transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1); }
+        .pose-card:hover { transform: translateY(-2px); border-color: #10b981; }
+        
+        ::-webkit-scrollbar { width: 6px; }
+        ::-webkit-scrollbar-track { background: #f1f5f9; }
+        ::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 10px; }
+        ::-webkit-scrollbar-thumb:hover { background: #94a3b8; }
+
+        @media print {
+            .no-print { display: none !important; }
+            .print-only { display: block !important; }
+            body { background: white; }
+            .main-content { padding: 0 !important; width: 100% !important; }
+        }
     </style>
 </head>
 <body class="bg-slate-50 text-slate-900">
@@ -29,100 +45,146 @@
             const [library, setLibrary] = useState({});
             const [search, setSearch] = useState('');
             const [seq, setSeq] = useState({ flow: [] });
+            const [savedFlows, setSavedFlows] = useState(() => {
+                const saved = localStorage.getItem('presence_flows');
+                return saved ? JSON.parse(saved) : [];
+            });
 
             useEffect(() => {
-                const checkData = () => {
-                    // This pulls from your external scripts
-                    const rawData = window.yogaLibraryVariations || window.allPoses || [];
-                    
-                    if (rawData.length > 0) {
+                const syncData = () => {
+                    const data = window.yogaLibraryVariations || window.allPoses || [];
+                    if (data.length > 0) {
                         const dict = {};
-                        rawData.forEach(p => {
-                            // Only add if the pose has a name and ID
-                            if (p.name && p.id) {
-                                dict[p.id] = p;
-                            }
-                        });
+                        data.forEach(p => { if(p.id) dict[p.id] = p; });
                         setLibrary(dict);
                     }
                 };
-                const timer = setInterval(checkData, 1000);
+                const timer = setInterval(syncData, 1000);
                 return () => clearInterval(timer);
             }, []);
 
-            // Safety filter to ensure we don't crash on empty names
-            const list = Object.values(library).filter(p => 
-                p.name && p.name.toLowerCase().includes(search.toLowerCase())
+            useEffect(() => {
+                localStorage.setItem('presence_flows', JSON.stringify(savedFlows));
+            }, [savedFlows]);
+
+            const getLevelBadge = (level) => {
+                const styles = {
+                    beginner: "bg-emerald-50 text-emerald-700 border-emerald-100",
+                    intermediate: "bg-blue-50 text-blue-700 border-blue-100",
+                    advanced: "bg-rose-50 text-rose-700 border-rose-100"
+                };
+                return styles[level?.toLowerCase()] || "bg-slate-50 text-slate-600 border-slate-100";
+            };
+
+            const mainList = Object.values(library).filter(p => 
+                !p.parentPose && !p.isVariation &&
+                p.name?.toLowerCase().includes(search.toLowerCase())
             );
 
+            const handleSave = () => {
+                if (seq.flow.length === 0) return;
+                const name = prompt("Name your sequence:", `Flow ${savedFlows.length + 1}`);
+                if (name) setSavedFlows([...savedFlows, { name, flow: seq.flow }]);
+            };
+
             return (
-                <div className="flex flex-col h-screen overflow-hidden font-sans">
-                    <header className="h-20 border-b bg-white flex items-center px-10 justify-between shadow-sm">
+                <div className="flex flex-col h-screen overflow-hidden">
+                    {/* Header */}
+                    <header className="h-20 border-b bg-white flex items-center px-8 justify-between shadow-sm z-20 no-print">
                         <div className="flex items-center gap-4">
-                            <div className="w-10 h-10 bg-emerald-800 rounded-full"></div>
-                            <h1 className="font-serif text-3xl font-semibold">Presence Studio</h1>
+                            <div className="w-12 h-12 bg-emerald-900 rounded-2xl flex items-center justify-center shadow-lg transform -rotate-3">
+                                <span className="text-white font-serif text-2xl font-bold">P</span>
+                            </div>
+                            <div>
+                                <h1 className="font-serif text-3xl font-bold text-slate-800">Presence Studio</h1>
+                                <p className="text-[10px] uppercase tracking-[0.3em] text-emerald-600 font-bold">The Vault v3.0</p>
+                            </div>
                         </div>
-                        <div className="flex flex-col items-end">
-                            <span className="text-[10px] uppercase tracking-widest text-emerald-600 font-bold">Vault Status</span>
-                            <span className="text-sm font-mono">Poses Loaded: {Object.keys(library).length}</span>
+
+                        <div className="flex items-center gap-4">
+                            <button onClick={handleSave} className="px-4 py-2 text-sm font-semibold text-slate-600 hover:bg-slate-50 rounded-xl transition-all">Save Flow</button>
+                            <button onClick={() => window.print()} className="px-6 py-2 bg-emerald-600 text-white rounded-xl font-semibold shadow-md hover:bg-emerald-700 transition-all">Print Practice</button>
                         </div>
                     </header>
 
                     <div className="flex flex-1 overflow-hidden">
                         {/* Sidebar */}
-                        <aside className="w-96 border-r bg-white p-6 flex flex-col shadow-inner">
-                            <div className="relative mb-6">
+                        <aside className="w-[400px] border-r bg-white flex flex-col no-print">
+                            <div className="p-6 bg-slate-50/50 border-b">
                                 <input 
                                     type="text" 
                                     placeholder="Search 500+ poses..." 
-                                    className="w-full p-3 pl-4 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-emerald-500 outline-none transition-all"
+                                    className="w-full p-4 bg-white border border-slate-200 rounded-2xl shadow-sm focus:ring-2 focus:ring-emerald-500 outline-none transition-all"
                                     onChange={(e) => setSearch(e.target.value)}
                                 />
                             </div>
-                            
-                            <div className="flex-1 overflow-y-auto space-y-2 pr-2">
-                                {list.map(p => (
-                                    <div key={p.id} 
-                                         className="p-4 border border-slate-100 rounded-2xl pose-card cursor-pointer flex justify-between items-center bg-white shadow-sm"
-                                         onClick={() => setSeq(s => ({...s, flow: [...s.flow, p.id]}))}>
-                                        <div>
-                                            <div className="text-sm font-bold text-slate-800">{p.name}</div>
-                                            <div className="text-[10px] text-emerald-600 font-semibold italic uppercase">{p.sanskrit}</div>
+
+                            <div className="flex-1 overflow-y-auto p-4 space-y-6">
+                                {mainList.map(p => (
+                                    <div key={p.id} className="space-y-3">
+                                        {/* Parent Pose */}
+                                        <div 
+                                            className="p-4 border border-slate-100 rounded-2xl pose-card cursor-pointer bg-white shadow-sm flex justify-between items-center group"
+                                            onClick={() => setSeq(s => ({...s, flow: [...s.flow, p.id]}))}>
+                                            <div>
+                                                <div className={`inline-block px-2 py-0.5 rounded-md text-[9px] font-bold uppercase border mb-2 ${getLevelBadge(p.level)}`}>
+                                                    {p.level}
+                                                </div>
+                                                <div className="text-sm font-bold text-slate-800">{p.name}</div>
+                                                <div className="text-[11px] text-emerald-600 italic font-medium uppercase tracking-wider">{p.sanskrit}</div>
+                                            </div>
+                                            <div className="w-8 h-8 rounded-full bg-emerald-50 text-emerald-600 flex items-center justify-center font-bold group-hover:bg-emerald-600 group-hover:text-white transition-all">+</div>
                                         </div>
-                                        <div className="w-8 h-8 flex items-center justify-center rounded-full bg-emerald-50 text-emerald-600 font-bold text-xl">+</div>
+
+                                        {/* Variations Indented */}
+                                        {p.variations && p.variations.map(v => (
+                                            <div 
+                                                key={v.id}
+                                                className="ml-8 p-3 border-l-2 border-slate-100 hover:border-emerald-200 flex justify-between items-center cursor-pointer group rounded-r-xl hover:bg-emerald-50/30 transition-all"
+                                                onClick={() => setSeq(s => ({...s, flow: [...s.flow, v.id]}))}>
+                                                <span className="text-xs font-medium text-slate-500 group-hover:text-slate-800">{v.name}</span>
+                                                <span className="text-slate-300 group-hover:text-emerald-500 font-bold">+</span>
+                                            </div>
+                                        ))}
                                     </div>
                                 ))}
-                                {list.length === 0 && (
-                                    <div className="text-center py-20 opacity-30 italic">No poses found in vault...</div>
-                                )}
                             </div>
                         </aside>
 
-                        {/* Main Stage */}
-                        <main className="flex-1 p-12 overflow-y-auto">
+                        {/* Sequence Stage */}
+                        <main className="flex-1 bg-slate-50 p-12 overflow-y-auto main-content">
                             <div className="max-w-2xl mx-auto">
-                                <h2 className="font-serif text-4xl mb-10 text-slate-800">Your Flow Sequence</h2>
-                                
+                                <div className="mb-12 no-print">
+                                    <h2 className="font-serif text-5xl font-bold text-slate-800">Your Practice</h2>
+                                    <div className="flex gap-4 mt-4">
+                                        <span className="text-xs font-bold text-emerald-600 uppercase tracking-widest">{seq.flow.length} Poses Selected</span>
+                                        <button onClick={() => setSeq({flow:[]})} className="text-xs font-bold text-slate-400 uppercase tracking-widest hover:text-rose-500 transition-colors">Clear All</button>
+                                    </div>
+                                </div>
+
                                 <div className="space-y-4">
                                     {seq.flow.map((id, i) => (
-                                        <div key={i} className="flex items-center gap-6 p-5 bg-white border border-slate-200 rounded-3xl shadow-sm hover:shadow-md transition-shadow">
-                                            <div className="text-2xl font-serif italic text-emerald-200 w-8">{i + 1}</div>
+                                        <div key={i} className="flex items-center gap-6 p-6 bg-white border border-slate-200 rounded-[2.5rem] shadow-sm group relative">
+                                            <div className="text-3xl font-serif italic text-emerald-100 w-10">{i + 1}</div>
                                             <div className="flex-1">
-                                                <div className="font-semibold text-lg text-slate-700">{library[id]?.name || "Unknown Pose"}</div>
-                                                <div className="text-[10px] uppercase tracking-widest text-slate-400">{library[id]?.family}</div>
+                                                <div className="font-bold text-xl text-slate-800">{library[id]?.name}</div>
+                                                <div className="flex items-center gap-3 mt-1">
+                                                    <span className="text-[10px] font-bold uppercase tracking-tighter text-slate-400">{library[id]?.level}</span>
+                                                    <span className="w-1 h-1 rounded-full bg-slate-200"></span>
+                                                    <span className="text-[10px] font-bold text-emerald-500 uppercase">{library[id]?.duration}s Hold</span>
+                                                </div>
                                             </div>
                                             <button 
-                                                className="text-slate-300 hover:text-red-400 transition-colors px-2"
-                                                onClick={() => setSeq(s => ({...s, flow: s.flow.filter((_, idx) => idx !== i)}))}
-                                            >
-                                                ✕
+                                                className="no-print opacity-0 group-hover:opacity-100 p-2 text-slate-300 hover:text-rose-500 transition-all"
+                                                onClick={() => setSeq(s => ({...s, flow: s.flow.filter((_, idx) => idx !== i)}))}>
+                                                <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12"></path></svg>
                                             </button>
                                         </div>
                                     ))}
 
                                     {seq.flow.length === 0 && (
-                                        <div className="border-2 border-dashed border-slate-200 rounded-[40px] py-32 text-center text-slate-400 italic">
-                                            The mat is empty. Select poses from the left to build your practice.
+                                        <div className="border-4 border-dashed border-slate-200 rounded-[3rem] py-40 text-center">
+                                            <p className="font-serif text-2xl text-slate-300 italic">Select poses to begin your flow</p>
                                         </div>
                                     )}
                                 </div>
