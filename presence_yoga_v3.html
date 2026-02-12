@@ -7,7 +7,6 @@
     
     <script src="pose-database.js"></script>
     <script src="yoga-library-with-variations.js"></script>
-
     <script src="https://cdn.tailwindcss.com"></script>
     <script crossorigin src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
     <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
@@ -15,23 +14,11 @@
     
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@400;600&family=Inter:wght@300;400;600&display=swap');
-        
         body { font-family: 'Inter', sans-serif; background-color: #ffffff; color: #334155; }
         .font-serif { font-family: 'Cormorant Garamond', serif; }
-        
-        .stats-box { 
-            background-color: #f0f4ff; 
-            border: 1px solid #dbeafe; 
-            border-radius: 12px; 
-            padding: 24px;
-        }
-
+        .stats-box { background-color: #f0f4ff; border: 1px solid #dbeafe; border-radius: 12px; }
         ::-webkit-scrollbar { width: 5px; }
         ::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 10px; }
-        
-        input[type=range] { -webkit-appearance: none; width: 100%; background: transparent; }
-        input[type=range]::-webkit-slider-runnable-track { width: 100%; height: 6px; background: #e2e8f0; border-radius: 3px; }
-        input[type=range]::-webkit-slider-thumb { -webkit-appearance: none; height: 18px; width: 18px; border-radius: 50%; background: #2563eb; cursor: pointer; margin-top: -6px; border: 2px solid white; box-shadow: 0 1px 3px rgba(0,0,0,0.2); }
     </style>
 </head>
 <body>
@@ -46,23 +33,22 @@
             const [seq, setSeq] = useState({ flow: [] });
             const [viewMode, setViewMode] = useState('structural');
             const [activeLevel, setActiveLevel] = useState('Beginner');
-            const [duration, setDuration] = useState(60);
+            const [selectedCategory, setSelectedCategory] = useState('All Categories');
             const [selectedStyle, setSelectedStyle] = useState('Drishti Yoga');
 
-            const yogaStyles = [
-                "Drishti Yoga", "Hatha", "Ashtanga", "Iyengar", "Kundalini", "Sivananda", 
-                "Vinyasa Flow", "Power Yoga", "Rocket Yoga", "Jivamukti", 
-                "Baptiste Power", "Yin Yoga", "Restorative", "Gentle Yoga", 
-                "Chair Yoga", "Therapeutic", "Somatic Yoga", "Bikram", 
-                "Hot Vinyasa", "Hot Power", "Inferno Hot Pilates"
+            const drishtiPoints = [
+                { name: "Nasagrai", focus: "Tip of the Nose" },
+                { name: "Ajna / Broomadhya", focus: "Third Eye / Between Eyebrows" },
+                { name: "Nabi Chakra", focus: "Navel" },
+                { name: "Hastagrai", focus: "Hand / Fingertips" },
+                { name: "Padayoragrai", focus: "Toes / Feet" },
+                { name: "Parsva", focus: "Far Side (Left/Right)" },
+                { name: "Angusthamadhye", focus: "Thumbs" },
+                { name: "Urdhva / Antara", focus: "Upward to the Sky" }
             ];
 
-            const styleDescriptions = {
-                "Drishti Yoga": "Focused gaze (Drishti) to cultivate single-pointed attention and alignment.",
-                "Hatha": "Classical yoga emphasizing alignment, balance, and controlled breath.",
-                "Vinyasa Flow": "Dynamic movement connecting breath with continuous posture transitions.",
-                "Yin Yoga": "Meditative floor-based practice targeting deep connective tissues."
-            };
+            const categories = ["All Categories", "Standing", "Seated", "Floor", "Core", "Backbends", "Inversions"];
+            const yogaStyles = ["Drishti Yoga", "Hatha", "Ashtanga", "Vinyasa Flow", "Yin Yoga", "Restorative"];
 
             useEffect(() => {
                 const syncData = () => {
@@ -76,187 +62,135 @@
                 syncData();
             }, []);
 
-            // Sidebar Filtering (Parents only, subcategories handled in map)
-            const mainList = Object.values(library).filter(p => 
-                !p.isVariation && !p.parentPose &&
-                p.name?.toLowerCase().includes(search.toLowerCase())
-            );
+            const addPose = (id) => {
+                setSeq(s => ({
+                    ...s, 
+                    flow: [...s.flow, { 
+                        id, 
+                        holdType: 'breath', 
+                        holdVal: 5, 
+                        drishti: drishtiPoints[0].name 
+                    }] 
+                }));
+            };
 
-            const totalPoses = seq.flow.length;
-            const estSeconds = seq.flow.reduce((acc, id) => acc + (library[id]?.duration || 0), 0);
-            const estMinutes = Math.round(estSeconds / 60) || (totalPoses * 5);
+            const updateItem = (index, field, value) => {
+                const newFlow = [...seq.flow];
+                newFlow[index][field] = value;
+                setSeq({...seq, flow: newFlow});
+            };
+
+            const filteredList = Object.values(library).filter(p => {
+                const matchesSearch = p.name?.toLowerCase().includes(search.toLowerCase());
+                const matchesLevel = p.level === activeLevel;
+                const matchesCategory = selectedCategory === 'All Categories' || p.category?.toLowerCase() === selectedCategory.toLowerCase();
+                return matchesSearch && matchesLevel && matchesCategory && !p.isVariation && !p.parentPose;
+            });
+
+            const estMinutes = Math.round(seq.flow.reduce((acc, item) => {
+                return acc + (item.holdType === 'breath' ? item.holdVal * 6 : parseInt(item.holdVal));
+            }, 0) / 60);
 
             return (
                 <div className="flex flex-col h-screen overflow-hidden">
-                    {/* Header */}
                     <header className="p-6 border-b flex items-center gap-4 bg-white z-10">
-                        <div className="w-12 h-12 bg-[#002b1d] rounded-full flex items-center justify-center text-white font-serif text-2xl font-bold shadow-sm">P</div>
+                        <div className="w-12 h-12 bg-[#002b1d] rounded-full flex items-center justify-center text-white font-serif text-2xl font-bold">P</div>
                         <div>
                             <h1 className="font-serif text-4xl text-[#002b1d] leading-none">Presence Yoga</h1>
-                            <p className="text-[10px] uppercase tracking-[0.3em] text-emerald-600 mt-1 font-bold">Drishti Sequence Studio</p>
+                            <p className="text-[10px] uppercase tracking-[0.3em] text-emerald-600 mt-1 font-bold">Drishti Studio • Focused Gaze</p>
                         </div>
                     </header>
 
                     <div className="flex flex-1 overflow-hidden">
-                        {/* Sidebar: AI Controls & Subcategory Library */}
-                        <aside className="w-[400px] border-r overflow-y-auto bg-white">
-                            <div className="p-8 space-y-8">
-                                <section className="space-y-6">
-                                    <h3 className="text-[11px] font-bold tracking-[0.2em] text-slate-400 uppercase border-b pb-2">AI Sequencing</h3>
-                                    
-                                    <div className="space-y-2">
-                                        <label className="text-sm text-slate-600 font-semibold">Category</label>
-                                        <select className="w-full p-3 border border-slate-200 rounded-xl bg-slate-50 text-slate-700 outline-none">
-                                            <option>All Categories</option>
-                                        </select>
-                                    </div>
-
-                                    <div className="space-y-2">
-                                        <label className="text-sm text-slate-600 font-semibold">Style</label>
-                                        <select 
-                                            className="w-full p-3 border border-slate-200 rounded-xl bg-slate-50 text-slate-700 outline-none"
-                                            value={selectedStyle}
-                                            onChange={(e) => setSelectedStyle(e.target.value)}
-                                        >
-                                            {yogaStyles.map(s => <option key={s} value={s}>{s}</option>)}
-                                        </select>
-                                        <p className="text-[11px] italic text-slate-400">{styleDescriptions[selectedStyle] || "A transformative practice for body and mind."}</p>
-                                    </div>
-
-                                    <div className="space-y-2">
-                                        <label className="text-sm text-slate-600 font-semibold">Level</label>
-                                        <div className="flex bg-slate-100 p-1 rounded-xl border border-slate-200">
-                                            {['Beginner', 'Intermediate', 'Advanced'].map(lvl => (
-                                                <button 
-                                                    key={lvl}
-                                                    onClick={() => setActiveLevel(lvl)}
-                                                    className={`flex-1 py-2 text-[10px] rounded-lg transition-all ${activeLevel === lvl ? 'bg-[#e2e8f0] text-slate-900 font-bold shadow-sm' : 'text-slate-400 hover:text-slate-600'}`}
-                                                >
-                                                    {lvl}
-                                                </button>
-                                            ))}
-                                        </div>
-                                    </div>
-
-                                    <div className="space-y-4">
-                                        <label className="text-sm text-slate-600 font-semibold flex justify-between">
-                                            <span>Minutes</span>
-                                            <span className="text-blue-600 font-bold">{duration} min</span>
-                                        </label>
-                                        <input 
-                                            type="range" min="15" max="120" step="5" value={duration}
-                                            onChange={(e) => setDuration(e.target.value)}
-                                        />
-                                        <div className="flex justify-between text-[10px] text-slate-400 font-bold">
-                                            <span>15</span>
-                                            <span>120</span>
-                                        </div>
-                                    </div>
-
-                                    <button className="w-full py-4 bg-[#002b1d] text-white rounded-2xl font-bold flex items-center justify-center gap-2 shadow-lg hover:bg-black transition-all">
-                                        ✨ Generate Sequence
-                                    </button>
-                                </section>
-
-                                <hr className="border-slate-100" />
-
-                                <section className="space-y-5 pb-10">
-                                    <h3 className="text-[11px] font-bold tracking-[0.2em] text-slate-400 uppercase">Pose Library</h3>
-                                    <input 
-                                        type="text" placeholder="Search poses & variations..." 
-                                        className="w-full p-2 border-b border-slate-100 outline-none text-sm italic italic"
-                                        onChange={(e) => setSearch(e.target.value)}
-                                    />
-                                    <div className="space-y-6">
-                                        {mainList.map(p => (
-                                            <div key={p.id} className="space-y-2">
-                                                <div 
-                                                    onClick={() => setSeq(s => ({...s, flow: [...s.flow, p.id]}))}
-                                                    className="flex justify-between items-center cursor-pointer hover:text-blue-600 group"
-                                                >
-                                                    <span className="text-sm font-semibold text-slate-700">{p.name}</span>
-                                                    <span className="text-slate-200 group-hover:text-blue-500 font-bold">+</span>
-                                                </div>
-                                                {/* Subcategories (Variations) */}
-                                                {p.variations && p.variations.map(v => (
-                                                    <div 
-                                                        key={v.id} 
-                                                        onClick={() => setSeq(s => ({...s, flow: [...s.flow, v.id]}))}
-                                                        className="ml-4 pl-3 border-l border-slate-100 text-[11px] text-slate-400 cursor-pointer flex justify-between hover:text-blue-500 hover:border-blue-200 transition-all group"
-                                                    >
-                                                        <span>• {v.name}</span>
-                                                        <span className="opacity-0 group-hover:opacity-100">+</span>
-                                                    </div>
-                                                ))}
-                                            </div>
-                                        ))}
-                                    </div>
-                                </section>
-                            </div>
-                        </aside>
-
-                        {/* Main Stage: Sequence Designer */}
-                        <main className="flex-1 overflow-y-auto p-12 bg-white">
-                            <div className="max-w-3xl mx-auto space-y-10">
-                                <div className="flex justify-between items-end border-b pb-6">
-                                    <h2 className="font-serif text-4xl text-slate-800 font-bold tracking-tight">Sequence Flow</h2>
-                                    <div className="flex bg-slate-100 p-1 rounded-xl border border-slate-200">
-                                        {['structural', 'teaching'].map(mode => (
-                                            <button 
-                                                key={mode}
-                                                onClick={() => setViewMode(mode)}
-                                                className={`px-5 py-2 text-xs rounded-lg transition-all capitalize ${viewMode === mode ? 'bg-white shadow-sm font-bold text-slate-900' : 'text-slate-400'}`}
-                                            >
-                                                {mode === 'teaching' ? 'Teaching Script' : mode}
-                                            </button>
-                                        ))}
-                                    </div>
+                        <aside className="w-[360px] border-r overflow-y-auto bg-white p-6 space-y-8">
+                            <section className="space-y-4">
+                                <h3 className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Filters</h3>
+                                <select className="w-full p-2.5 border rounded-lg text-sm" value={selectedCategory} onChange={e => setSelectedCategory(e.target.value)}>
+                                    {categories.map(c => <option key={c}>{c}</option>)}
+                                </select>
+                                <div className="flex bg-slate-100 p-1 rounded-lg">
+                                    {['Beginner', 'Intermediate', 'Advanced'].map(lvl => (
+                                        <button key={lvl} onClick={() => setActiveLevel(lvl)} className={`flex-1 py-1.5 text-[9px] rounded-md ${activeLevel === lvl ? 'bg-white shadow-sm font-bold' : 'text-slate-400'}`}>{lvl}</button>
+                                    ))}
                                 </div>
+                            </section>
 
-                                {/* Blue Stats Box */}
-                                <div className="stats-box space-y-3">
-                                    <h4 className="text-[10px] font-bold tracking-[0.2em] text-blue-800 uppercase">Sequence Stats</h4>
-                                    <div className="flex justify-between text-sm border-b border-blue-100 pb-2">
-                                        <span className="text-blue-600">Total Poses:</span>
-                                        <span className="font-bold text-blue-900">{totalPoses}</span>
-                                    </div>
-                                    <div className="flex justify-between text-sm border-b border-blue-100 pb-2">
-                                        <span className="text-blue-600">Estimated Duration:</span>
-                                        <span className="font-bold text-blue-900">{estMinutes} min</span>
-                                    </div>
-                                    <div className="flex justify-between text-sm">
-                                        <span className="text-blue-600">Difficulty Level:</span>
-                                        <span className="font-bold text-blue-900">{activeLevel}</span>
-                                    </div>
-                                </div>
-
-                                <div className="space-y-6">
-                                    {seq.flow.map((id, i) => (
-                                        <div key={i} className="flex items-start gap-8 p-6 rounded-2xl hover:bg-slate-50 transition-all group relative border-b border-slate-50">
-                                            <span className="font-serif italic text-slate-200 text-3xl mt-1">{String(i + 1).padStart(2, '0')}</span>
-                                            <div className="flex-1">
-                                                <h3 className="font-bold text-slate-800 text-xl">{library[id]?.name}</h3>
-                                                <div className="flex gap-4 mt-1 text-[10px] font-bold uppercase tracking-wider text-slate-400">
-                                                    <span>{library[id]?.level}</span>
-                                                    <span className="text-blue-500">{library[id]?.duration}s Hold</span>
-                                                </div>
-                                                {viewMode === 'teaching' && (
-                                                    <div className="mt-4 p-4 bg-white border border-slate-100 rounded-xl text-sm text-slate-500 leading-relaxed italic border-l-4 border-l-blue-400">
-                                                        "Gently settle your gaze. In {library[id]?.name}, focus on the drishti point to anchor your presence and allow the breath to move through the posture..."
-                                                    </div>
-                                                )}
-                                            </div>
-                                            <button 
-                                                onClick={() => setSeq(s => ({...s, flow: s.flow.filter((_, idx) => idx !== i)}))}
-                                                className="opacity-0 group-hover:opacity-100 p-2 text-slate-300 hover:text-red-500 transition-all"
-                                            >✕</button>
+                            <section className="space-y-4">
+                                <h3 className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Pose Library</h3>
+                                <input type="text" placeholder="Search..." className="w-full border-b p-2 text-sm italic outline-none" onChange={e => setSearch(e.target.value)} />
+                                <div className="space-y-3">
+                                    {filteredList.map(p => (
+                                        <div key={p.id} onClick={() => addPose(p.id)} className="flex justify-between items-center cursor-pointer hover:text-blue-600 group">
+                                            <span className="text-sm font-medium text-slate-700">{p.name}</span>
+                                            <span className="text-slate-200 group-hover:text-blue-500 font-bold">+</span>
                                         </div>
                                     ))}
-                                    {seq.flow.length === 0 && (
-                                        <div className="py-32 text-center border-2 border-dashed border-slate-100 rounded-[3rem]">
-                                            <p className="font-serif text-2xl text-slate-300 italic">Select poses to begin your flow</p>
+                                </div>
+                            </section>
+                        </aside>
+
+                        <main className="flex-1 overflow-y-auto p-12 bg-slate-50/30">
+                            <div className="max-w-3xl mx-auto space-y-10">
+                                <div className="flex justify-between items-end border-b pb-6">
+                                    <h2 className="font-serif text-5xl text-slate-800 font-bold">Sequence</h2>
+                                    <div className="stats-box px-6 py-4 text-center min-w-[140px]">
+                                        <p className="text-[9px] font-bold text-blue-400 uppercase tracking-tighter">Est. Practice Time</p>
+                                        <p className="text-2xl font-serif font-bold text-blue-900">{estMinutes} min</p>
+                                    </div>
+                                </div>
+
+                                <div className="space-y-8">
+                                    {seq.flow.map((item, i) => (
+                                        <div key={i} className="bg-white rounded-[2rem] p-8 shadow-sm border border-slate-100 space-y-6 relative group">
+                                            <div className="flex justify-between">
+                                                <div className="flex items-center gap-4">
+                                                    <span className="w-10 h-10 rounded-full bg-emerald-50 text-emerald-700 flex items-center justify-center font-serif italic text-xl">{i+1}</span>
+                                                    <h3 className="font-serif text-3xl text-slate-800">{library[item.id]?.name}</h3>
+                                                </div>
+                                                <button onClick={() => setSeq(s => ({...s, flow: s.flow.filter((_, idx) => idx !== i)}))} className="text-slate-200 hover:text-red-500">✕</button>
+                                            </div>
+
+                                            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                                                {/* Hold Type Toggle */}
+                                                <div className="space-y-2">
+                                                    <label className="text-[10px] font-bold text-slate-400 uppercase">Method</label>
+                                                    <div className="flex bg-slate-50 p-1 rounded-lg border border-slate-100">
+                                                        <button onClick={() => updateItem(i, 'holdType', 'breath')} className={`flex-1 py-1.5 text-[9px] rounded-md ${item.holdType === 'breath' ? 'bg-white shadow-sm text-blue-600 font-bold' : 'text-slate-400'}`}>Breaths</button>
+                                                        <button onClick={() => updateItem(i, 'holdType', 'time')} className={`flex-1 py-1.5 text-[9px] rounded-md ${item.holdType === 'time' ? 'bg-white shadow-sm text-blue-600 font-bold' : 'text-slate-400'}`}>Seconds</button>
+                                                    </div>
+                                                </div>
+
+                                                {/* Duration Slider */}
+                                                <div className="space-y-2">
+                                                    <div className="flex justify-between text-[10px] font-bold uppercase">
+                                                        <label className="text-slate-400">Duration</label>
+                                                        <span className="text-blue-600">{item.holdVal} {item.holdType === 'breath' ? 'B' : 'S'}</span>
+                                                    </div>
+                                                    <input type="range" min={item.holdType === 'breath' ? "1" : "5"} max={item.holdType === 'breath' ? "20" : "300"} step={item.holdType === 'breath' ? "1" : "5"} value={item.holdVal} onChange={e => updateItem(i, 'holdVal', e.target.value)} className="w-full h-1.5 bg-slate-100 rounded-lg appearance-none accent-blue-600" />
+                                                </div>
+
+                                                {/* Drishti Selector */}
+                                                <div className="space-y-2">
+                                                    <label className="text-[10px] font-bold text-slate-400 uppercase">Drishti Gaze</label>
+                                                    <select 
+                                                        className="w-full p-2 border border-slate-100 rounded-lg text-[11px] bg-slate-50 text-blue-800 font-medium"
+                                                        value={item.drishti}
+                                                        onChange={e => updateItem(i, 'drishti', e.target.value)}
+                                                    >
+                                                        {drishtiPoints.map(d => <option key={d.name} value={d.name}>{d.name} ({d.focus})</option>)}
+                                                    </select>
+                                                </div>
+                                            </div>
+
+                                            {/* Teaching Script Preview */}
+                                            <div className="p-4 bg-emerald-50/30 rounded-xl border border-emerald-100/50">
+                                                <p className="text-xs text-slate-500 italic leading-relaxed">
+                                                    "Fix your gaze on the <strong>{drishtiPoints.find(d => d.name === item.drishti)?.focus}</strong>. 
+                                                    Hold for {item.holdVal} {item.holdType === 'breath' ? 'deep breaths' : 'seconds'}, maintaining presence within the still point."
+                                                </p>
+                                            </div>
                                         </div>
-                                    )}
+                                    ))}
                                 </div>
                             </div>
                         </main>
