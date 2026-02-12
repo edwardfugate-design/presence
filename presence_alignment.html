@@ -2,222 +2,70 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-    <meta name="apple-mobile-web-app-capable" content="yes">
-    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-    <meta name="theme-color" content="#f8f9fa">
-    <title>presence • alignment lab</title>
-    <script src="presence-content-manager.js"></script>
-    <script src="presence-monitoring.js"></script>
-    <script src="presence-auto-integrate.js"></script>
-    <script src="all-libraries-compact.js"></script>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Presence • Alignment Lab</title>
+    
     <script src="https://cdn.tailwindcss.com"></script>
-    <script crossorigin src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
-    <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
+    <script src="https://unpkg.com/react@18/umd/react.development.js"></script>
+    <script src="https://unpkg.com/react-dom@18/umd/react-dom.development.js"></script>
     <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
-    <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@300;400;500;700&family=Newsreader:wght@300;400;600&display=swap" rel="stylesheet">
+
+    <script src="presence-content-manager.js"></script>
+
     <style>
-        :root {
-            /* Zen Color Palette - Unified */
-            --dawn-start: #f8f9fa;
-            --dawn-mid: #e9ecef;
-            --dawn-end: #dee2e6;
-            --text-whisper: #6c757d;
-            --text-soft: #495057;
-            --text-present: #212529;
-            --accent-calm: #8b98a5;
-            --accent-focus: #6366f1;
-            --accent-success: #84cc16;
-            --accent-warning: #f59e0b;
-            --accent-alert: #ef4444;
-            --surface-primary: rgba(255, 255, 255, 0.4);
-            --surface-hover: rgba(255, 255, 255, 0.7);
-            --border-subtle: rgba(0, 0, 0, 0.05);
-        }
-        * {
-            -webkit-tap-highlight-color: transparent;
-            box-sizing: border-box;
-        }
-        body {
-            font-family: 'JetBrains Mono', monospace;
-            background: linear-gradient(180deg, var(--dawn-start) 0%, var(--dawn-mid) 50%, var(--dawn-end) 100%);
-            color: var(--text-present);
-            margin: 0;
-            padding: env(safe-area-inset-top) env(safe-area-inset-right) env(safe-area-inset-bottom) env(safe-area-inset-left);
-            min-height: 100vh;
-            min-height: -webkit-fill-available;
-            overflow-x: hidden;
-        }
-        html { height: -webkit-fill-available; }
-        
-        .font-serif { font-family: 'Newsreader', serif; }
-        
+        body { background-color: #f8fafc; }
         .bio-card {
-            background: var(--surface-primary);
-            border: 1px solid var(--border-subtle);
-            backdrop-filter: blur(10px);
-            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            background: rgba(255, 255, 255, 0.8);
+            backdrop-filter: blur(16px);
+            border: 1px solid rgba(255, 255, 255, 0.4);
+            box-shadow: 0 10px 30px -10px rgba(0, 0, 0, 0.05);
         }
-        
-        @media (hover: hover) {
-            .bio-card:hover {
-                border-color: rgba(99, 102, 241, 0.3);
-                transform: translateY(-2px);
-                box-shadow: 0 8px 32px rgba(99, 102, 241, 0.1);
-            }
-        }
-        
-        .bio-card:active {
-            transform: scale(0.99);
-        }
-        
-        .metric-display {
-            font-family: 'JetBrains Mono', monospace;
-            font-weight: 300;
-            letter-spacing: -0.02em;
-        }
-        
-        .angle-arc {
-            stroke: var(--accent-success);
-            fill: none;
-            stroke-width: 3;
-            stroke-linecap: round;
-        }
-        
-        .muscle-highlight {
-            transition: all 0.3s;
-            cursor: pointer;
-        }
-        
-        .muscle-highlight:hover {
-            filter: brightness(1.2);
-        }
-        
-        .muscle-active {
-            opacity: 0.7;
-        }
-        
-        .muscle-inactive {
-            fill: rgba(139, 152, 165, 0.1);
-        }
-        
-        .skeleton-joint {
-            fill: var(--accent-focus);
-        }
-        
-        .alignment-warning {
-            animation: pulse-warning 2s ease-in-out infinite;
-        }
-        
-        @keyframes pulse-warning {
-            0%, 100% { opacity: 0.3; }
-            50% { opacity: 1; }
-        }
-        
-        .biometric-gauge {
-            stroke-dasharray: 283;
-            stroke-dashoffset: 283;
-            transition: stroke-dashoffset 0.5s cubic-bezier(0.4, 0, 0.2, 1);
-            transform-origin: center;
-        }
-        
         .stat-label {
-            font-size: 0.65rem;
-            letter-spacing: 0.15em;
             text-transform: uppercase;
-            color: var(--text-whisper);
-        }
-        
-        input[type="range"] {
-            -webkit-appearance: none;
-            appearance: none;
-            width: 100%;
-            height: 2px;
-            background: rgba(0, 0, 0, 0.1);
-            outline: none;
-        }
-        
-        input[type="range"]::-webkit-slider-thumb {
-            -webkit-appearance: none;
-            appearance: none;
-            width: 16px;
-            height: 16px;
-            background: var(--text-present);
-            cursor: pointer;
-            border-radius: 50%;
-        }
-        
-        input[type="range"]::-moz-range-thumb {
-            width: 16px;
-            height: 16px;
-            background: var(--text-present);
-            cursor: pointer;
-            border-radius: 50%;
-            border: none;
-        }
-        
-        .pose-skeleton {
-            stroke: rgba(73, 80, 87, 0.3);
-            stroke-width: 2;
-            fill: none;
-        }
-        
-        @media (max-width: 640px) {
-            .mobile-text-lg { font-size: 1rem !important; }
-            .mobile-text-xl { font-size: 1.25rem !important; }
+            letter-spacing: 0.1em;
+            font-size: 0.7rem;
+            font-weight: 700;
+            color: #64748b;
         }
     </style>
 </head>
 <body>
     <div id="root"></div>
 
-   <script type="text/babel">
-        const { useState, useEffect, useRef } = React;
+    <script type="text/babel">
+        const { useState, useEffect } = React;
 
-        // 1. Bridge to your external 500+ Pose Database
-        // This looks for the variable we created in your presence-content-manager.js
+        // PULLING DATA FROM YOUR SHARED VAULT
         const MASTER_DATA = window.allPoses || window.ALL_POSES || [];
 
-        // 2. Alignment checkpoints for specific "Focus Poses"
         const DETAILED_ALIGNMENT = {
             "warrior i": {
                 checkpoints: [
                     { joint: 'front_knee', ideal: 90, range: [85, 95], label: 'Front Knee Angle' },
-                    { joint: 'hip_alignment', ideal: 0, range: [-5, 5], label: 'Hip Square to Front' },
-                    { joint: 'back_leg', ideal: 180, range: [170, 180], label: 'Back Leg Extension' }
+                    { joint: 'hip_alignment', ideal: 0, range: [-5, 5], label: 'Hip Square to Front' }
                 ]
             },
             "downward facing dog": {
                 checkpoints: [
                     { joint: 'shoulder', ideal: 180, range: [160, 180], label: 'Shoulder Flexion' },
-                    { joint: 'spine', ideal: 0, range: [-5, 5], label: 'Spine Lengthening' },
                     { joint: 'heel', ideal: 0, range: [0, 20], label: 'Heel to Ground' }
-                ]
-            },
-            "plank": {
-                checkpoints: [
-                    { joint: 'shoulder', ideal: 90, range: [85, 95], label: 'Shoulder Stack' },
-                    { joint: 'hip', ideal: 180, range: [170, 180], label: 'Hip Neutral' },
-                    { joint: 'spine', ideal: 0, range: [-5, 5], label: 'Spine Alignment' }
                 ]
             }
         };
 
         function AlignmentLab() {
-            // Default to the first pose in your database, or null if loading
-            const [selectedPose, setSelectedPose] = useState(MASTER_DATA[0] || null);
+            // Safety check: find a starter pose or use a placeholder
+            const initialPose = MASTER_DATA.length > 0 ? MASTER_DATA[0] : null;
+            const [selectedPose, setSelectedPose] = useState(initialPose);
             const [searchQuery, setSearchQuery] = useState('');
             const [angles, setAngles] = useState({});
 
-            // Update UI when a new pose is selected
             useEffect(() => {
                 if (selectedPose) {
                     const details = DETAILED_ALIGNMENT[selectedPose.name.toLowerCase()];
                     const initialAngles = {};
                     if (details) {
-                        details.checkpoints.forEach(cp => {
-                            initialAngles[cp.joint] = cp.ideal;
-                        });
+                        details.checkpoints.forEach(cp => initialAngles[cp.joint] = cp.ideal);
                     }
                     setAngles(initialAngles);
                 }
@@ -231,44 +79,49 @@
                 ).slice(0, 6);
             };
 
-            if (!selectedPose) return <div className="p-20 text-center">Loading Database...</div>;
+            // If database isn't loading, show a warning
+            if (MASTER_DATA.length === 0) {
+                return (
+                    <div className="min-h-screen flex items-center justify-center bg-red-50 p-10">
+                        <div className="text-center">
+                            <h2 className="text-red-600 font-bold text-xl mb-2">Vault Connection Error</h2>
+                            <p className="text-red-400">Make sure <b>presence-content-manager.js</b> is in the same folder.</p>
+                        </div>
+                    </div>
+                );
+            }
 
             return (
                 <div className="min-h-screen p-4 sm:p-8">
                     <div className="max-w-7xl mx-auto">
                         
-                        {/* HEADER & SMART SEARCH */}
                         <header className="mb-12">
                             <h1 className="font-serif text-4xl mb-6 text-indigo-900 tracking-tight">presence • alignment lab</h1>
                             
                             <div className="relative max-w-lg">
-                                <div className="flex items-center bg-white/40 backdrop-blur-xl border border-white/20 rounded-2xl px-5 py-4 shadow-sm focus-within:border-indigo-300 transition-all">
-                                    <svg className="w-5 h-5 text-indigo-400 mr-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
-                                    </svg>
+                                <div className="flex items-center bg-white border border-indigo-100 rounded-2xl px-5 py-4 shadow-sm">
                                     <input 
                                         type="text"
-                                        placeholder="Search 500+ poses (e.g. 'Warrior', 'Hips', 'Adho')..."
-                                        className="bg-transparent outline-none w-full text-base font-medium text-indigo-950 placeholder-indigo-300"
+                                        placeholder="Search 500+ shared poses..."
+                                        className="bg-transparent outline-none w-full text-base font-medium text-indigo-950"
                                         value={searchQuery}
                                         onChange={(e) => setSearchQuery(e.target.value)}
                                     />
                                 </div>
 
-                                {/* Results Dropdown */}
                                 {getFilteredResults().length > 0 && (
-                                    <div className="absolute z-50 w-full mt-2 bg-white/95 backdrop-blur-2xl border border-indigo-100 rounded-2xl shadow-2xl overflow-hidden animate-in fade-in slide-in-from-top-2">
+                                    <div className="absolute z-50 w-full mt-2 bg-white border border-indigo-50 rounded-2xl shadow-xl overflow-hidden">
                                         {getFilteredResults().map(pose => (
                                             <div 
                                                 key={pose.id}
-                                                className="p-4 hover:bg-indigo-500 hover:text-white cursor-pointer border-b border-indigo-50 last:border-0 transition-colors"
+                                                className="p-4 hover:bg-indigo-50 cursor-pointer border-b border-indigo-50 last:border-0"
                                                 onClick={() => {
                                                     setSelectedPose(pose);
                                                     setSearchQuery('');
                                                 }}
                                             >
-                                                <div className="text-sm font-bold">{pose.name}</div>
-                                                <div className="text-[11px] opacity-70 italic font-mono">{pose.sanskrit}</div>
+                                                <div className="text-sm font-bold text-indigo-900">{pose.name}</div>
+                                                <div className="text-[11px] text-indigo-400 italic">{pose.sanskrit}</div>
                                             </div>
                                         ))}
                                     </div>
@@ -276,98 +129,78 @@
                             </div>
                         </header>
 
-                        {/* MAIN LAB INTERFACE */}
-                        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-                            
-                            {/* LEFT PANEL: POSE INFO */}
-                            <div className="lg:col-span-2 space-y-6">
-                                <div className="bio-card rounded-[2rem] p-10">
-                                    <div className="flex justify-between items-start mb-10">
-                                        <div>
-                                            <span className="stat-label">Biometric Target</span>
-                                            <h2 className="font-serif text-5xl text-indigo-950 mt-2">{selectedPose.name}</h2>
-                                            <p className="text-indigo-500 font-mono text-lg mt-1">{selectedPose.sanskrit}</p>
-                                        </div>
-                                        <div className="px-4 py-2 bg-indigo-100 rounded-full text-indigo-600 text-xs font-bold tracking-widest uppercase">
-                                            {selectedPose.level}
-                                        </div>
-                                    </div>
-
-                                    {/* Muscle Grid */}
-                                    <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
-                                        {selectedPose.muscles.map(muscle => (
-                                            <div key={muscle} className="bg-white/40 p-4 rounded-2xl border border-indigo-100/50">
-                                                <div className="stat-label mb-1" style={{fontSize: '0.6rem'}}>Activation</div>
-                                                <div className="text-sm font-bold text-indigo-800">{muscle}</div>
+                        {selectedPose && (
+                            <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 animate-in fade-in duration-500">
+                                <div className="lg:col-span-2 space-y-6">
+                                    <div className="bio-card rounded-[2rem] p-10">
+                                        <div className="flex justify-between items-start mb-10">
+                                            <div>
+                                                <span className="stat-label">Active Analysis</span>
+                                                <h2 className="font-serif text-5xl text-indigo-950 mt-2">{selectedPose.name}</h2>
+                                                <p className="text-indigo-500 font-mono text-lg mt-1">{selectedPose.sanskrit}</p>
                                             </div>
-                                        ))}
-                                    </div>
-                                </div>
-
-                                {/* Benefits Panel */}
-                                <div className="bio-card rounded-[2rem] p-10">
-                                    <h3 className="stat-label mb-6">Physiological Impacts</h3>
-                                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                                        {selectedPose.benefits.map((benefit, i) => (
-                                            <div key={i} className="flex items-center text-sm text-indigo-900/80 bg-indigo-50/30 p-4 rounded-xl border border-white/50">
-                                                <div className="w-2 h-2 rounded-full bg-lime-400 mr-4 shadow-[0_0_8px_rgba(163,230,53,0.5)]"></div>
-                                                {benefit}
+                                            <div className="px-4 py-2 bg-indigo-100 rounded-full text-indigo-600 text-xs font-bold uppercase">
+                                                {selectedPose.level}
                                             </div>
-                                        ))}
-                                    </div>
-                                </div>
-                            </div>
+                                        </div>
 
-                            {/* RIGHT PANEL: ALIGNMENT SLIDERS */}
-                            <div className="space-y-6">
-                                <div className="bio-card rounded-[2rem] p-8 bg-indigo-950 text-white shadow-xl shadow-indigo-200">
-                                    <h3 className="stat-label text-indigo-300 mb-8 flex items-center">
-                                        <span className="w-2 h-2 bg-indigo-400 rounded-full mr-2 animate-pulse"></span>
-                                        Live Alignment Adjustment
-                                    </h3>
-                                    
-                                    <div className="space-y-8">
-                                        {DETAILED_ALIGNMENT[selectedPose.name.toLowerCase()] ? (
-                                            DETAILED_ALIGNMENT[selectedPose.name.toLowerCase()].checkpoints.map(cp => (
-                                                <div key={cp.joint} className="space-y-4">
-                                                    <div className="flex justify-between items-end">
-                                                        <span className="text-xs font-medium text-indigo-200">{cp.label}</span>
-                                                        <span className="font-mono text-xl text-lime-400">{angles[cp.joint]}°</span>
-                                                    </div>
-                                                    <input 
-                                                        type="range" 
-                                                        min={cp.ideal - 45} 
-                                                        max={cp.ideal + 45}
-                                                        value={angles[cp.joint]}
-                                                        onChange={(e) => setAngles({...angles, [cp.joint]: e.target.value})}
-                                                        className="w-full"
-                                                    />
+                                        <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
+                                            {selectedPose.muscles.map(muscle => (
+                                                <div key={muscle} className="bg-white/40 p-4 rounded-2xl border border-indigo-100">
+                                                    <div className="stat-label mb-1" style={{fontSize: '0.6rem'}}>Target</div>
+                                                    <div className="text-sm font-bold text-indigo-800">{muscle}</div>
                                                 </div>
-                                            ))
-                                        ) : (
-                                            <div className="py-10 text-center space-y-4">
-                                                <div className="text-indigo-400 text-xs uppercase tracking-widest font-bold">General Alignment</div>
-                                                <p className="text-sm text-indigo-200 italic leading-relaxed">
-                                                    For {selectedPose.name}, prioritize lengthening the spine and grounding through the {selectedPose.muscles[0]}. 
-                                                    Maintain a 4-7-8 breath cycle.
-                                                </p>
-                                            </div>
-                                        )}
+                                            ))}
+                                        </div>
                                     </div>
 
-                                    <div className="mt-12 pt-8 border-t border-indigo-900">
-                                        <div className="text-[10px] text-indigo-400 uppercase tracking-widest mb-2 font-bold">Bio-Metric Status</div>
-                                        <div className="flex items-center text-lime-400 font-mono text-sm">
-                                            <svg className="w-4 h-4 mr-2" fill="currentColor" viewBox="0 0 20 20">
-                                                <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
-                                            </svg>
-                                            Optimal Kinetic Chain
+                                    <div className="bio-card rounded-[2rem] p-10">
+                                        <h3 className="stat-label mb-6">Physiological Impacts</h3>
+                                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                            {selectedPose.benefits.map((benefit, i) => (
+                                                <div key={i} className="flex items-center text-sm text-indigo-900/80 bg-indigo-50/30 p-4 rounded-xl">
+                                                    <div className="w-2 h-2 rounded-full bg-lime-400 mr-4"></div>
+                                                    {benefit}
+                                                </div>
+                                            ))}
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div className="space-y-6">
+                                    <div className="bio-card rounded-[2rem] p-8 bg-indigo-950 text-white">
+                                        <h3 className="stat-label text-indigo-300 mb-8">Kinetic Alignment</h3>
+                                        
+                                        <div className="space-y-8">
+                                            {DETAILED_ALIGNMENT[selectedPose.name.toLowerCase()] ? (
+                                                DETAILED_ALIGNMENT[selectedPose.name.toLowerCase()].checkpoints.map(cp => (
+                                                    <div key={cp.joint} className="space-y-4">
+                                                        <div className="flex justify-between items-end">
+                                                            <span className="text-xs text-indigo-200">{cp.label}</span>
+                                                            <span className="font-mono text-xl text-lime-400">{angles[cp.joint]}°</span>
+                                                        </div>
+                                                        <input 
+                                                            type="range" 
+                                                            min={cp.ideal - 45} 
+                                                            max={cp.ideal + 45}
+                                                            value={angles[cp.joint]}
+                                                            onChange={(e) => setAngles({...angles, [cp.joint]: e.target.value})}
+                                                            className="w-full accent-lime-400"
+                                                        />
+                                                    </div>
+                                                ))
+                                            ) : (
+                                                <div className="py-10 text-center">
+                                                    <p className="text-sm text-indigo-300 italic">
+                                                        Standard cues apply for {selectedPose.name}. Maintain focus on {selectedPose.muscles[0]}.
+                                                    </p>
+                                                </div>
+                                            )}
                                         </div>
                                     </div>
                                 </div>
                             </div>
-
-                        </div>
+                        )}
                     </div>
                 </div>
             );
