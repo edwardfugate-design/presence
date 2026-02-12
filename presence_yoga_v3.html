@@ -96,19 +96,24 @@
       });
 
       // Load external data on mount
-      useEffect(() => {
-        const loadData = () => {
+     useEffect(() => {
+        const attemptLoad = () => {
             const master = getMasterLibrary();
-            setLibrary(master);
-            // Default Savasana
-            if (master.savasana || master.corpse) {
-                setSequence(s => ({...s, savasana: [master.savasana ? 'savasana' : 'corpse']}));
+            const count = Object.keys(master).length;
+            console.log("Attempting to load poses... found:", count);
+            
+            if (count > 0) {
+                setLibrary(master);
+                clearInterval(loadInterval);
             }
         };
-        // Small delay to ensure scripts are executed
-        setTimeout(loadData, 500);
-      }, []);
 
+        // Try every 1 second until data appears
+        const loadInterval = setInterval(attemptLoad, 1000);
+        attemptLoad();
+
+        return () => clearInterval(loadInterval);
+      }, []);
       useEffect(() => {
         document.body.className = theme === 'dark' ? 'dark-mode font-serif' : 'light-mode font-serif';
       }, [theme]);
