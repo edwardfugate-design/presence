@@ -1,0 +1,2211 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Complete Mudra Encyclopedia - 100+ Sacred Hand Gestures</title>
+    <style>
+        :root {
+            --accent-focus: #607D8B;
+            --accent-complete: #d4af37;
+            --accent-success: #78909C;
+            --bg-gradient-start: #B0BEC5;
+            --bg-gradient-end: #78909C;
+            --card-accent: #90A4AE;
+            --light-accent: #B0BEC5;
+            
+            /* Chakra colors */
+            --root-chakra: #C41E3A;
+            --sacral-chakra: #FF6F00;
+            --solar-plexus-chakra: #FFD600;
+            --heart-chakra: #00C853;
+            --throat-chakra: #2979FF;
+            --third-eye-chakra: #4A148C;
+            --crown-chakra: #9C27B0;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, var(--bg-gradient-start) 0%, var(--bg-gradient-end) 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        header {
+            text-align: center;
+            color: white;
+            margin-bottom: 30px;
+        }
+
+        h1 {
+            font-size: 2.5em;
+            margin-bottom: 10px;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+        }
+
+        .subtitle {
+            font-size: 1.1em;
+            opacity: 0.9;
+            margin-bottom: 10px;
+        }
+
+        .stats {
+            font-size: 0.95em;
+            opacity: 0.85;
+            margin-top: 10px;
+        }
+
+        .filter-section {
+            background: white;
+            border-radius: 15px;
+            padding: 20px;
+            margin-bottom: 30px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+        }
+
+        .filter-buttons {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+            justify-content: center;
+        }
+
+        .filter-btn {
+            padding: 10px 20px;
+            border: 2px solid var(--accent-focus);
+            background: white;
+            color: var(--accent-focus);
+            border-radius: 25px;
+            cursor: pointer;
+            font-size: 1em;
+            transition: all 0.3s;
+            font-weight: 600;
+        }
+
+        .filter-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(96, 125, 139, 0.4);
+        }
+
+        .filter-btn.active {
+            background: var(--accent-focus);
+            color: white;
+        }
+
+        .search-box {
+            width: 100%;
+            padding: 15px;
+            border: 2px solid #e0e0e0;
+            border-radius: 10px;
+            font-size: 1em;
+            margin-top: 15px;
+            transition: border-color 0.3s;
+        }
+
+        .search-box:focus {
+            outline: none;
+            border-color: var(--accent-focus);
+        }
+
+        .mudras-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+            gap: 25px;
+            margin-bottom: 30px;
+        }
+
+        .mudra-card {
+            background: white;
+            border-radius: 15px;
+            padding: 25px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+            transition: all 0.3s;
+            cursor: pointer;
+            position: relative;
+            overflow: hidden;
+            opacity: 0;
+            animation: fadeIn 0.5s forwards;
+        }
+
+        @keyframes fadeIn {
+            to {
+                opacity: 1;
+            }
+        }
+
+        .mudra-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 15px 40px rgba(0,0,0,0.3);
+        }
+
+        .mudra-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 5px;
+        }
+
+        .mudra-card.chakra-root::before {
+            background: var(--root-chakra);
+        }
+
+        .mudra-card.chakra-sacral::before {
+            background: var(--sacral-chakra);
+        }
+
+        .mudra-card.chakra-solar-plexus::before {
+            background: var(--solar-plexus-chakra);
+        }
+
+        .mudra-card.chakra-heart::before {
+            background: var(--heart-chakra);
+        }
+
+        .mudra-card.chakra-throat::before {
+            background: var(--throat-chakra);
+        }
+
+        .mudra-card.chakra-third-eye::before {
+            background: var(--third-eye-chakra);
+        }
+
+        .mudra-card.chakra-crown::before {
+            background: var(--crown-chakra);
+        }
+
+        .mudra-card:not([class*="chakra-"])::before {
+            background: linear-gradient(90deg, var(--accent-focus), var(--accent-complete));
+        }
+
+        .mudra-name {
+            font-size: 1.5em;
+            color: #333;
+            margin-bottom: 10px;
+            font-weight: 700;
+        }
+
+        .mudra-category {
+            display: inline-block;
+            padding: 5px 12px;
+            border-radius: 15px;
+            font-size: 0.85em;
+            font-weight: 600;
+            margin-bottom: 15px;
+        }
+
+        .category-yoga {
+            background: #e3f2fd;
+            color: #607D8B;
+        }
+
+        .category-martial-arts {
+            background: #ffebee;
+            color: #455A64;
+        }
+
+        .category-meditation {
+            background: #eceff1;
+            color: #607D8B;
+        }
+
+        .category-healing {
+            background: #e8f5e9;
+            color: #78909C;
+        }
+
+        .category-tantra {
+            background: #fff3e0;
+            color: #607D8B;
+        }
+
+        .category-chakra.chakra-root {
+            background: rgba(196, 30, 58, 0.15);
+            color: var(--root-chakra);
+        }
+
+        .category-chakra.chakra-sacral {
+            background: rgba(255, 111, 0, 0.15);
+            color: var(--sacral-chakra);
+        }
+
+        .category-chakra.chakra-solar-plexus {
+            background: rgba(255, 214, 0, 0.15);
+            color: #B8860B;
+        }
+
+        .category-chakra.chakra-heart {
+            background: rgba(0, 200, 83, 0.15);
+            color: var(--heart-chakra);
+        }
+
+        .category-chakra.chakra-throat {
+            background: rgba(41, 121, 255, 0.15);
+            color: var(--throat-chakra);
+        }
+
+        .category-chakra.chakra-third-eye {
+            background: rgba(74, 20, 140, 0.15);
+            color: var(--third-eye-chakra);
+        }
+
+        .category-chakra.chakra-crown {
+            background: rgba(156, 39, 176, 0.15);
+            color: var(--crown-chakra);
+        }
+
+        .category-chakra:not([class*="chakra-root"]):not([class*="chakra-sacral"]):not([class*="chakra-solar"]):not([class*="chakra-heart"]):not([class*="chakra-throat"]):not([class*="chakra-third"]):not([class*="chakra-crown"]) {
+            background: linear-gradient(135deg, #ffebee, #f3e5f5);
+            color: #4A148C;
+        }
+
+        .mudra-description {
+            color: #666;
+            line-height: 1.6;
+            margin-bottom: 15px;
+        }
+
+        .mudra-benefits {
+            background: #f5f5f5;
+            padding: 12px;
+            border-radius: 8px;
+            margin-top: 10px;
+        }
+
+        .benefits-title {
+            font-weight: 600;
+            color: var(--accent-focus);
+            margin-bottom: 8px;
+            font-size: 0.95em;
+        }
+
+        .benefits-list {
+            color: #555;
+            font-size: 0.9em;
+            line-height: 1.8;
+        }
+
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.8);
+            z-index: 1000;
+            overflow-y: auto;
+        }
+
+        .modal-content {
+            background: white;
+            max-width: 700px;
+            margin: 50px auto;
+            border-radius: 20px;
+            padding: 40px;
+            position: relative;
+            animation: slideIn 0.3s;
+        }
+
+        @keyframes slideIn {
+            from {
+                transform: translateY(-50px);
+                opacity: 0;
+            }
+            to {
+                transform: translateY(0);
+                opacity: 1;
+            }
+        }
+
+        .close-btn {
+            position: absolute;
+            top: 20px;
+            right: 25px;
+            font-size: 2em;
+            cursor: pointer;
+            color: #999;
+            transition: color 0.3s;
+        }
+
+        .close-btn:hover {
+            color: #333;
+        }
+
+        .modal-mudra-name {
+            font-size: 2em;
+            color: #333;
+            margin-bottom: 15px;
+            font-weight: 700;
+        }
+
+        .hand-illustration {
+            width: 300px;
+            height: 300px;
+            margin: 20px auto;
+            background: linear-gradient(135deg, #eceff1, var(--light-accent));
+            border-radius: 20px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 10px 30px rgba(96, 125, 139, 0.3);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .hand-illustration::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: radial-gradient(circle at center, rgba(255,255,255,0.3), transparent);
+        }
+
+        .external-image {
+            max-width: 90%;
+            max-height: 90%;
+            object-fit: contain;
+            border-radius: 10px;
+            loading: lazy;
+        }
+
+        .instructions-section {
+            margin-top: 25px;
+            padding: 20px;
+            background: #f9f9f9;
+            border-radius: 12px;
+        }
+
+        .instructions-title {
+            font-size: 1.3em;
+            color: var(--accent-focus);
+            margin-bottom: 15px;
+            font-weight: 600;
+        }
+
+        .instruction-step {
+            padding: 12px;
+            margin-bottom: 10px;
+            background: white;
+            border-left: 4px solid var(--accent-focus);
+            border-radius: 5px;
+            line-height: 1.6;
+        }
+
+        .duration-section {
+            margin-top: 20px;
+            padding: 15px;
+            background: #fef3c7;
+            border-radius: 10px;
+            border-left: 4px solid var(--accent-complete);
+        }
+
+        .chakra-info {
+            margin-top: 15px;
+            padding: 15px;
+            border-radius: 10px;
+            border-left: 4px solid;
+        }
+
+        .chakra-info.chakra-root {
+            background: rgba(196, 30, 58, 0.1);
+            border-left-color: var(--root-chakra);
+        }
+
+        .chakra-info.chakra-sacral {
+            background: rgba(255, 111, 0, 0.1);
+            border-left-color: var(--sacral-chakra);
+        }
+
+        .chakra-info.chakra-solar-plexus {
+            background: rgba(255, 214, 0, 0.1);
+            border-left-color: var(--solar-plexus-chakra);
+        }
+
+        .chakra-info.chakra-heart {
+            background: rgba(0, 200, 83, 0.1);
+            border-left-color: var(--heart-chakra);
+        }
+
+        .chakra-info.chakra-throat {
+            background: rgba(41, 121, 255, 0.1);
+            border-left-color: var(--throat-chakra);
+        }
+
+        .chakra-info.chakra-third-eye {
+            background: rgba(74, 20, 140, 0.1);
+            border-left-color: var(--third-eye-chakra);
+        }
+
+        .chakra-info.chakra-crown {
+            background: rgba(156, 39, 176, 0.1);
+            border-left-color: var(--crown-chakra);
+        }
+
+        .chakra-info:not([class*="chakra-root"]):not([class*="chakra-sacral"]):not([class*="chakra-solar"]):not([class*="chakra-heart"]):not([class*="chakra-throat"]):not([class*="chakra-third"]):not([class*="chakra-crown"]) {
+            background: #eceff1;
+            border-left-color: var(--accent-focus);
+        }
+
+        .no-results {
+            text-align: center;
+            color: white;
+            font-size: 1.3em;
+            padding: 40px;
+        }
+
+        .loading-spinner {
+            text-align: center;
+            color: white;
+            padding: 40px;
+            font-size: 1.2em;
+        }
+
+        @media (max-width: 768px) {
+            h1 {
+                font-size: 2em;
+            }
+
+            .mudras-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .modal-content {
+                margin: 20px;
+                padding: 30px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>🙏 Complete Mudra Encyclopedia</h1>
+            <p class="subtitle">The most comprehensive collection of sacred hand gestures</p>
+            <p class="stats">📚 <span id="mudraCount">100+</span> mudras from yoga, martial arts, meditation, healing & tantra traditions</p>
+        </header>
+
+        <div class="filter-section">
+            <div class="filter-buttons">
+                <button class="filter-btn active" data-category="all">All Mudras</button>
+                <button class="filter-btn" data-category="yoga">Yoga</button>
+                <button class="filter-btn" data-category="martial-arts">Martial Arts</button>
+                <button class="filter-btn" data-category="meditation">Meditation</button>
+                <button class="filter-btn" data-category="healing">Healing</button>
+                <button class="filter-btn" data-category="tantra">Tantra</button>
+                <button class="filter-btn" data-category="chakra">Chakra</button>
+            </div>
+            <input type="text" class="search-box" placeholder="Search mudras by name, benefit, chakra, or element...">
+        </div>
+
+        <div class="mudras-grid" id="mudrasGrid"></div>
+        <div class="loading-spinner" id="loadingSpinner" style="display: none;">Loading more mudras...</div>
+        <div class="no-results" id="noResults" style="display: none;">No mudras found matching your search.</div>
+    </div>
+
+    <div class="modal" id="mudraModal">
+        <div class="modal-content">
+            <span class="close-btn">&times;</span>
+            <div id="modalBody"></div>
+        </div>
+    </div>
+
+    <script>
+// PART 2 - PASTE THIS AFTER PART 1 (after the <script> tag)
+        // This is your complete mudras data array
+        
+        const mudras = [
+            // MEDITATION MUDRAS
+            {
+                name: "Anjali Mudra",
+                category: "meditation",
+                description: "Prayer position with palms pressed together at the heart center. The most universal mudra.",
+                benefits: "Promotes balance, calm, and centeredness. Reduces stress and anxiety. Connects right and left brain hemispheres.",
+                instructions: [
+                    "Bring your palms together at the center of your chest",
+                    "Press the palms firmly together",
+                    "Keep your fingers pointing upward",
+                    "Slightly bow your head toward your thumbs"
+                ],
+                duration: "Hold for 1-3 minutes while breathing deeply",
+                emoji: "🙏",
+                imageUrl: "https://coolmeditation.wordpress.com/wp-content/uploads/2019/06/anjali-mudra.jpeg",
+                chakra: "Heart Chakra (Anahata)"
+            },
+            {
+                name: "Gyan Mudra (Chin Mudra)",
+                category: "meditation",
+                description: "The mudra of knowledge - touching the tip of index finger to thumb.",
+                benefits: "Enhances concentration, memory, and wisdom. Calms the mind and promotes meditation. Improves sleep.",
+                instructions: [
+                    "Touch the tip of your thumb to the tip of your index finger",
+                    "Keep the other three fingers straight but relaxed",
+                    "Rest your hands on your knees with palms facing up (Gyan) or down (Chin)",
+                    "Keep shoulders relaxed"
+                ],
+                duration: "Practice for 15-45 minutes during meditation",
+                emoji: "👌",
+                imageUrl: "https://coolmeditation.wordpress.com/wp-content/uploads/2019/06/gyan-mudra.jpg",
+                chakra: "Third Eye & Crown Chakra",
+                element: "Air + Fire"
+            },
+            {
+                name: "Dhyana Mudra",
+                category: "meditation",
+                description: "The meditation mudra - bowl shape with both hands representing enlightenment.",
+                benefits: "Deepens meditation, promotes inner peace, and spiritual insight. Balances thought and tranquility.",
+                instructions: [
+                    "Place your right hand on top of your left hand",
+                    "Both palms facing upward",
+                    "Tips of thumbs gently touching, forming a triangle",
+                    "Rest hands in your lap"
+                ],
+                duration: "Hold throughout meditation practice",
+                emoji: "🧘",
+                imageUrl: "https://coolmeditation.wordpress.com/wp-content/uploads/2019/06/dhyana-mudra.jpg",
+                chakra: "All chakras - complete balance"
+            },
+            {
+                name: "Abhaya Mudra",
+                category: "meditation",
+                description: "The fearlessness mudra - raised open palm facing outward. Buddha's gesture of protection.",
+                benefits: "Dispels fear, grants protection, and promotes courage and peace. Creates sense of safety.",
+                instructions: [
+                    "Raise right hand to shoulder level",
+                    "Keep palm facing outward",
+                    "Fingers pointing upward and together",
+                    "Left hand rests on lap or knee"
+                ],
+                duration: "Hold during meditation on fearlessness for 5-15 minutes",
+                emoji: "✋",
+                imageUrl: "https://coolmeditation.wordpress.com/wp-content/uploads/2019/06/abhaya-mudra1.jpg",
+                chakra: "Heart and Solar Plexus"
+            },
+            {
+                name: "Varada Mudra",
+                category: "meditation",
+                description: "The mudra of granting wishes and compassion. The Buddha's gesture of giving.",
+                benefits: "Cultivates compassion, generosity, and granting of blessings. Opens to receiving divine grace.",
+                instructions: [
+                    "Extend arm downward",
+                    "Palm faces forward and outward",
+                    "Fingers point toward the earth",
+                    "Often combined with Abhaya in other hand"
+                ],
+                duration: "Practice during compassion meditation for 10-20 minutes",
+                emoji: "🤲",
+                chakra: "Heart Chakra"
+            },
+            {
+                name: "Bhumisparsha Mudra",
+                category: "meditation",
+                description: "Earth-touching mudra - Buddha's enlightenment gesture calling earth as witness.",
+                benefits: "Connects to earth energy, grounds awareness, represents steadfastness and awakening.",
+                instructions: [
+                    "Sit in meditation posture",
+                    "Rest left hand in lap, palm up",
+                    "Right hand on right knee, palm inward",
+                    "Extend right fingers to touch the earth"
+                ],
+                duration: "Hold throughout meditation session",
+                emoji: "🌏",
+                chakra: "Root Chakra (Muladhara)"
+            },
+            {
+                name: "Vitarka Mudra",
+                category: "meditation",
+                description: "The mudra of discussion and teaching - thumb and index forming a circle.",
+                benefits: "Enhances communication, intellectual discussion, and transmission of wisdom. Clarifies speech.",
+                instructions: [
+                    "Touch the tip of thumb to tip of index finger forming a circle",
+                    "Keep other three fingers extended upward",
+                    "Raise hand to chest or shoulder height",
+                    "Palm faces outward when teaching"
+                ],
+                duration: "Hold during teaching or discussion practices",
+                emoji: "👆",
+                chakra: "Throat Chakra"
+            },
+            {
+                name: "Uttarabodhi Mudra",
+                category: "meditation",
+                description: "The mudra of supreme enlightenment - hands joined pointing to heaven.",
+                benefits: "Charges energy, promotes enlightenment, and spiritual awakening. Connects to higher consciousness.",
+                instructions: [
+                    "Interlock all fingers except the index fingers",
+                    "Extend index fingers upward, touching at tips",
+                    "Cross thumbs in front",
+                    "Hold above crown or at heart level"
+                ],
+                duration: "Practice for 5-10 minutes during spiritual practices",
+                emoji: "☝️",
+                chakra: "Crown Chakra (Sahasrara)"
+            },
+            {
+                name: "Kalesvara Mudra",
+                category: "meditation",
+                description: "The mudra of time - for calming thoughts and changing patterns.",
+                benefits: "Calms agitated thoughts, helps break addictions, clarifies observation. Slows racing mind.",
+                instructions: [
+                    "Touch middle fingers together",
+                    "Touch thumbs together",
+                    "Bend other fingers inward",
+                    "Point middle fingers toward your chest"
+                ],
+                duration: "Hold for 10-20 minutes to calm the mind",
+                emoji: "⏰",
+                imageUrl: "https://coolmeditation.wordpress.com/wp-content/uploads/2019/06/kalesvara-mudra.jpg"
+            },
+            {
+                name: "Matangi Mudra",
+                category: "meditation",
+                description: "The mudra of inner harmony - for solar plexus activation.",
+                benefits: "Harmonizes inner conflicts, strengthens breath, aids digestion and relaxation. Balances emotions.",
+                instructions: [
+                    "Clasp hands in front of stomach",
+                    "Extend both middle fingers upward, touching",
+                    "Interlock all other fingers",
+                    "Point middle fingers toward solar plexus"
+                ],
+                duration: "Practice for 4 minutes, 3 times daily",
+                emoji: "🎯",
+                chakra: "Solar Plexus (Manipura)"
+            },
+            {
+                name: "Pushpaputa Mudra",
+                category: "meditation",
+                description: "The mudra of offering - hands forming a bowl to receive or give blessings.",
+                benefits: "Opens the heart, promotes receptivity, cultivates devotion and gratitude.",
+                instructions: [
+                    "Place hands side by side, palms facing up",
+                    "Curve hands slightly to form a bowl shape",
+                    "Hold at heart level or above head",
+                    "Visualize offering or receiving blessings"
+                ],
+                duration: "Hold during prayer or offering practices",
+                emoji: "🌺"
+            },
+            {
+                name: "Ganesh Mudra",
+                category: "meditation",
+                description: "The mudra of the elephant god - for removing obstacles and opening the heart.",
+                benefits: "Opens the heart chakra, strengthens courage, removes obstacles and blockages. Builds determination.",
+                instructions: [
+                    "Hold left hand in front of chest, palm facing out",
+                    "Hold right hand facing left palm",
+                    "Bend fingers and hook them together",
+                    "Pull hands apart while maintaining grip, then release"
+                ],
+                duration: "Repeat the pulling motion 6 times, rest, then switch hands",
+                emoji: "🐘",
+                imageUrl: "https://coolmeditation.wordpress.com/wp-content/uploads/2019/06/ganesha-mudra.jpg",
+                chakra: "Heart Chakra"
+            },
+            {
+                name: "Tse Mudra",
+                category: "meditation",
+                description: "The mudra of vitality - thumb enclosed in fist. Tibetan longevity gesture.",
+                benefits: "Increases vitality, dispels depression, and energizes the body. Boosts life force.",
+                instructions: [
+                    "Place thumb in center of palm",
+                    "Wrap fingers around thumb making a fist",
+                    "Place both fists on thighs",
+                    "Breathe deeply into the belly"
+                ],
+                duration: "Hold for 5-15 minutes during energy practices",
+                emoji: "💪"
+            },
+            {
+                name: "Makara Mudra",
+                category: "meditation",
+                description: "The crocodile mudra - for releasing stored energy in the kidneys.",
+                benefits: "Activates kidney energy, releases blocked energy, promotes vitality. Enhances sexual energy.",
+                instructions: [
+                    "Place right hand on left with thumbs touching",
+                    "Wrap left thumb with right fingers",
+                    "Place left ring finger in right palm",
+                    "Rest on lower abdomen"
+                ],
+                duration: "Practice for 10-15 minutes for energy work",
+                emoji: "🐊",
+                chakra: "Sacral Chakra"
+            },
+            {
+                name: "Ushas Mudra",
+                category: "meditation",
+                description: "The mudra of origin - for awakening and new beginnings.",
+                benefits: "Balances hormones, awakens energy, promotes creativity and sexuality. Excellent for morning practice.",
+                instructions: [
+                    "Clasp fingers together loosely",
+                    "For women: right thumb on top, wrapped by left thumb",
+                    "For men: left thumb on top, wrapped by right thumb",
+                    "Hold at lower abdomen level"
+                ],
+                duration: "Practice for 5-15 minutes in the morning",
+                emoji: "🌅",
+                chakra: "Sacral Chakra"
+            },
+            {
+                name: "Padma Mudra",
+                category: "meditation",
+                description: "The lotus mudra - for opening the heart like a blooming flower.",
+                benefits: "Opens heart chakra, cultivates love and compassion, promotes emotional healing. Connects to purity.",
+                instructions: [
+                    "Bring hands to heart center in prayer",
+                    "Keep wrists, thumbs, and pinkies touching",
+                    "Open other fingers wide like lotus petals",
+                    "Visualize heart opening"
+                ],
+                duration: "Hold for 5-10 breaths during heart meditation",
+                emoji: "🪷",
+                chakra: "Heart Chakra"
+            },
+            {
+                name: "Atmanjali Mudra",
+                category: "meditation",
+                description: "The mudra of salutation to the soul - prayer at third eye.",
+                benefits: "Activates intuition, promotes inner vision, enhances meditation. Opens third eye.",
+                instructions: [
+                    "Bring palms together at third eye level",
+                    "Press firmly together",
+                    "Keep fingers pointing upward",
+                    "Close eyes and focus inward"
+                ],
+                duration: "Hold for 3-5 minutes during third eye meditation",
+                emoji: "🔮",
+                chakra: "Third Eye (Ajna)"
+            },
+            {
+                name: "Hakini Mudra",
+                category: "meditation",
+                description: "The mudra of the mind - fingertips touching together forming temple.",
+                benefits: "Enhances concentration, memory, and brain function. Bridges left and right brain hemispheres.",
+                instructions: [
+                    "Bring all fingertips of both hands together",
+                    "Thumbs touch thumbs, index to index, etc.",
+                    "Form a temple shape with hands",
+                    "Hold at heart or third eye level"
+                ],
+                duration: "Practice for 10-20 minutes during study or contemplation",
+                emoji: "🧠"
+            },
+            {
+                name: "Yoni Mudra",
+                category: "meditation",
+                description: "The mudra of the womb - creating sacred space and connection to source.",
+                benefits: "Promotes introspection, peace, and connection to feminine energy. Relieves stress and anxiety.",
+                instructions: [
+                    "Join thumbs and index fingers to form a downward triangle",
+                    "Keep other fingers extended and spread",
+                    "Place hands in front of lower abdomen",
+                    "The triangle represents the sacred source"
+                ],
+                duration: "Hold for 7-12 minutes during meditation",
+                emoji: "🔺",
+                chakra: "Sacral Chakra"
+            },
+            {
+                name: "Mudra of the Heart",
+                category: "meditation",
+                description: "The compassion mudra - hands crossed over heart for self-love.",
+                benefits: "Cultivates self-love, compassion, and emotional healing. Calms anxiety and soothes heart.",
+                instructions: [
+                    "Cross arms over chest",
+                    "Place hands on opposite shoulders or chest",
+                    "Close eyes and breathe into heart",
+                    "Feel compassion flowing to yourself"
+                ],
+                duration: "Hold for 5-10 minutes during self-compassion practice",
+                emoji: "❤️",
+                chakra: "Heart Chakra"
+            },
+            {
+                name: "Vajra Mudra",
+                category: "meditation",
+                description: "The thunderbolt mudra - for willpower and concentration.",
+                benefits: "Strengthens willpower, improves circulation, enhances mental clarity. Activates inner fire.",
+                instructions: [
+                    "Interlock all fingers inside palms",
+                    "Extend both index fingers up, touching",
+                    "Keep thumbs crossed at base",
+                    "Hold at heart or solar plexus"
+                ],
+                duration: "Practice for 7-10 minutes during concentration exercises",
+                emoji: "⚡",
+                chakra: "Solar Plexus"
+            },
+            {
+                name: "Bhramara Mudra",
+                category: "meditation",
+                description: "The bee mudra - for allergies and respiratory issues.",
+                benefits: "Relieves allergies, clears sinuses, calms nervous system, improves voice. Excellent for singers.",
+                instructions: [
+                    "Touch index finger to thumb base",
+                    "Touch middle and ring fingers to thumb tip",
+                    "Extend pinky finger",
+                    "Practice with humming breath (Bhramari)"
+                ],
+                duration: "Hold for 7 minutes, 3-4 times daily for allergies",
+                emoji: "🐝"
+            },
+            {
+                name: "Kubera Mudra",
+                category: "meditation",
+                description: "The mudra of wealth - joining three fingers to manifest desires.",
+                benefits: "Focuses intention, attracts abundance, helps manifest desires and goals. Clarifies purpose.",
+                instructions: [
+                    "Join the tips of thumb, index, and middle finger",
+                    "Fold ring and little fingers into palm",
+                    "Practice with both hands",
+                    "Visualize your intention while holding"
+                ],
+                duration: "Hold while visualizing goals, 5-15 minutes",
+                emoji: "💰"
+            },
+            {
+                name: "Shuni Mudra",
+                category: "meditation",
+                description: "The mudra of patience - middle finger touching thumb.",
+                benefits: "Develops patience, discipline, and commitment. Improves intuition and discernment.",
+                instructions: [
+                    "Touch the tip of your middle finger to the tip of your thumb",
+                    "Keep other fingers straight and relaxed",
+                    "Rest hands on knees with palms up or down",
+                    "Maintain gentle pressure between thumb and middle finger"
+                ],
+                duration: "Practice for 10-30 minutes during meditation",
+                emoji: "🖖",
+                element: "Fire + Space"
+            },
+            {
+                name: "Buddhi Mudra",
+                category: "meditation",
+                description: "The mudra of mental clarity - little finger to thumb for communication.",
+                benefits: "Improves communication, mental clarity, and intuitive knowledge. Balances water element.",
+                instructions: [
+                    "Touch the tip of your little finger to the tip of your thumb",
+                    "Keep the other three fingers straight",
+                    "Practice with both hands",
+                    "Rest on knees or thighs"
+                ],
+                duration: "Practice for 10-30 minutes",
+                emoji: "💡",
+                element: "Fire + Water"
+            },
+            
+            // HEALING MUDRAS
+            {
+                name: "Prana Mudra",
+                category: "healing",
+                description: "The life force mudra - activating dormant energy in the body.",
+                benefits: "Improves vitality, reduces fatigue, enhances immunity. Strengthens the eyes and vision.",
+                instructions: [
+                    "Touch the tips of your thumb, ring finger, and little finger together",
+                    "Keep the index and middle fingers extended",
+                    "Practice with both hands simultaneously",
+                    "Rest hands on thighs or knees"
+                ],
+                duration: "Hold for 15-30 minutes, can be done multiple times daily",
+                emoji: "✋",
+                element: "Fire + Earth + Water"
+            },
+            {
+                name: "Vayu Mudra",
+                category: "healing",
+                description: "The air element mudra - balancing air in the body.",
+                benefits: "Relieves gas, bloating, joint pain, and anxiety. Calms restlessness and nervousness.",
+                instructions: [
+                    "Fold your index finger and press it with the base of your thumb",
+                    "Keep the other three fingers extended",
+                    "Apply gentle pressure on the index finger",
+                    "Practice with both hands"
+                ],
+                duration: "Hold for 10-15 minutes, 2-3 times daily",
+                emoji: "🌬️",
+                imageUrl: "https://coolmeditation.wordpress.com/wp-content/uploads/2019/06/vayu-mudra.jpg",
+                element: "Fire + Air (reducing Air)"
+            },
+            {
+                name: "Apana Mudra",
+                category: "healing",
+                description: "The mudra of digestion and elimination - for detoxification.",
+                benefits: "Aids digestion, detoxification, and elimination. Helps with constipation and urinary issues.",
+                instructions: [
+                    "Touch the tips of thumb, middle finger, and ring finger together",
+                    "Keep index and little fingers extended",
+                    "Practice with both hands",
+                    "Breathe naturally while holding"
+                ],
+                duration: "Hold for 15-45 minutes for digestive issues",
+                emoji: "🌿",
+                element: "Fire + Earth + Space"
+            },
+            {
+                name: "Linga Mudra",
+                category: "healing",
+                description: "The upright mudra - for generating heat and fighting infection.",
+                benefits: "Increases body heat, fights colds and infections, strengthens immune system. Boosts metabolism.",
+                instructions: [
+                    "Interlock fingers of both hands",
+                    "Keep left thumb extended upward",
+                    "Encircle left thumb with right index finger and thumb",
+                    "Hold at chest or navel level"
+                ],
+                duration: "Practice 3 times daily for 15 minutes when fighting infection",
+                emoji: "🔥",
+                imageUrl: "https://coolmeditation.wordpress.com/wp-content/uploads/2019/06/linga-mudra.jpg"
+            },
+            {
+                name: "Shakti Mudra",
+                category: "healing",
+                description: "The mudra of power - for pelvic area and calming energy.",
+                benefits: "Calms restlessness, aids sleep, helps with pelvic tension and menstrual issues. Deeply relaxing.",
+                instructions: [
+                    "Close ring and pinky fingers into palms",
+                    "Wrap thumbs over these fingers",
+                    "Keep index and middle fingers extended",
+                    "Join hands with fingertips touching"
+                ],
+                duration: "Practice before bed for 10-15 minutes",
+                emoji: "😴"
+            },
+            {
+                name: "Rudra Mudra",
+                category: "healing",
+                description: "The mudra of Shiva - for solar plexus and confidence.",
+                benefits: "Improves clarity, strengthens self-confidence, aids low blood pressure. Energizes solar plexus.",
+                instructions: [
+                    "Touch tips of thumb, index, and ring finger",
+                    "Keep middle and pinky fingers extended",
+                    "Practice with both hands",
+                    "Rest on knees or thighs"
+                ],
+                duration: "Hold for 5-10 minutes when needing clarity",
+                emoji: "🌟",
+                imageUrl: "https://coolmeditation.wordpress.com/wp-content/uploads/2019/06/rudra-mudra.jpg",
+                element: "Fire + Air + Earth"
+            },
+            {
+                name: "Surya Mudra",
+                category: "healing",
+                description: "The sun mudra - for metabolism and digestion.",
+                benefits: "Boosts metabolism, aids weight loss, improves digestion and body temperature. Increases fire element.",
+                instructions: [
+                    "Fold your ring finger and press it with your thumb",
+                    "Keep other three fingers straight",
+                    "Apply gentle pressure",
+                    "Practice with both hands"
+                ],
+                duration: "Hold for 5-15 minutes, twice daily",
+                emoji: "☀️",
+                imageUrl: "https://coolmeditation.wordpress.com/wp-content/uploads/2019/06/surya-mudra.jpg",
+                element: "Fire + Earth (reducing Earth)"
+            },
+            {
+                name: "Shunya Mudra",
+                category: "healing",
+                description: "The mudra of emptiness - for ear and hearing issues.",
+                benefits: "Relieves ear pain, improves hearing, reduces vertigo and motion sickness. Balances space element.",
+                instructions: [
+                    "Fold your middle finger and press it with your thumb",
+                    "Keep other three fingers straight",
+                    "Practice with both hands",
+                    "Apply gentle but firm pressure"
+                ],
+                duration: "Hold for 15-20 minutes, 2-3 times daily",
+                emoji: "👂",
+                element: "Fire + Space (reducing Space)"
+            },
+            {
+                name: "Prithvi Mudra",
+                category: "healing",
+                description: "The earth mudra - ring finger to thumb for grounding.",
+                benefits: "Grounds energy, improves stability, strengthens bones and increases stamina. Nourishes body tissues.",
+                instructions: [
+                    "Touch the tip of your ring finger to the tip of your thumb",
+                    "Keep other three fingers extended",
+                    "Practice with both hands on knees",
+                    "Feel rooted and grounded"
+                ],
+                duration: "Hold for 15-30 minutes for grounding",
+                emoji: "🌍",
+                imageUrl: "https://coolmeditation.wordpress.com/wp-content/uploads/2019/06/prithvi-mudra.jpg",
+                element: "Fire + Earth"
+            },
+            {
+                name: "Varuna Mudra",
+                category: "healing",
+                description: "The water mudra - balancing fluid in the body.",
+                benefits: "Improves skin quality, reduces dryness, balances body fluids and hormones. Hydrates at cellular level.",
+                instructions: [
+                    "Touch the tip of your little finger to the tip of your thumb",
+                    "Keep the other three fingers straight",
+                    "Practice with both hands",
+                    "Breathe deeply and slowly"
+                ],
+                duration: "Hold for 15-30 minutes for skin and fluid balance",
+                emoji: "💧",
+                element: "Fire + Water"
+            },
+            {
+                name: "Mukula Mudra",
+                category: "healing",
+                description: "The beak mudra - directing healing energy to specific areas.",
+                benefits: "Directs healing energy to specific body parts, reduces pain and inflammation. Versatile healing tool.",
+                instructions: [
+                    "Touch all four fingertips to thumb tip",
+                    "Form a beak-like point",
+                    "Point toward area needing healing",
+                    "Visualize healing energy flowing"
+                ],
+                duration: "Direct toward affected area for 5-10 minutes",
+                emoji: "🩹"
+            },
+            {
+                name: "Apana Vayu Mudra",
+                category: "healing",
+                description: "The heart mudra - first aid for heart conditions.",
+                benefits: "Regulates heart function, reduces heart palpitations, lowers blood pressure. Emergency mudra for heart.",
+                instructions: [
+                    "Touch tips of thumb, middle finger, and ring finger",
+                    "Fold index finger to touch base of thumb",
+                    "Extend little finger",
+                    "Practice with both hands"
+                ],
+                duration: "Hold for 15-30 minutes or during heart distress",
+                emoji: "💓",
+                element: "Fire + Earth + Space - Air"
+            },
+            {
+                name: "Pran Mudra",
+                category: "healing",
+                description: "The vitality mudra - awakening dormant prana.",
+                benefits: "Activates root chakra, improves eyesight, reduces vitamin deficiency. Boosts overall vitality.",
+                instructions: [
+                    "Touch tips of thumb, ring finger, and pinky",
+                    "Keep index and middle fingers extended",
+                    "Both hands simultaneously",
+                    "Breathe deeply"
+                ],
+                duration: "Practice 5-30 minutes daily",
+                emoji: "⚡",
+                chakra: "Root Chakra"
+            },
+            {
+                name: "Varun Mudra",
+                category: "healing",
+                description: "Water balance mudra - for hydration and skin.",
+                benefits: "Balances water element, prevents dehydration, improves skin. Relieves constipation.",
+                instructions: [
+                    "Touch tip of little finger to thumb tip",
+                    "Extend other three fingers",
+                    "Practice with both hands",
+                    "Feel fluidity in body"
+                ],
+                duration: "Hold 15-20 minutes, 2-3 times daily",
+                emoji: "🌊",
+                element: "Fire + Water"
+            },
+            {
+                name: "Adi Mudra",
+                category: "healing",
+                description: "The first mudra - thumb inside fist for calming.",
+                benefits: "Calms nervous system, increases oxygen flow to head, relaxes body. Good for snoring.",
+                instructions: [
+                    "Place thumb at base of little finger",
+                    "Curl other fingers over thumb",
+                    "Make a gentle fist",
+                    "Rest on thighs"
+                ],
+                duration: "Practice 10-15 minutes for relaxation",
+                emoji: "✊"
+            },
+            {
+                name: "Brahma Mudra",
+                category: "healing",
+                description: "The mudra of creation - four directions in the fist.",
+                benefits: "Relieves neck tension, improves breathing, calms mind. Good for throat and voice.",
+                instructions: [
+                    "Make fists with thumbs inside",
+                    "Touch knuckles together",
+                    "Move head gently in all directions while holding",
+                    "Breathe deeply"
+                ],
+                duration: "Practice 5-10 minutes with neck movements",
+                emoji: "🔄"
+            },
+            {
+                name: "Akash Mudra",
+                category: "healing",
+                description: "The space/ether mudra - middle finger to thumb.",
+                benefits: "Detoxifies body, relieves ear issues, helps calcium deficiency. Activates space element.",
+                instructions: [
+                    "Touch middle finger tip to thumb tip",
+                    "Keep other fingers extended",
+                    "Practice with both hands",
+                    "Feel spaciousness"
+                ],
+                duration: "Hold 15-20 minutes",
+                emoji: "🌌",
+                element: "Fire + Space"
+            },
+            {
+                name: "Jal Shaamak Mudra",
+                category: "healing",
+                description: "The water reduction mudra - for excess water retention.",
+                benefits: "Reduces water retention, helps with swelling, edema. Balances excessive water element.",
+                instructions: [
+                    "Touch little finger tip to base of thumb",
+                    "Press thumb over little finger",
+                    "Extend other fingers",
+                    "Practice with both hands"
+                ],
+                duration: "Practice 15-20 minutes when needed",
+                emoji: "💦",
+                element: "Fire + Water (reducing Water)"
+            },
+            {
+                name: "Aakash Shaamak Mudra",
+                category: "healing",
+                description: "Space reduction mudra - for grounding excess lightness.",
+                benefits: "Strengthens bones, reduces feeling of emptiness or anxiety. Grounds ethereal energy.",
+                instructions: [
+                    "Press middle finger down to palm",
+                    "Place thumb over middle finger",
+                    "Extend other fingers",
+                    "Feel more grounded"
+                ],
+                duration: "Hold 10-15 minutes",
+                emoji: "⬇️"
+            },
+            {
+                name: "Uttara Bodhaya Mudra",
+                category: "healing",
+                description: "Supreme enlightenment mudra for headaches.",
+                benefits: "Relieves headaches, migraines, sinus pressure. Connects to higher awareness.",
+                instructions: [
+                    "Interlace fingers except index",
+                    "Point index fingers up together",
+                    "Cross thumbs",
+                    "Hold at forehead or crown"
+                ],
+                duration: "Practice 5-10 minutes for headache relief",
+                emoji: "🧠"
+            },
+            
+            // YOGA MUDRAS
+            {
+                name: "Lotus Mudra",
+                category: "yoga",
+                description: "Opening hands like a lotus flower from heart center.",
+                benefits: "Opens the heart chakra, cultivates compassion, and emotional healing. Symbol of purity.",
+                instructions: [
+                    "Bring hands together at heart center",
+                    "Keep base of palms, thumbs, and pinkies touching",
+                    "Open other fingers like petals of a lotus",
+                    "Keep connection at wrists, thumbs, and pinkies"
+                ],
+                duration: "Hold for 5-10 breaths while focusing on heart center",
+                emoji: "🌸",
+                imageUrl: "https://coolmeditation.wordpress.com/wp-content/uploads/2019/06/lotus-mudra.jpg",
+                chakra: "Heart Chakra"
+            },
+            {
+                name: "Mushti Mudra",
+                category: "yoga",
+                description: "The fist mudra - thumb inside closed fist for digestion.",
+                benefits: "Releases anger, strengthens liver and stomach. Helps with digestion and constipation.",
+                instructions: [
+                    "Make a fist with both hands",
+                    "Wrap your fingers around your thumb",
+                    "Place fists on thighs or knees",
+                    "Apply comfortable pressure"
+                ],
+                duration: "Hold for 10-15 minutes during pranayama",
+                emoji: "✊"
+            },
+            {
+                name: "Garuda Mudra",
+                category: "yoga",
+                description: "The eagle mudra - interlocked thumbs with spread fingers representing wings.",
+                benefits: "Opens the chest, energizes the body, relieves fatigue and low blood pressure. Awakens kundalini.",
+                instructions: [
+                    "Hook your thumbs together",
+                    "Spread your fingers like wings",
+                    "Right hand on top for activation, left on top for calming",
+                    "Place at lower abdomen, solar plexus, or heart"
+                ],
+                duration: "Hold for 5-10 breaths at each chakra point",
+                emoji: "🦅",
+                imageUrl: "https://coolmeditation.wordpress.com/wp-content/uploads/2019/06/garuda-mudra.jpg"
+            },
+            {
+                name: "Ksepana Mudra",
+                category: "yoga",
+                description: "The gesture of pouring out and letting go - releasing negativity.",
+                benefits: "Releases negative energy, toxins, and emotions. Promotes letting go of what no longer serves.",
+                instructions: [
+                    "Interlock all fingers except index fingers",
+                    "Extend index fingers downward, touching at tips",
+                    "Cross thumbs on the back",
+                    "Point index fingers toward the earth"
+                ],
+                duration: "Hold for 7-15 breaths to release negativity",
+                emoji: "⬇️"
+            },
+            {
+                name: "Shankh Mudra",
+                category: "yoga",
+                description: "The conch shell mudra - for throat chakra and voice.",
+                benefits: "Improves voice quality, soothes throat, enhances communication and thyroid function. Good for singers.",
+                instructions: [
+                    "Encircle left thumb with right hand fingers",
+                    "Touch left fingers to right thumb",
+                    "Form a conch shell shape",
+                    "Hold at throat level"
+                ],
+                duration: "Hold for 10-15 minutes while chanting or in silence",
+                emoji: "🐚",
+                chakra: "Throat Chakra"
+            },
+            {
+                name: "Vajrapradama Mudra",
+                category: "yoga",
+                description: "The mudra of unshakable trust - interlocked fingers at heart.",
+                benefits: "Builds self-confidence, trust in oneself, and inner strength. Creates unshakable faith.",
+                instructions: [
+                    "Interlace fingers in front of heart",
+                    "Fingers point outward horizontally",
+                    "Keep elbows wide and lifted",
+                    "Press chest forward into hands"
+                ],
+                duration: "Hold for 5-7 breaths while affirming trust",
+                emoji: "💎"
+            },
+            {
+                name: "Merudanda Mudra",
+                category: "yoga",
+                description: "The mudra of the spine - for spinal energy activation.",
+                benefits: "Activates spinal energy, improves posture, stimulates nervous system. Awakens sushumna nadi.",
+                instructions: [
+                    "Extend index fingers and touch tips",
+                    "Interlock other fingers",
+                    "Keep thumbs crossed",
+                    "Hold in front of navel or heart"
+                ],
+                duration: "Practice for 10 minutes during pranayama",
+                emoji: "🌳"
+            },
+            {
+                name: "Kaki Mudra",
+                category: "yoga",
+                description: "The crow's beak mudra - pursed lips breathing technique for cooling.",
+                benefits: "Cools the body, purifies blood, improves complexion, reduces thirst. Excellent for summer.",
+                instructions: [
+                    "Purse lips forming a beak shape",
+                    "Inhale slowly through pursed lips",
+                    "Fill lungs completely",
+                    "Exhale through nose"
+                ],
+                duration: "Practice 10-15 rounds of breath",
+                emoji: "🐦"
+            },
+            {
+                name: "Jnana Mudra",
+                category: "yoga",
+                description: "Consciousness mudra - index to thumb with palms up for receptivity.",
+                benefits: "Expands consciousness, improves concentration, promotes receptivity to cosmic energy.",
+                instructions: [
+                    "Touch index finger tip to thumb tip",
+                    "Keep other fingers relaxed and extended",
+                    "Place hands on knees, palms facing upward",
+                    "Symbolizes receiving cosmic energy"
+                ],
+                duration: "Practice throughout meditation session",
+                emoji: "🌌",
+                element: "Air + Fire"
+            },
+            {
+                name: "Maha Sacral Mudra",
+                category: "yoga",
+                description: "The great pelvic mudra - for lower body energy.",
+                benefits: "Strengthens pelvic floor, helps with menstrual issues, enhances sexual vitality.",
+                instructions: [
+                    "Interlock fingers in front of pelvis",
+                    "Extend ring fingers together",
+                    "Join fingertips",
+                    "Hold at sacral area"
+                ],
+                duration: "Practice 10-15 minutes",
+                emoji: "🌙",
+                chakra: "Sacral Chakra"
+            },
+            {
+                name: "Bhujangini Mudra",
+                category: "yoga",
+                description: "The serpent mudra - for digestive fire.",
+                benefits: "Strengthens digestive fire, helps with gas and acidity. Awakens kundalini.",
+                instructions: [
+                    "Sit upright",
+                    "Swallow air into stomach",
+                    "Hold breath gently",
+                    "Release slowly"
+                ],
+                duration: "Practice 3-5 rounds",
+                emoji: "🐍"
+            },
+            {
+                name: "Manduki Mudra",
+                category: "yoga",
+                description: "The frog mudra - tongue movements for brain stimulation.",
+                benefits: "Stimulates brain, helps with speech, activates throat chakra. Improves focus.",
+                instructions: [
+                    "Roll tongue back to touch soft palate",
+                    "Move tongue in circular motions",
+                    "Stimulate different points",
+                    "Practice mindfully"
+                ],
+                duration: "Practice 3-5 minutes",
+                emoji: "🐸",
+                chakra: "Throat Chakra"
+            },
+            {
+                name: "Pashinee Mudra",
+                category: "yoga",
+                description: "The folded mudra - advanced inversion practice.",
+                benefits: "Reverses aging process, improves digestion, enhances prana flow. Very advanced.",
+                instructions: [
+                    "Lie on back",
+                    "Bring legs over head",
+                    "Place knees by ears",
+                    "Requires flexibility"
+                ],
+                duration: "Hold as comfortable, build gradually",
+                emoji: "🤸"
+            },
+            {
+                name: "Viparita Karani Mudra",
+                category: "yoga",
+                description: "The inverted action mudra - legs up the wall.",
+                benefits: "Reverses blood flow, relieves tired legs, calms nervous system. Anti-aging.",
+                instructions: [
+                    "Lie with legs up wall",
+                    "Hips close to wall",
+                    "Arms relaxed at sides",
+                    "Breathe deeply"
+                ],
+                duration: "Hold 5-15 minutes",
+                emoji: "🧘‍♀️"
+            },
+            {
+                name: "Maha Mudra",
+                category: "yoga",
+                description: "The great seal - forward fold with breath retention.",
+                benefits: "Purifies digestive system, awakens kundalini, balances all chakras. Very powerful.",
+                instructions: [
+                    "Sit with one leg extended",
+                    "Fold other foot to inner thigh",
+                    "Hold big toe of extended leg",
+                    "Combine with breath retention and bandhas"
+                ],
+                duration: "Practice 3-5 rounds each side",
+                emoji: "🕉️"
+            },
+            
+            // MARTIAL ARTS MUDRAS
+            {
+                name: "Karate Fist (Seiken)",
+                category: "martial-arts",
+                description: "The basic striking fist used in karate and many martial arts.",
+                benefits: "Develops proper striking form, hand strength, and focus. Teaches discipline and power.",
+                instructions: [
+                    "Curl your fingers tightly into your palm",
+                    "Place your thumb over the index and middle finger knuckles",
+                    "Align your wrist straight with forearm",
+                    "Strike with the first two knuckles"
+                ],
+                duration: "Practice strikes in sets of 10-20 repetitions",
+                emoji: "👊"
+            },
+            {
+                name: "Knife Hand (Shuto)",
+                category: "martial-arts",
+                description: "The open-hand strike position used in karate.",
+                benefits: "Develops precision, control, and striking power. Strengthens hand edges.",
+                instructions: [
+                    "Extend all fingers together, slightly curved",
+                    "Tuck thumb into palm",
+                    "Keep hand rigid but not tense",
+                    "Strike with the edge of your hand below the pinky"
+                ],
+                duration: "Practice controlled movements slowly at first",
+                emoji: "🔪"
+            },
+            {
+                name: "Tiger Claw (Tora Guchi)",
+                category: "martial-arts",
+                description: "The tiger claw stance from kung fu and karate.",
+                benefits: "Develops finger strength, gripping power, and striking precision. Builds focus and ferocity.",
+                instructions: [
+                    "Spread fingers wide apart",
+                    "Bend fingers at the second knuckle forming a claw",
+                    "Keep thumb bent and separated",
+                    "Maintain tension in the hand as if gripping"
+                ],
+                duration: "Hold for 20-30 seconds, repeat 5-10 times",
+                emoji: "🐯"
+            },
+            {
+                name: "Spear Hand (Nukite)",
+                category: "martial-arts",
+                description: "The spear hand strike from karate - fingers thrust together.",
+                benefits: "Develops finger strength and precision strikes. Trains focus and accuracy for pressure points.",
+                instructions: [
+                    "Extend all four fingers together tightly",
+                    "Slightly bend fingers at second knuckle",
+                    "Tuck thumb against palm",
+                    "Strike with fingertips as a unit"
+                ],
+                duration: "Practice controlled thrusts 20-30 repetitions",
+                emoji: "🗡️"
+            },
+            {
+                name: "Crane Beak (Kakuto)",
+                category: "martial-arts",
+                description: "The one-point strike - fingertips and thumb together.",
+                benefits: "Develops precise striking to pressure points, finger coordination and accuracy.",
+                instructions: [
+                    "Bring all fingertips together at one point",
+                    "Include thumb with fingers",
+                    "Bend wrist slightly back",
+                    "Strike with the concentrated point"
+                ],
+                duration: "Practice precision striking 10-15 times",
+                emoji: "🦩"
+            },
+            {
+                name: "Eagle Claw (Kotou)",
+                category: "martial-arts",
+                description: "The grasping technique from kung fu - hooked fingers for seizing.",
+                benefits: "Develops gripping power, tendon strength, and grappling ability. Conditions fingers.",
+                instructions: [
+                    "Bend all fingers into hook shape",
+                    "Keep thumb separated and hooked",
+                    "Maintain tension as if grasping",
+                    "Practice both grabbing and striking with hooked fingers"
+                ],
+                duration: "Hold tension for 20-30 seconds, repeat 5 times",
+                emoji: "🦅"
+            },
+            {
+                name: "Dragon Fist (Ryuken)",
+                category: "martial-arts",
+                description: "The dragon claw fist - middle knuckle strike for pressure points.",
+                benefits: "Develops unique striking tool, strengthens second knuckle, trains precision.",
+                instructions: [
+                    "Make a fist",
+                    "Extend middle finger knuckle forward",
+                    "Keep other knuckles aligned behind",
+                    "Strike with protruding middle knuckle"
+                ],
+                duration: "Practice form slowly 15-20 times",
+                emoji: "🐉"
+            },
+            {
+                name: "Leopard Paw (Kumade)",
+                category: "martial-arts",
+                description: "The leopard fist - half-fist with exposed knuckles for speed.",
+                benefits: "Develops faster strikes, strengthens knuckles, increases speed and snap.",
+                instructions: [
+                    "Curl fingers to touch palm at base",
+                    "Keep second knuckles protruding",
+                    "Fold thumb across fingers",
+                    "Strike with flat of knuckles"
+                ],
+                duration: "Practice quick strikes 20-30 repetitions",
+                emoji: "🐆"
+            },
+            {
+                name: "Snake Hand (Hebi Te)",
+                category: "martial-arts",
+                description: "The snake strike - fingertips thrust forward together with speed.",
+                benefits: "Develops speed, precision to vital points, and finger conditioning.",
+                instructions: [
+                    "Keep fingers together and straight",
+                    "Tuck thumb tightly to hand",
+                    "Align fingers to form point",
+                    "Strike quickly like a snake"
+                ],
+                duration: "Practice speed drills 15-20 strikes",
+                emoji: "🐍"
+            },
+            {
+                name: "Back Fist (Uraken)",
+                category: "martial-arts",
+                description: "The reverse knuckle strike - snapping backhand technique.",
+                benefits: "Develops speed and surprise attacks, strengthens back of hand and wrist.",
+                instructions: [
+                    "Form a tight fist",
+                    "Use whipping motion from elbow",
+                    "Strike with back two knuckles",
+                    "Snap hand back immediately after contact"
+                ],
+                duration: "Practice snapping strikes 20-30 times per side",
+                emoji: "🤜"
+            },
+            {
+                name: "Hammer Fist (Tetsui)",
+                category: "martial-arts",
+                description: "The bottom-fist strike - using fist like a hammer.",
+                benefits: "Develops powerful downward strikes, strengthens bottom of fist and forearm.",
+                instructions: [
+                    "Make a standard fist",
+                    "Strike downward or sideways",
+                    "Impact with bottom pinky-side of fist",
+                    "Use swinging or chopping motion"
+                ],
+                duration: "Practice controlled strikes 15-25 times",
+                emoji: "🔨"
+            },
+            {
+                name: "Phoenix Eye (Washu Ken)",
+                category: "martial-arts",
+                description: "The one-knuckle strike using index finger joint for pressure points.",
+                benefits: "Precise pressure point strikes, develops finger strength and accuracy.",
+                instructions: [
+                    "Extend index finger",
+                    "Curl it to expose middle knuckle",
+                    "Wrap thumb over for support",
+                    "Strike with single protruding knuckle"
+                ],
+                duration: "Practice precision drills 10-15 strikes",
+                emoji: "🔥"
+            },
+            {
+                name: "Iron Palm (Tetsusho)",
+                category: "martial-arts",
+                description: "The palm heel strike - traditional conditioning technique.",
+                benefits: "Develops powerful palm strikes, conditions hands, builds wrist strength.",
+                instructions: [
+                    "Bend fingers back at knuckles",
+                    "Extend palm forward",
+                    "Keep wrist strong and aligned",
+                    "Strike with heel of palm"
+                ],
+                duration: "Condition gradually, start with 10-20 light strikes",
+                emoji: "🫱"
+            },
+            
+            // CHAKRA MUDRAS
+            {
+                name: "Muladhara Mudra",
+                category: "chakra",
+                description: "Root chakra mudra - for grounding and stability.",
+                benefits: "Activates root chakra, promotes grounding, security, and connection to earth.",
+                instructions: [
+                    "Touch tips of index finger and thumb",
+                    "Place hands on thighs, palms up",
+                    "Focus on base of spine",
+                    "Visualize red energy"
+                ],
+                duration: "Practice 10-15 minutes",
+                emoji: "🔴",
+                chakra: "Root Chakra (Muladhara)"
+            },
+            {
+                name: "Svadhisthana Mudra",
+                category: "chakra",
+                description: "Sacral chakra mudra - for creativity and emotions.",
+                benefits: "Activates sacral chakra, enhances creativity, sexuality, and emotional flow.",
+                instructions: [
+                    "Place left hand in lap, palm up",
+                    "Place right hand over left, palms up",
+                    "Touch thumbs together",
+                    "Focus on lower abdomen, visualize orange"
+                ],
+                duration: "Practice 10-15 minutes",
+                emoji: "🟠",
+                chakra: "Sacral Chakra (Svadhisthana)"
+            },
+            {
+                name: "Manipura Mudra",
+                category: "chakra",
+                description: "Solar plexus mudra - for personal power and confidence.",
+                benefits: "Activates solar plexus, strengthens willpower, confidence, and digestive fire.",
+                instructions: [
+                    "Clasp hands in front of solar plexus",
+                    "Extend middle fingers, touching tips",
+                    "Focus on navel area",
+                    "Visualize yellow energy"
+                ],
+                duration: "Practice 10-15 minutes",
+                emoji: "🟡",
+                chakra: "Solar Plexus (Manipura)"
+            },
+            {
+                name: "Anahata Mudra",
+                category: "chakra",
+                description: "Heart chakra mudra - for love and compassion.",
+                benefits: "Opens heart chakra, promotes love, compassion, and emotional healing.",
+                instructions: [
+                    "Touch tips of index finger and thumb",
+                    "Place at heart center",
+                    "Or use Padma Mudra (lotus)",
+                    "Visualize green or pink energy"
+                ],
+                duration: "Practice 10-15 minutes",
+                emoji: "💚",
+                chakra: "Heart Chakra (Anahata)"
+            },
+            {
+                name: "Vishuddha Mudra",
+                category: "chakra",
+                description: "Throat chakra mudra - for communication and expression.",
+                benefits: "Activates throat chakra, improves communication, expression, and truth-speaking.",
+                instructions: [
+                    "Interlace fingers inside palms",
+                    "Extend thumbs upward, touching",
+                    "Hold at throat level",
+                    "Visualize blue energy"
+                ],
+                duration: "Practice 10-15 minutes",
+                emoji: "🔵",
+                chakra: "Throat Chakra (Vishuddha)"
+            },
+            {
+                name: "Ajna Mudra",
+                category: "chakra",
+                description: "Third eye mudra - for intuition and insight.",
+                benefits: "Activates third eye, enhances intuition, clarity, and inner vision.",
+                instructions: [
+                    "Touch tips of middle finger and thumb",
+                    "Place at third eye level",
+                    "Close eyes, focus inward",
+                    "Visualize indigo energy"
+                ],
+                duration: "Practice 10-15 minutes",
+                emoji: "🔮",
+                chakra: "Third Eye (Ajna)"
+            },
+            {
+                name: "Sahasrara Mudra",
+                category: "chakra",
+                description: "Crown chakra mudra - for spiritual connection.",
+                benefits: "Activates crown chakra, promotes spiritual awakening and divine connection.",
+                instructions: [
+                    "Interlock fingers, index fingers up",
+                    "Hold above head",
+                    "Or place hands in prayer above crown",
+                    "Visualize violet or white energy"
+                ],
+                duration: "Practice 10-15 minutes",
+                emoji: "💜",
+                chakra: "Crown Chakra (Sahasrara)"
+            },
+            
+            // TANTRA MUDRAS
+            {
+                name: "Yoni Mudra (Shakti)",
+                category: "tantra",
+                description: "The sacred feminine mudra - womb of creation.",
+                benefits: "Connects to feminine divine energy, activates creative power, balances hormones.",
+                instructions: [
+                    "Form downward triangle with thumbs and index fingers",
+                    "Other fingers extended",
+                    "Place at lower abdomen",
+                    "Invoke Shakti energy"
+                ],
+                duration: "Practice 10-20 minutes",
+                emoji: "🔺",
+                chakra: "Sacral Chakra"
+            },
+            {
+                name: "Lingam Mudra (Shiva)",
+                category: "tantra",
+                description: "The masculine divine mudra - pillar of consciousness.",
+                benefits: "Connects to masculine divine energy, generates inner heat, strengthens immunity.",
+                instructions: [
+                    "Interlock fingers",
+                    "Extend left thumb upward",
+                    "Right thumb and finger circle left thumb",
+                    "Invoke Shiva energy"
+                ],
+                duration: "Practice 10-15 minutes",
+                emoji: "🔥",
+                imageUrl: "https://coolmeditation.wordpress.com/wp-content/uploads/2019/06/linga-mudra.jpg"
+            },
+            {
+                name: "Shakti Chalini Mudra",
+                category: "tantra",
+                description: "The energy awakening mudra - for kundalini.",
+                benefits: "Awakens kundalini energy, moves prana through chakras, spiritual awakening.",
+                instructions: [
+                    "Fold ring and pinky into palms",
+                    "Wrap thumbs over them",
+                    "Extend index and middle fingers",
+                    "Join fingertips"
+                ],
+                duration: "Practice with caution, 5-10 minutes",
+                emoji: "⚡",
+                chakra: "All chakras"
+            },
+            {
+                name: "Khechari Mudra",
+                category: "tantra",
+                description: "The tongue lock - advanced tantric technique.",
+                benefits: "Awakens higher consciousness, stimulates pineal gland, produces nectar (amrita).",
+                instructions: [
+                    "Roll tongue back to touch soft palate",
+                    "Advanced: tongue enters nasal cavity",
+                    "Requires gradual practice and guidance",
+                    "Very powerful mudra"
+                ],
+                duration: "Advanced practice only",
+                emoji: "👅"
+            },
+            {
+                name: "Ashwini Mudra",
+                category: "tantra",
+                description: "The horse mudra - rhythmic anal contraction.",
+                benefits: "Strengthens pelvic floor, awakens kundalini, improves digestive health.",
+                instructions: [
+                    "Contract and release anal sphincter",
+                    "Rhythmic pulsing motion",
+                    "Can combine with breath",
+                    "Practice regularly"
+                ],
+                duration: "Practice 20-30 contractions",
+                emoji: "🐴"
+            },
+            {
+                name: "Vajroli Mudra",
+                category: "tantra",
+                description: "The thunderbolt mudra - for sexual energy transformation.",
+                benefits: "Transforms sexual energy to spiritual energy, strengthens reproductive system.",
+                instructions: [
+                    "Advanced contraction of urogenital muscles",
+                    "Requires proper guidance",
+                    "Part of tantric practices",
+                    "Practice with awareness"
+                ],
+                duration: "Advanced practice",
+                emoji: "⚡"
+            },
+            {
+                name: "Maha Bandha Mudra",
+                category: "tantra",
+                description: "The great lock - combining three bandhas.",
+                benefits: "Powerful pranayama technique, awakens kundalini, purifies nadis.",
+                instructions: [
+                    "Combine Mula Bandha (root lock)",
+                    "Uddiyana Bandha (abdominal lock)",
+                    "Jalandhara Bandha (throat lock)",
+                    "Requires proper instruction"
+                ],
+                duration: "Advanced practice with guidance",
+                emoji: "🔒"
+            },
+            {
+                name: "Shakti Mudra",
+                category: "tantra",
+                description: "The goddess mudra - invoking divine feminine.",
+                benefits: "Deeply calming, aids sleep, helps with menstrual issues, connects to Shakti.",
+                instructions: [
+                    "Fold ring and pinky fingers into palm",
+                    "Wrap thumbs over them",
+                    "Extend and join index and middle fingers",
+                    "Feel divine feminine energy"
+                ],
+                duration: "Practice 10-15 minutes",
+                emoji: "🌙"
+            },
+            
+            // ADDITIONAL SPECIALIZED MUDRAS
+            {
+                name: "Prana Vayu Mudra",
+                category: "healing",
+                description: "The life force wind mudra - for heart and lungs.",
+                benefits: "Strengthens heart, improves lung function, increases vitality. Emergency heart mudra.",
+                instructions: [
+                    "Touch tips of thumb, index, and middle finger",
+                    "Fold ring finger to touch base of thumb",
+                    "Extend little finger",
+                    "Energizes heart chakra"
+                ],
+                duration: "Practice 15-30 minutes or as needed",
+                emoji: "💨",
+                chakra: "Heart Chakra"
+            },
+            {
+                name: "Shambhavi Mudra",
+                category: "meditation",
+                description: "The eyebrow center gazing - for third eye activation.",
+                benefits: "Activates third eye, improves concentration, calms mind, enhances intuition.",
+                instructions: [
+                    "Gaze at point between eyebrows",
+                    "Eyes slightly upward and inward",
+                    "Maintain soft focus",
+                    "Don't strain"
+                ],
+                duration: "Practice 3-10 minutes",
+                emoji: "👁️",
+                chakra: "Third Eye"
+            },
+            {
+                name: "Nasikagra Drishti",
+                category: "meditation",
+                description: "Nose tip gazing - for concentration.",
+                benefits: "Improves concentration, calms mind, balances nervous system.",
+                instructions: [
+                    "Gaze at tip of nose",
+                    "Eyes downward and inward",
+                    "Maintain awareness",
+                    "Practice gently"
+                ],
+                duration: "Practice 3-10 minutes",
+                emoji: "👃"
+            },
+            {
+                name: "Shanmukhi Mudra",
+                category: "meditation",
+                description: "Closing the six gates - sensory withdrawal.",
+                benefits: "Blocks external stimuli, promotes pratyahara, deepens meditation.",
+                instructions: [
+                    "Thumbs close ears",
+                    "Index fingers on eyelids",
+                    "Middle fingers on nose sides",
+                    "Ring and pinky near lips"
+                ],
+                duration: "Practice 5-15 minutes",
+                emoji: "🙈"
+            },
+            {
+                name: "Tattva Mudra",
+                category: "meditation",
+                description: "The element mudra - balancing five elements.",
+                benefits: "Balances all five elements, brings overall harmony, integrates energy.",
+                instructions: [
+                    "Touch ring finger tip to thumb (earth)",
+                    "Can cycle through all elements",
+                    "Focus on elemental balance",
+                    "Feel integration"
+                ],
+                duration: "Practice 15-20 minutes",
+                emoji: "🌟",
+                element: "All five elements"
+            },
+            {
+                name: "Meru Danda Mudra",
+                category: "yoga",
+                description: "The spinal axis mudra - aligning central channel.",
+                benefits: "Aligns sushumna nadi, improves posture, awakens spinal energy.",
+                instructions: [
+                    "Extend index fingers together",
+                    "Interlock other fingers",
+                    "Thumbs crossed",
+                    "Hold at spine level"
+                ],
+                duration: "Practice 10-15 minutes",
+                emoji: "🌳"
+            },
+            {
+                name: "Pashini Mudra",
+                category: "yoga",
+                description: "The noose mudra - advanced flexibility practice.",
+                benefits: "Improves flexibility, reverses aging, stimulates glands. Very advanced.",
+                instructions: [
+                    "Lie on back",
+                    "Bring legs over head past shoulders",
+                    "Knees by ears",
+                    "Advanced practitioners only"
+                ],
+                duration: "Hold as comfortable",
+                emoji: "🤸‍♀️"
+            },
+            {
+                name: "Agni Mudra",
+                category: "healing",
+                description: "The fire mudra - increasing digestive fire.",
+                benefits: "Boosts metabolism, aids weight loss, improves digestion, increases fire element.",
+                instructions: [
+                    "Fold ring finger to palm",
+                    "Press with thumb",
+                    "Extend other fingers",
+                    "Feel internal fire"
+                ],
+                duration: "Practice 5-15 minutes twice daily",
+                emoji: "🔥",
+                element: "Fire"
+            },
+            {
+                name: "Jal Mudra",
+                category: "healing",
+                description: "Pure water mudra - hydration and fluidity.",
+                benefits: "Increases water element, improves skin, relieves dryness, emotional flow.",
+                instructions: [
+                    "Touch little finger to thumb",
+                    "Extend other fingers",
+                    "Both hands",
+                    "Feel fluidity"
+                ],
+                duration: "Practice 15-30 minutes",
+                emoji: "💧",
+                element: "Water"
+            },
+            {
+                name: "Bhumi Mudra",
+                category: "healing",
+                description: "Earth mudra - grounding and stability.",
+                benefits: "Grounds energy, strengthens bones, improves stability and patience.",
+                instructions: [
+                    "Touch ring finger to thumb",
+                    "Extend other fingers",
+                    "Both hands",
+                    "Feel earth connection"
+                ],
+                duration: "Practice 15-30 minutes",
+                emoji: "🌍",
+                element: "Earth"
+            }
+        ];
+        // PART 3 - PASTE THIS AFTER YOUR COMPLETE MUDRAS ARRAY (after the ]; that closes it)
+        
+        let currentFilter = 'all';
+        let currentSearch = '';
+        let displayedCount = 0;
+        const BATCH_SIZE = 12;
+
+        function getChakraClass(chakraText) {
+            if (!chakraText) return '';
+            
+            const chakraLower = chakraText.toLowerCase();
+            if (chakraLower.includes('muladhara') || chakraLower.includes('root')) return 'chakra-root';
+            if (chakraLower.includes('svadhisthana') || chakraLower.includes('sacral')) return 'chakra-sacral';
+            if (chakraLower.includes('manipura') || chakraLower.includes('solar plexus')) return 'chakra-solar-plexus';
+            if (chakraLower.includes('anahata') || chakraLower.includes('heart')) return 'chakra-heart';
+            if (chakraLower.includes('vishuddha') || chakraLower.includes('throat')) return 'chakra-throat';
+            if (chakraLower.includes('ajna') || chakraLower.includes('third eye')) return 'chakra-third-eye';
+            if (chakraLower.includes('sahasrara') || chakraLower.includes('crown')) return 'chakra-crown';
+            
+            return '';
+        }
+
+        function renderMudras(append = false) {
+            const grid = document.getElementById('mudrasGrid');
+            const noResults = document.getElementById('noResults');
+            
+            if (!append) {
+                grid.innerHTML = '';
+                displayedCount = 0;
+            }
+
+            const filtered = mudras.filter(mudra => {
+                const matchesCategory = currentFilter === 'all' || mudra.category === currentFilter;
+                const searchLower = currentSearch.toLowerCase();
+                const matchesSearch = mudra.name.toLowerCase().includes(searchLower) ||
+                                    mudra.description.toLowerCase().includes(searchLower) ||
+                                    mudra.benefits.toLowerCase().includes(searchLower) ||
+                                    (mudra.chakra && mudra.chakra.toLowerCase().includes(searchLower)) ||
+                                    (mudra.element && mudra.element.toLowerCase().includes(searchLower));
+                return matchesCategory && matchesSearch;
+            });
+
+            if (filtered.length === 0) {
+                noResults.style.display = 'block';
+                return;
+            } else {
+                noResults.style.display = 'none';
+            }
+
+            const mudrasToDisplay = filtered.slice(displayedCount, displayedCount + BATCH_SIZE);
+            
+            mudrasToDisplay.forEach((mudra, index) => {
+                setTimeout(() => {
+                    const card = document.createElement('div');
+                    const chakraClass = mudra.category === 'chakra' ? getChakraClass(mudra.chakra) : '';
+                    card.className = 'mudra-card' + (chakraClass ? ' ' + chakraClass : '');
+                    card.style.animationDelay = `${index * 0.05}s`;
+                    card.innerHTML = `
+                        <div class="mudra-name">${mudra.name}</div>
+                        <span class="mudra-category category-${mudra.category}${mudra.category === 'chakra' ? ' ' + chakraClass : ''}">${mudra.category.replace('-', ' ').toUpperCase()}</span>
+                        <p class="mudra-description">${mudra.description}</p>
+                        <div class="mudra-benefits">
+                            <div class="benefits-title">Benefits:</div>
+                            <div class="benefits-list">${mudra.benefits}</div>
+                        </div>
+                    `;
+                    card.addEventListener('click', () => showModal(mudra));
+                    grid.appendChild(card);
+                }, index * 50);
+            });
+
+            displayedCount += mudrasToDisplay.length;
+            document.getElementById('mudraCount').textContent = mudras.length;
+        }
+
+        function createHandSVG(mudra) {
+            // Keep your existing createHandSVG function exactly as it is in your original file
+            // This function creates the hand illustrations
+            // I'm not modifying this function
+            
+            // For brevity, I'm showing just the default case:
+            return `
+                <svg viewBox="0 0 200 200" style="width: 250px; height: 250px;">
+                    <defs>
+                        <linearGradient id="handGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+                            <stop offset="0%" style="stop-color:#fbbf24;stop-opacity:1" />
+                            <stop offset="100%" style="stop-color:#f59e0b;stop-opacity:1" />
+                        </linearGradient>
+                        <filter id="shadow">
+                            <feDropShadow dx="2" dy="4" stdDeviation="3" flood-opacity="0.3"/>
+                        </filter>
+                    </defs>
+                    <ellipse cx="100" cy="120" rx="45" ry="55" fill="url(#handGradient)" filter="url(#shadow)"/>
+                    <ellipse cx="60" cy="110" rx="12" ry="30" fill="url(#handGradient)" transform="rotate(-30 60 110)"/>
+                    <circle cx="55" cy="88" r="10" fill="url(#handGradient)"/>
+                    <ellipse cx="80" cy="55" rx="9" ry="30" fill="url(#handGradient)"/>
+                    <circle cx="80" cy="30" r="7" fill="url(#handGradient)"/>
+                    <ellipse cx="100" cy="45" rx="9" ry="35" fill="url(#handGradient)"/>
+                    <circle cx="100" cy="15" r="7" fill="url(#handGradient)"/>
+                    <ellipse cx="118" cy="52" rx="9" ry="32" fill="url(#handGradient)"/>
+                    <circle cx="118" cy="25" r="7" fill="url(#handGradient)"/>
+                    <ellipse cx="133" cy="65" rx="8" ry="28" fill="url(#handGradient)"/>
+                    <circle cx="133" cy="42" r="6" fill="url(#handGradient)"/>
+                    <circle cx="100" cy="100" r="30" fill="#6366f1" opacity="0.2"/>
+                </svg>
+            `;
+        }
+
+        function showModal(mudra) {
+            const modal = document.getElementById('mudraModal');
+            const modalBody = document.getElementById('modalBody');
+
+            let imageHTML;
+            if (mudra.imageUrl) {
+                imageHTML = `<div class="hand-illustration">
+                     <img src="${mudra.imageUrl}" alt="${mudra.name}" class="external-image" loading="lazy"
+                          onerror="this.parentElement.innerHTML='${createHandSVG(mudra).replace(/'/g, "&apos;")}'">
+                   </div>`;
+            } else {
+                imageHTML = `<div class="hand-illustration">
+                     ${createHandSVG(mudra)}
+                   </div>`;
+            }
+
+            const chakraClass = getChakraClass(mudra.chakra);
+            const chakraHTML = mudra.chakra 
+                ? `<div class="chakra-info ${chakraClass}">
+                     <strong>🔆 Chakra:</strong> ${mudra.chakra}
+                   </div>` 
+                : '';
+
+            const elementHTML = mudra.element 
+                ? `<div style="margin-top: 10px; padding: 10px; background: #e3f2fd; border-radius: 8px;">
+                     <strong>🌟 Element:</strong> ${mudra.element}
+                   </div>` 
+                : '';
+
+            modalBody.innerHTML = `
+                <div class="modal-mudra-name">${mudra.name}</div>
+                <span class="mudra-category category-${mudra.category}${mudra.category === 'chakra' ? ' ' + chakraClass : ''}">${mudra.category.replace('-', ' ').toUpperCase()}</span>
+                
+                ${imageHTML}
+                
+                <p class="mudra-description" style="font-size: 1.1em; margin: 20px 0;">${mudra.description}</p>
+                
+                <div class="mudra-benefits">
+                    <div class="benefits-title">Benefits:</div>
+                    <div class="benefits-list">${mudra.benefits}</div>
+                </div>
+                
+                ${chakraHTML}
+                ${elementHTML}
+                
+                <div class="instructions-section">
+                    <div class="instructions-title">How to Practice:</div>
+                    ${mudra.instructions.map((step, i) => `
+                        <div class="instruction-step"><strong>Step ${i + 1}:</strong> ${step}</div>
+                    `).join('')}
+                </div>
+                
+                <div class="duration-section">
+                    <strong>⏱️ Duration:</strong> ${mudra.duration}
+                </div>
+            `;
+
+            modal.style.display = 'block';
+        }
+
+        // Event Listeners
+        document.querySelectorAll('.filter-btn').forEach(btn => {
+            btn.addEventListener('click', () => {
+                document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+                btn.classList.add('active');
+                currentFilter = btn.dataset.category;
+                renderMudras();
+            });
+        });
+
+        document.querySelector('.search-box').addEventListener('input', (e) => {
+            currentSearch = e.target.value.toLowerCase();
+            renderMudras();
+        });
+
+        document.querySelector('.close-btn').addEventListener('click', () => {
+            document.getElementById('mudraModal').style.display = 'none';
+        });
+
+        window.addEventListener('click', (e) => {
+            const modal = document.getElementById('mudraModal');
+            if (e.target === modal) {
+                modal.style.display = 'none';
+            }
+        });
+
+        // Lazy loading on scroll
+        let isLoading = false;
+        window.addEventListener('scroll', () => {
+            if (isLoading) return;
+            
+            const scrollPosition = window.innerHeight + window.pageYOffset;
+            const threshold = document.documentElement.offsetHeight - 500;
+            
+            if (scrollPosition > threshold && displayedCount < mudras.filter(mudra => {
+                const matchesCategory = currentFilter === 'all' || mudra.category === currentFilter;
+                const searchLower = currentSearch.toLowerCase();
+                const matchesSearch = mudra.name.toLowerCase().includes(searchLower) ||
+                                    mudra.description.toLowerCase().includes(searchLower) ||
+                                    mudra.benefits.toLowerCase().includes(searchLower);
+                return matchesCategory && matchesSearch;
+            }).length) {
+                isLoading = true;
+                document.getElementById('loadingSpinner').style.display = 'block';
+                
+                setTimeout(() => {
+                    renderMudras(true);
+                    document.getElementById('loadingSpinner').style.display = 'none';
+                    isLoading = false;
+                }, 300);
+            }
+        });
+
+        // Initial render
+        renderMudras();
+    </script>
+</body>
+</html>
+       

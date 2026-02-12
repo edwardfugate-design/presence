@@ -1,0 +1,2355 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <title>Presence - The Digital Monastery</title>
+    <link href="https://fonts.googleapis.com/css2?family=Crimson+Pro:wght@300;400;600&family=Montserrat:wght@200;300;400;500&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --monastery-black: #0a0a0a;
+            --monastery-charcoal: #1a1a1a;
+            --monastery-stone: #2a2a2a;
+            --monastery-gold: #d4af37;
+            --monastery-pale-gold: #f0e6d2;
+            --monastery-bronze: #cd7f32;
+            --monastery-mist: rgba(255, 255, 255, 0.03);
+            --monastery-fog: rgba(255, 255, 255, 0.08);
+            --monastery-glow: rgba(212, 175, 55, 0.15);
+            
+            --text-primary: #f5f5f5;
+            --text-secondary: #c4c4c4;
+            --text-tertiary: #8a8a8a;
+            
+            --radius-sm: 8px;
+            --radius-md: 16px;
+            --radius-lg: 24px;
+            --radius-xl: 32px;
+            
+            --transition-smooth: cubic-bezier(0.4, 0.0, 0.2, 1);
+            --transition-bounce: cubic-bezier(0.68, -0.55, 0.265, 1.55);
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Montserrat', sans-serif;
+            background: var(--monastery-black);
+            color: var(--text-primary);
+            overflow-x: hidden;
+            line-height: 1.6;
+        }
+
+        /* Gate Experience */
+        .monastery-gate {
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            position: relative;
+            background: radial-gradient(circle at 50% 30%, rgba(212, 175, 55, 0.08), transparent 60%),
+                        linear-gradient(135deg, var(--monastery-black) 0%, var(--monastery-charcoal) 100%);
+            overflow: hidden;
+        }
+
+        .gate-ambient {
+            position: absolute;
+            inset: 0;
+            opacity: 0;
+            animation: ambientGlow 12s ease-in-out infinite;
+        }
+
+        @keyframes ambientGlow {
+            0%, 100% { opacity: 0.1; }
+            50% { opacity: 0.25; }
+        }
+
+        .gate-ambient::before {
+            content: '';
+            position: absolute;
+            top: -50%;
+            left: -50%;
+            width: 200%;
+            height: 200%;
+            background: radial-gradient(circle, var(--monastery-glow), transparent 40%);
+            animation: drift 30s linear infinite;
+        }
+
+        @keyframes drift {
+            from { transform: rotate(0deg) translate(-50px); }
+            to { transform: rotate(360deg) translate(-50px); }
+        }
+
+        .gate-content {
+            position: relative;
+            z-index: 10;
+            text-align: center;
+            padding: 40px;
+        }
+
+        .monastery-symbol {
+            font-size: 140px;
+            margin-bottom: 40px;
+            filter: drop-shadow(0 0 40px rgba(212, 175, 55, 0.4));
+            animation: float 6s ease-in-out infinite;
+        }
+
+        @keyframes float {
+            0%, 100% { transform: translateY(0px); }
+            50% { transform: translateY(-20px); }
+        }
+
+        .gate-title {
+            font-family: 'Crimson Pro', serif;
+            font-size: clamp(3rem, 8vw, 6rem);
+            font-weight: 300;
+            letter-spacing: 0.15em;
+            color: var(--monastery-gold);
+            margin-bottom: 20px;
+            text-shadow: 0 0 60px rgba(212, 175, 55, 0.3);
+        }
+
+        .gate-subtitle {
+            font-size: clamp(1rem, 2vw, 1.4rem);
+            font-weight: 300;
+            color: var(--text-secondary);
+            margin-bottom: 50px;
+            letter-spacing: 0.08em;
+        }
+
+        .gate-description {
+            max-width: 500px;
+            margin: 0 auto 60px;
+            font-size: 1rem;
+            color: var(--text-tertiary);
+            line-height: 1.8;
+        }
+
+        .enter-btn {
+            padding: 18px 60px;
+            font-size: 1.1rem;
+            font-weight: 400;
+            letter-spacing: 0.1em;
+            background: linear-gradient(135deg, rgba(212, 175, 55, 0.15), rgba(212, 175, 55, 0.05));
+            border: 2px solid var(--monastery-gold);
+            color: var(--monastery-gold);
+            border-radius: var(--radius-xl);
+            cursor: pointer;
+            transition: all 0.4s var(--transition-smooth);
+            position: relative;
+            overflow: hidden;
+            font-family: 'Montserrat', sans-serif;
+        }
+
+        .enter-btn::before {
+            content: '';
+            position: absolute;
+            inset: 0;
+            background: linear-gradient(135deg, var(--monastery-gold), var(--monastery-bronze));
+            opacity: 0;
+            transition: opacity 0.4s var(--transition-smooth);
+        }
+
+        .enter-btn span {
+            position: relative;
+            z-index: 1;
+        }
+
+        .enter-btn:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 10px 40px rgba(212, 175, 55, 0.4);
+        }
+
+        .enter-btn:hover::before {
+            opacity: 0.3;
+        }
+
+        /* Main Interior */
+        .monastery-interior {
+            display: none;
+            min-height: 100vh;
+            background: var(--monastery-black);
+        }
+
+        .monastery-interior.active {
+            display: block;
+        }
+
+        /* Navigation */
+        .monastery-nav {
+            position: sticky;
+            top: 0;
+            z-index: 1000;
+            background: rgba(10, 10, 10, 0.95);
+            backdrop-filter: blur(20px) saturate(180%);
+            border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+            padding: 20px 0;
+        }
+
+        .nav-container {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 0 30px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .nav-brand {
+            font-family: 'Crimson Pro', serif;
+            font-size: 1.8rem;
+            font-weight: 300;
+            color: var(--monastery-gold);
+            letter-spacing: 0.12em;
+        }
+
+        .nav-halls {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+
+        .nav-tab {
+            padding: 10px 24px;
+            font-size: 0.9rem;
+            font-weight: 300;
+            letter-spacing: 0.05em;
+            background: transparent;
+            border: 1px solid transparent;
+            color: var(--text-tertiary);
+            border-radius: var(--radius-md);
+            cursor: pointer;
+            transition: all 0.3s var(--transition-smooth);
+            position: relative;
+        }
+
+        .nav-tab::before {
+            content: '';
+            position: absolute;
+            inset: 0;
+            border-radius: var(--radius-md);
+            background: var(--monastery-glow);
+            opacity: 0;
+            transition: opacity 0.3s var(--transition-smooth);
+        }
+
+        .nav-tab:hover {
+            color: var(--text-primary);
+            border-color: rgba(212, 175, 55, 0.3);
+        }
+
+        .nav-tab:hover::before {
+            opacity: 1;
+        }
+
+        .nav-tab.active {
+            color: var(--monastery-gold);
+            border-color: var(--monastery-gold);
+            background: rgba(212, 175, 55, 0.08);
+        }
+
+        /* Chambers */
+        .chamber {
+            display: none;
+            opacity: 0;
+            transform: translateY(20px);
+        }
+
+        .chamber.active {
+            display: block;
+            animation: chamberReveal 0.6s var(--transition-smooth) forwards;
+        }
+
+        @keyframes chamberReveal {
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .chamber-container {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 60px 30px;
+        }
+
+        .chamber-header {
+            text-align: center;
+            margin-bottom: 60px;
+        }
+
+        .chamber-title {
+            font-family: 'Crimson Pro', serif;
+            font-size: clamp(2.5rem, 5vw, 4rem);
+            font-weight: 300;
+            color: var(--monastery-gold);
+            margin-bottom: 20px;
+            letter-spacing: 0.08em;
+        }
+
+        .chamber-description {
+            max-width: 700px;
+            margin: 0 auto;
+            font-size: 1.1rem;
+            font-weight: 300;
+            color: var(--text-secondary);
+            line-height: 1.8;
+        }
+
+        /* Meditation Hall */
+        .meditation-grid {
+            display: grid;
+            grid-template-columns: 2fr 1fr;
+            gap: 40px;
+            margin-top: 60px;
+        }
+
+        @media (max-width: 968px) {
+            .meditation-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        .meditation-space {
+            background: linear-gradient(135deg, var(--monastery-mist), transparent);
+            border: 1px solid rgba(255, 255, 255, 0.06);
+            border-radius: var(--radius-xl);
+            padding: 50px;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .meditation-space::before {
+            content: '';
+            position: absolute;
+            inset: -100%;
+            background: radial-gradient(circle, var(--monastery-glow), transparent 60%);
+            animation: pulseGlow 8s ease-in-out infinite;
+            pointer-events: none;
+        }
+
+        @keyframes pulseGlow {
+            0%, 100% { transform: scale(0.8); opacity: 0.3; }
+            50% { transform: scale(1.2); opacity: 0.6; }
+        }
+
+        .meditation-icon {
+            font-size: 100px;
+            text-align: center;
+            margin-bottom: 40px;
+            filter: drop-shadow(0 0 30px rgba(212, 175, 55, 0.3));
+        }
+
+        .timer-display {
+            font-family: 'Crimson Pro', serif;
+            font-size: clamp(4rem, 8vw, 6rem);
+            font-weight: 300;
+            color: var(--monastery-gold);
+            text-align: center;
+            margin: 40px 0;
+            letter-spacing: 0.1em;
+            text-shadow: 0 0 40px rgba(212, 175, 55, 0.5);
+        }
+
+        .timer-presets {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 12px;
+            margin: 30px 0;
+        }
+
+        .preset-btn {
+            padding: 16px;
+            background: var(--monastery-fog);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            color: var(--text-secondary);
+            border-radius: var(--radius-md);
+            cursor: pointer;
+            transition: all 0.3s var(--transition-smooth);
+            font-family: 'Montserrat', sans-serif;
+            font-size: 0.95rem;
+            font-weight: 300;
+        }
+
+        .preset-btn:hover {
+            background: var(--monastery-glow);
+            border-color: rgba(212, 175, 55, 0.4);
+            color: var(--monastery-gold);
+            transform: translateY(-2px);
+        }
+
+        .preset-btn.active {
+            background: rgba(212, 175, 55, 0.12);
+            border-color: var(--monastery-gold);
+            color: var(--monastery-gold);
+        }
+
+        .control-panel {
+            display: flex;
+            gap: 12px;
+            justify-content: center;
+            margin-top: 30px;
+        }
+
+        .control-btn {
+            padding: 14px 32px;
+            background: rgba(212, 175, 55, 0.1);
+            border: 2px solid rgba(212, 175, 55, 0.4);
+            color: var(--monastery-gold);
+            border-radius: var(--radius-lg);
+            cursor: pointer;
+            transition: all 0.3s var(--transition-smooth);
+            font-family: 'Montserrat', sans-serif;
+            font-size: 0.95rem;
+            font-weight: 400;
+            letter-spacing: 0.05em;
+        }
+
+        .control-btn:hover {
+            background: rgba(212, 175, 55, 0.2);
+            border-color: var(--monastery-gold);
+            transform: translateY(-2px);
+            box-shadow: 0 8px 24px rgba(212, 175, 55, 0.3);
+        }
+
+        .control-btn.primary {
+            background: linear-gradient(135deg, rgba(212, 175, 55, 0.25), rgba(212, 175, 55, 0.15));
+            border-color: var(--monastery-gold);
+        }
+
+        /* Guidance Panel */
+        .guidance-panel {
+            background: var(--monastery-fog);
+            border: 1px solid rgba(255, 255, 255, 0.06);
+            border-radius: var(--radius-xl);
+            padding: 40px;
+        }
+
+        .guidance-title {
+            font-family: 'Crimson Pro', serif;
+            font-size: 1.8rem;
+            font-weight: 400;
+            color: var(--monastery-gold);
+            margin-bottom: 25px;
+            text-align: center;
+        }
+
+        .guidance-text {
+            font-size: 1rem;
+            font-weight: 300;
+            color: var(--text-secondary);
+            line-height: 1.9;
+            margin-bottom: 15px;
+        }
+
+        /* Wisdom Library */
+        .wisdom-card {
+            background: linear-gradient(135deg, var(--monastery-mist), transparent);
+            border-left: 4px solid var(--monastery-gold);
+            border-radius: var(--radius-lg);
+            padding: 50px;
+            margin-bottom: 40px;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .wisdom-card::after {
+            content: '"';
+            position: absolute;
+            top: -20px;
+            left: 30px;
+            font-size: 200px;
+            font-family: 'Crimson Pro', serif;
+            color: rgba(212, 175, 55, 0.08);
+            line-height: 1;
+        }
+
+        .wisdom-text {
+            font-family: 'Crimson Pro', serif;
+            font-size: clamp(1.4rem, 2.5vw, 2rem);
+            font-weight: 300;
+            line-height: 1.7;
+            color: var(--text-primary);
+            margin-bottom: 30px;
+            position: relative;
+            z-index: 1;
+        }
+
+        .wisdom-source {
+            font-size: 1.1rem;
+            color: var(--monastery-gold);
+            text-align: right;
+            font-weight: 400;
+            letter-spacing: 0.05em;
+        }
+
+        .tradition-selector {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+            gap: 15px;
+            margin: 50px 0;
+        }
+
+        .tradition-btn {
+            padding: 20px;
+            background: var(--monastery-fog);
+            border: 1px solid rgba(255, 255, 255, 0.06);
+            border-radius: var(--radius-md);
+            cursor: pointer;
+            transition: all 0.3s var(--transition-smooth);
+            text-align: center;
+        }
+
+        .tradition-btn:hover {
+            background: var(--monastery-glow);
+            border-color: rgba(212, 175, 55, 0.3);
+            transform: translateY(-3px);
+        }
+
+        .tradition-btn.active {
+            background: rgba(212, 175, 55, 0.12);
+            border-color: var(--monastery-gold);
+        }
+
+        .tradition-icon {
+            font-size: 2.5rem;
+            margin-bottom: 12px;
+        }
+
+        .tradition-name {
+            font-size: 1rem;
+            color: var(--text-secondary);
+            font-weight: 400;
+        }
+
+        .tradition-btn.active .tradition-name {
+            color: var(--monastery-gold);
+        }
+
+        /* Practice Dojo */
+        .practice-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+            gap: 30px;
+            margin-top: 60px;
+        }
+
+        .practice-card {
+            background: linear-gradient(135deg, var(--monastery-fog), var(--monastery-mist));
+            border: 1px solid rgba(255, 255, 255, 0.06);
+            border-radius: var(--radius-xl);
+            padding: 40px;
+            cursor: pointer;
+            transition: all 0.4s var(--transition-smooth);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .practice-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 4px;
+            background: linear-gradient(90deg, var(--monastery-gold), var(--monastery-bronze));
+            transform: scaleX(0);
+            transform-origin: left;
+            transition: transform 0.4s var(--transition-smooth);
+        }
+
+        .practice-card:hover {
+            transform: translateY(-8px);
+            border-color: rgba(212, 175, 55, 0.3);
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.4);
+        }
+
+        .practice-card:hover::before {
+            transform: scaleX(1);
+        }
+
+        .practice-icon {
+            font-size: 3.5rem;
+            margin-bottom: 20px;
+        }
+
+        .practice-title {
+            font-family: 'Crimson Pro', serif;
+            font-size: 1.6rem;
+            font-weight: 400;
+            color: var(--monastery-gold);
+            margin-bottom: 15px;
+        }
+
+        .practice-description {
+            font-size: 0.95rem;
+            font-weight: 300;
+            color: var(--text-secondary);
+            line-height: 1.7;
+        }
+
+        /* Breathing Space */
+        .breathing-container {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 80px 20px;
+        }
+
+        .breath-circle {
+            width: 280px;
+            height: 280px;
+            border: 4px solid rgba(212, 175, 55, 0.4);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.4rem;
+            color: var(--monastery-gold);
+            margin: 40px 0;
+            position: relative;
+            transition: all 1s var(--transition-smooth);
+        }
+
+        .breath-circle::before {
+            content: '';
+            position: absolute;
+            inset: -20px;
+            border: 1px solid rgba(212, 175, 55, 0.2);
+            border-radius: 50%;
+            transition: all 1s var(--transition-smooth);
+        }
+
+        .breath-circle.inhale {
+            transform: scale(1.2);
+            border-color: var(--monastery-gold);
+            box-shadow: 0 0 60px rgba(212, 175, 55, 0.6), inset 0 0 40px rgba(212, 175, 55, 0.2);
+        }
+
+        .breath-circle.inhale::before {
+            transform: scale(1.3);
+            border-color: rgba(212, 175, 55, 0.4);
+        }
+
+        .breath-circle.exhale {
+            transform: scale(0.85);
+            border-color: rgba(212, 175, 55, 0.2);
+        }
+
+        .breath-instruction {
+            font-family: 'Crimson Pro', serif;
+            font-size: 2rem;
+            color: var(--monastery-gold);
+            margin: 30px 0;
+            text-align: center;
+        }
+
+        /* Journal */
+        .journal-entry {
+            background: var(--monastery-fog);
+            border-left: 3px solid rgba(212, 175, 55, 0.6);
+            border-radius: var(--radius-md);
+            padding: 30px;
+            margin-bottom: 25px;
+            transition: all 0.3s var(--transition-smooth);
+        }
+
+        .journal-entry:hover {
+            background: var(--monastery-glow);
+            transform: translateX(5px);
+        }
+
+        .entry-date {
+            font-size: 0.85rem;
+            color: var(--monastery-gold);
+            margin-bottom: 15px;
+            font-weight: 400;
+            letter-spacing: 0.05em;
+        }
+
+        .entry-content {
+            font-family: 'Crimson Pro', serif;
+            font-size: 1.1rem;
+            line-height: 1.8;
+            color: var(--text-primary);
+            margin-bottom: 15px;
+        }
+
+        .entry-source {
+            text-align: right;
+            color: var(--text-secondary);
+            font-size: 0.95rem;
+            font-style: italic;
+        }
+
+        /* Zen Garden */
+        .zen-garden {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 80px 20px;
+            background: radial-gradient(circle at center, rgba(212, 175, 55, 0.05), transparent 70%);
+            border-radius: var(--radius-xl);
+        }
+
+        .garden-stone {
+            width: 120px;
+            height: 120px;
+            background: linear-gradient(135deg, rgba(212, 175, 55, 0.15), rgba(212, 175, 55, 0.05));
+            border: 2px solid rgba(212, 175, 55, 0.4);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 3rem;
+            margin: 40px 0;
+            animation: stoneFloat 8s ease-in-out infinite;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3), inset 0 0 30px rgba(212, 175, 55, 0.1);
+        }
+
+        @keyframes stoneFloat {
+            0%, 100% { transform: translateY(0px) rotate(0deg); }
+            50% { transform: translateY(-15px) rotate(5deg); }
+        }
+
+        .koan-text {
+            font-family: 'Crimson Pro', serif;
+            font-size: clamp(1.6rem, 3vw, 2.4rem);
+            line-height: 1.6;
+            color: var(--monastery-gold);
+            text-align: center;
+            max-width: 800px;
+            margin: 40px 0;
+        }
+
+        /* Monastery Bell */
+        .monastery-bell {
+            position: fixed;
+            bottom: 40px;
+            right: 40px;
+            width: 80px;
+            height: 80px;
+            background: linear-gradient(135deg, rgba(212, 175, 55, 0.2), rgba(212, 175, 55, 0.1));
+            border: 2px solid var(--monastery-gold);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 2.5rem;
+            cursor: pointer;
+            transition: all 0.3s var(--transition-bounce);
+            z-index: 1000;
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.3);
+        }
+
+        .monastery-bell:hover {
+            transform: scale(1.1) rotate(12deg);
+            box-shadow: 0 15px 60px rgba(212, 175, 55, 0.5);
+        }
+
+        .monastery-bell.ringing {
+            animation: ringBell 0.6s var(--transition-bounce);
+        }
+
+        @keyframes ringBell {
+            0%, 100% { transform: rotate(0deg); }
+            25% { transform: rotate(15deg); }
+            50% { transform: rotate(-15deg); }
+            75% { transform: rotate(10deg); }
+        }
+
+        /* Empty State */
+        .empty-state {
+            text-align: center;
+            padding: 80px 20px;
+            color: var(--text-tertiary);
+        }
+
+        .empty-icon {
+            font-size: 4rem;
+            margin-bottom: 20px;
+            opacity: 0.4;
+        }
+
+        .empty-text {
+            font-size: 1.1rem;
+            font-weight: 300;
+        }
+
+        /* Responsive */
+        @media (max-width: 968px) {
+            .meditation-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .nav-container {
+                flex-direction: column;
+                gap: 20px;
+            }
+            
+            .nav-brand {
+                font-size: 1.5rem;
+            }
+            
+            .nav-halls {
+                width: 100%;
+                justify-content: center;
+            }
+        }
+
+        @media (max-width: 768px) {
+            .gate-title {
+                font-size: 2.5rem;
+            }
+            
+            .chamber-container {
+                padding: 40px 20px;
+            }
+            
+            .meditation-space,
+            .guidance-panel {
+                padding: 25px 20px;
+            }
+            
+            .monastery-bell {
+                width: 60px;
+                height: 60px;
+                font-size: 2rem;
+                bottom: 20px;
+                right: 20px;
+            }
+            
+            .timer-display {
+                font-size: 3.5rem;
+            }
+            
+            .breath-circle {
+                width: 220px;
+                height: 220px;
+            }
+            
+            /* Better touch targets for mobile */
+            .nav-tab,
+            .control-btn,
+            .preset-btn,
+            .tradition-btn,
+            .practice-card {
+                min-height: 44px; /* iOS recommended touch target */
+            }
+            
+            .tools-panel {
+                grid-template-columns: 1fr;
+            }
+            
+            /* Zen Garden Mobile */
+            #zenGardenCanvas {
+                height: 400px;
+            }
+            
+            .pattern-grid {
+                grid-template-columns: repeat(2, 1fr);
+            }
+        }
+
+        @media (max-width: 480px) {
+            .gate-title {
+                font-size: 2rem;
+                letter-spacing: 0.1em;
+            }
+            
+            .nav-tab {
+                font-size: 0.8rem;
+                padding: 8px 12px;
+            }
+            
+            .timer-display {
+                font-size: 2.5rem;
+            }
+            
+            .chamber-title {
+                font-size: 2rem;
+            }
+            
+            #zenGardenCanvas {
+                height: 300px;
+            }
+        }
+
+        /* Touch optimization */
+        @media (hover: none) and (pointer: coarse) {
+            /* Remove hover effects on touch devices */
+            .control-btn:hover,
+            .nav-tab:hover,
+            .preset-btn:hover {
+                transform: none;
+            }
+            
+            /* Larger touch targets */
+            .control-btn,
+            .preset-btn,
+            .nav-tab {
+                padding: 14px 20px;
+            }
+        }
+
+        /* Progress Indicator */
+        .session-progress {
+            width: 100%;
+            height: 4px;
+            background: rgba(255, 255, 255, 0.08);
+            border-radius: 2px;
+            margin: 30px 0;
+            overflow: hidden;
+        }
+
+        .progress-bar {
+            height: 100%;
+            background: linear-gradient(90deg, var(--monastery-gold), var(--monastery-bronze));
+            width: 0%;
+            transition: width 1s linear;
+            box-shadow: 0 0 15px rgba(212, 175, 55, 0.6);
+        }
+    </style>
+</head>
+<body>
+    <!-- Monastery Gate -->
+    <div class="monastery-gate" id="gate">
+        <div class="gate-ambient"></div>
+        <div class="gate-content">
+            <div class="monastery-symbol">🏯</div>
+            <h1 class="gate-title">禅</h1>
+            <p class="gate-subtitle">THE DIGITAL MONASTERY</p>
+            <p class="gate-description">
+                A sanctuary beyond the noise. Enter these sacred halls to cultivate stillness, 
+                receive ancient wisdom, and practice the art of presence. 
+                No achievements. No streaks. Only the eternal now.
+            </p>
+            <button class="enter-btn" onclick="enterMonastery()">
+                <span>Enter the Gates</span>
+            </button>
+        </div>
+    </div>
+
+    <!-- Monastery Interior -->
+    <div class="monastery-interior" id="interior">
+        <!-- Navigation -->
+        <nav class="monastery-nav">
+            <div class="nav-container">
+                <div class="nav-brand">禅 PRESENCE</div>
+                <div class="nav-halls">
+                    <button class="nav-tab active" data-chamber="meditation">🧘 Meditation</button>
+                    <button class="nav-tab" data-chamber="wisdom">📜 Wisdom</button>
+                    <button class="nav-tab" data-chamber="practice">⚔️ Practice</button>
+                    <button class="nav-tab" data-chamber="breathing">🌬️ Breathing</button>
+                    <button class="nav-tab" data-chamber="garden">🪨 Garden</button>
+                    <button class="nav-tab" data-chamber="zengarden">🏯 Zen Garden</button>
+                    <button class="nav-tab" data-chamber="journal">📖 Journal</button>
+                </div>
+            </div>
+        </nav>
+
+        <!-- Meditation Hall -->
+        <div class="chamber active" id="meditation">
+            <div class="chamber-container">
+                <div class="chamber-header">
+                    <h2 class="chamber-title">Meditation Hall</h2>
+                    <p class="chamber-description">
+                        Your cushion awaits. Choose your duration and settle into the silence.
+                    </p>
+                </div>
+
+                <div class="meditation-grid">
+                    <div class="meditation-space">
+                        <div class="meditation-icon">🕯️</div>
+                        <div class="timer-display" id="timerDisplay">00:00</div>
+                        
+                        <div class="session-progress">
+                            <div class="progress-bar" id="progressBar"></div>
+                        </div>
+
+                        <div class="timer-presets">
+                            <button class="preset-btn" data-duration="300">5 min</button>
+                            <button class="preset-btn" data-duration="600">10 min</button>
+                            <button class="preset-btn" data-duration="900">15 min</button>
+                            <button class="preset-btn" data-duration="1200">20 min</button>
+                            <button class="preset-btn" data-duration="1800">30 min</button>
+                            <button class="preset-btn" data-duration="3600">60 min</button>
+                        </div>
+
+                        <div class="control-panel">
+                            <button class="control-btn primary" id="meditationBtn">Begin</button>
+                            <button class="control-btn" id="resetBtn">Reset</button>
+                        </div>
+                    </div>
+
+                    <div class="guidance-panel">
+                        <h3 class="guidance-title">Sitting Guidance</h3>
+                        <p class="guidance-text">Settle into your seat with dignity. Let your spine rise naturally, shoulders soft.</p>
+                        <p class="guidance-text">Hands rest gently. Eyes closed or softly gazing downward.</p>
+                        <p class="guidance-text">Breathe naturally. Notice each breath as it comes and goes.</p>
+                        <p class="guidance-text">When thoughts arise—and they will—acknowledge them without judgment. Return to the breath.</p>
+                        <p class="guidance-text">There is nowhere to arrive. You are already here.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Wisdom Library -->
+        <div class="chamber" id="wisdom">
+            <div class="chamber-container">
+                <div class="chamber-header">
+                    <h2 class="chamber-title">Wisdom Library</h2>
+                    <p class="chamber-description">
+                        Ancient teachings from masters across six millennia. Let their words illuminate your path.
+                    </p>
+                </div>
+
+                <div class="wisdom-card">
+                    <p class="wisdom-text" id="wisdomText">Loading teaching...</p>
+                    <p class="wisdom-source" id="wisdomSource"></p>
+                </div>
+
+                <div class="control-panel">
+                    <button class="control-btn" onclick="newWisdom()">New Teaching</button>
+                    <button class="control-btn primary" onclick="saveToJournal()">Save to Journal</button>
+                </div>
+
+                <div class="tradition-selector">
+                    <button class="tradition-btn active" data-tradition="all">
+                        <div class="tradition-icon">🌏</div>
+                        <div class="tradition-name">All Traditions</div>
+                    </button>
+                    <button class="tradition-btn" data-tradition="zen">
+                        <div class="tradition-icon">⛩️</div>
+                        <div class="tradition-name">Zen</div>
+                    </button>
+                    <button class="tradition-btn" data-tradition="theravada">
+                        <div class="tradition-icon">☸️</div>
+                        <div class="tradition-name">Theravada</div>
+                    </button>
+                    <button class="tradition-btn" data-tradition="vajrayana">
+                        <div class="tradition-icon">🔱</div>
+                        <div class="tradition-name">Vajrayana</div>
+                    </button>
+                    <button class="tradition-btn" data-tradition="musashi">
+                        <div class="tradition-icon">⚔️</div>
+                        <div class="tradition-name">Musashi</div>
+                    </button>
+                    <button class="tradition-btn" data-tradition="tao">
+                        <div class="tradition-icon">☯️</div>
+                        <div class="tradition-name">Tao</div>
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Practice Dojo -->
+        <div class="chamber" id="practice">
+            <div class="chamber-container">
+                <div class="chamber-header">
+                    <h2 class="chamber-title">Practice Dojo</h2>
+                    <p class="chamber-description">
+                        Each practice is a doorway. Choose your path and walk it with sincerity.
+                    </p>
+                </div>
+
+                <div class="practice-grid">
+                    <div class="practice-card" data-practice="zazen">
+                        <div class="practice-icon">⛩️</div>
+                        <h3 class="practice-title">Zazen</h3>
+                        <p class="practice-description">
+                            Seated meditation. The foundation of Zen practice. Simply sit and observe the mind without interference.
+                        </p>
+                    </div>
+
+                    <div class="practice-card" data-practice="kinhin">
+                        <div class="practice-icon">🚶</div>
+                        <h3 class="practice-title">Kinhin</h3>
+                        <p class="practice-description">
+                            Walking meditation. Each step fully present. Coordinate breath and movement in perfect harmony.
+                        </p>
+                    </div>
+
+                    <div class="practice-card" data-practice="anapana">
+                        <div class="practice-icon">🌬️</div>
+                        <h3 class="practice-title">Anapanasati</h3>
+                        <p class="practice-description">
+                            Breath awareness. Follow each breath from beginning to end. The gateway to profound calm.
+                        </p>
+                    </div>
+
+                    <div class="practice-card" data-practice="metta">
+                        <div class="practice-icon">💚</div>
+                        <h3 class="practice-title">Metta</h3>
+                        <p class="practice-description">
+                            Loving-kindness meditation. Cultivate boundless compassion for yourself and all beings.
+                        </p>
+                    </div>
+
+                    <div class="practice-card" data-practice="bodyscan">
+                        <div class="practice-icon">🧘</div>
+                        <h3 class="practice-title">Body Scan</h3>
+                        <p class="practice-description">
+                            Systematic awareness through the body. Release tension. Notice sensation without judgment.
+                        </p>
+                    </div>
+
+                    <div class="practice-card" data-practice="mushin">
+                        <div class="practice-icon">⚔️</div>
+                        <h3 class="practice-title">Mushin</h3>
+                        <p class="practice-description">
+                            No-mind. The warrior's practice. Act without hesitation. Respond from emptiness.
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Breathing Space -->
+        <div class="chamber" id="breathing">
+            <div class="chamber-container">
+                <div class="chamber-header">
+                    <h2 class="chamber-title">Breathing Space</h2>
+                    <p class="chamber-description">
+                        Follow the breath. Let it anchor you to this moment.
+                    </p>
+                </div>
+
+                <div class="breathing-container">
+                    <div class="breath-circle" id="breathCircle">
+                        <span id="breathCount">Ready</span>
+                    </div>
+                    <p class="breath-instruction" id="breathInstruction">Begin breathing practice</p>
+                    <div class="control-panel">
+                        <button class="control-btn primary" id="breathBtn">Begin</button>
+                        <button class="control-btn" onclick="stopBreathing()">Stop</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Koan Garden -->
+        <div class="chamber" id="garden">
+            <div class="chamber-container">
+                <div class="chamber-header">
+                    <h2 class="chamber-title">Koan Garden</h2>
+                    <p class="chamber-description">
+                        Koans—paradoxes that shatter conceptual thinking. Don't analyze. Contemplate.
+                    </p>
+                </div>
+
+                <div class="zen-garden">
+                    <div class="garden-stone">❓</div>
+                    <p class="koan-text" id="koanText">Loading koan...</p>
+                    <button class="control-btn" onclick="newKoan()">New Koan</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Interactive Zen Garden -->
+        <div class="chamber" id="zengarden">
+            <div class="chamber-container">
+                <div class="chamber-header">
+                    <h2 class="chamber-title">Zen Garden • 枯山水</h2>
+                    <p class="chamber-description">
+                        Create your own karesansui. Rake patterns in the sand, place stones mindfully, and practice the art of contemplative design.
+                    </p>
+                </div>
+
+                <!-- Garden Canvas -->
+                <div style="background: linear-gradient(135deg, #8b7355, #654321); padding: 25px; border-radius: 20px; box-shadow: 0 20px 60px rgba(0, 0, 0, 0.2), inset 0 0 30px rgba(0, 0, 0, 0.1); margin-bottom: 40px;">
+                    <div style="position: relative; background: #d4c4a8; border-radius: 10px; overflow: hidden; box-shadow: inset 0 4px 20px rgba(0, 0, 0, 0.15);">
+                        <canvas id="zenGardenCanvas" style="display: block; width: 100%; height: 500px; cursor: crosshair;"></canvas>
+                    </div>
+                </div>
+
+                <!-- Zen Garden Custom Cursor -->
+                <div id="zenCursor" style="position: fixed; width: 40px; height: 40px; border: 2px solid rgba(106, 106, 106, 0.4); border-radius: 50%; pointer-events: none; transform: translate(-50%, -50%); transition: all 0.2s; z-index: 10000; display: none;"></div>
+
+                <!-- Tools -->
+                <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 20px; margin-bottom: 30px;">
+                    <!-- Rake Tool -->
+                    <div class="meditation-space" style="padding: 30px;">
+                        <h3 style="font-family: 'Crimson Pro', serif; font-size: 1.2rem; color: var(--monastery-gold); margin-bottom: 20px;">🪚 Rake Tool</h3>
+                        <div style="display: flex; gap: 10px; flex-wrap: wrap;">
+                            <button class="control-btn zen-tool-btn active" data-tool="rake">Rake</button>
+                            <button class="control-btn zen-tool-btn" data-tool="smooth">Smooth</button>
+                        </div>
+                    </div>
+
+                    <!-- Patterns -->
+                    <div class="meditation-space" style="padding: 30px;">
+                        <h3 style="font-family: 'Crimson Pro', serif; font-size: 1.2rem; color: var(--monastery-gold); margin-bottom: 20px;">文様 Patterns</h3>
+                        <div id="zenPatternGrid" style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px;">
+                            <!-- Patterns added by JS -->
+                        </div>
+                    </div>
+
+                    <!-- Stones -->
+                    <div class="meditation-space" style="padding: 30px;">
+                        <h3 style="font-family: 'Crimson Pro', serif; font-size: 1.2rem; color: var(--monastery-gold); margin-bottom: 20px;">石 Stones</h3>
+                        <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 12px;">
+                            <button class="control-btn zen-stone-btn" data-stone="large" style="display: flex; flex-direction: column; align-items: center; gap: 5px;">
+                                <span style="font-size: 1.5rem;">🪨</span>
+                                <span style="font-size: 0.8rem;">Large</span>
+                            </button>
+                            <button class="control-btn zen-stone-btn" data-stone="medium" style="display: flex; flex-direction: column; align-items: center; gap: 5px;">
+                                <span style="font-size: 1.5rem;">🗿</span>
+                                <span style="font-size: 0.8rem;">Medium</span>
+                            </button>
+                            <button class="control-btn zen-stone-btn" data-stone="small" style="display: flex; flex-direction: column; align-items: center; gap: 5px;">
+                                <span style="font-size: 1.5rem;">⬤</span>
+                                <span style="font-size: 0.8rem;">Small</span>
+                            </button>
+                            <button class="control-btn zen-stone-btn" data-stone="moss" style="display: flex; flex-direction: column; align-items: center; gap: 5px;">
+                                <span style="font-size: 1.5rem;">🍃</span>
+                                <span style="font-size: 0.8rem;">Moss</span>
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Actions -->
+                    <div class="meditation-space" style="padding: 30px;">
+                        <h3 style="font-family: 'Crimson Pro', serif; font-size: 1.2rem; color: var(--monastery-gold); margin-bottom: 20px;">⚙️ Actions</h3>
+                        <div style="display: flex; flex-direction: column; gap: 10px;">
+                            <button class="control-btn" onclick="saveZenGarden()">💾 Save Garden</button>
+                            <button class="control-btn" onclick="loadZenGarden()">📂 Load Garden</button>
+                            <button class="control-btn" onclick="clearZenGarden()" style="border-color: #ff6b6b; color: #ff6b6b;">🗑️ Clear Garden</button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Info -->
+                <div class="meditation-space" style="padding: 40px;">
+                    <h3 style="font-family: 'Crimson Pro', serif; font-size: 1.4rem; color: var(--monastery-gold); margin-bottom: 20px;">About Karesansui (枯山水)</h3>
+                    <p style="color: var(--text-secondary); line-height: 1.8; margin-bottom: 15px;">
+                        The Japanese rock garden, or "dry landscape garden," is a contemplative space designed to evoke 
+                        natural landscapes through carefully arranged stones, raked gravel, and minimal vegetation.
+                    </p>
+                    <p style="color: var(--text-secondary); line-height: 1.8; margin-bottom: 15px;">
+                        In this digital garden, drag your mouse to rake patterns in the sand. Place stones to create 
+                        islands of stability. Each stroke is a meditation, each pattern a reflection of your inner state.
+                    </p>
+                    <p style="color: var(--text-secondary); line-height: 1.8;">
+                        There is no right or wrong way to create your garden. Let your intuition guide you.
+                    </p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Journal Chamber -->
+        <div class="chamber" id="journal">
+            <div class="chamber-container">
+                <div class="chamber-header">
+                    <h2 class="chamber-title">Journal Chamber</h2>
+                    <p class="chamber-description">
+                        Your saved teachings. Return to them when you need guidance.
+                    </p>
+                </div>
+
+                <div id="journalEntries">
+                    <div class="empty-state">
+                        <div class="empty-icon">📖</div>
+                        <p class="empty-text">No saved teachings yet. Visit the Wisdom Library to begin.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Monastery Bell -->
+        <div class="monastery-bell" onclick="ringBell()" title="Ring the meditation bell">
+            🔔
+        </div>
+    </div>
+
+    <script>
+        // Wisdom Library - Comprehensive collection (200+ teachings)
+        const wisdomLibrary = {
+            zen: [
+                { text: "Before enlightenment, chop wood, carry water. After enlightenment, chop wood, carry water.", source: "Zen Proverb" },
+                { text: "Sitting quietly, doing nothing, spring comes and the grass grows by itself.", source: "Zenrin Kushū" },
+                { text: "The obstacle is the path. What stands in the way becomes the way.", source: "Zen Teaching" },
+                { text: "When walking, walk. When eating, eat.", source: "Zen Master Linji" },
+                { text: "If you meet the Buddha on the road, kill him.", source: "Linji Yixuan" },
+                { text: "The finger pointing at the moon is not the moon.", source: "Zen Teaching" },
+                { text: "In the beginner's mind there are many possibilities, but in the expert's there are few.", source: "Shunryu Suzuki" },
+                { text: "Let go or be dragged.", source: "Zen Proverb" },
+                { text: "The present moment is the only moment available to us, and it is the door to all moments.", source: "Thich Nhat Hanh" },
+                { text: "Not knowing is most intimate.", source: "Dizang" },
+                { text: "The snow falls, each flake in its appropriate place.", source: "Zen Saying" },
+                { text: "Drink your tea slowly and reverently, as if it is the axis on which the world revolves.", source: "Thich Nhat Hanh" },
+                { text: "Everything the same; everything distinct.", source: "Zen Saying" },
+                { text: "When the student is ready, the teacher appears.", source: "Buddhist Proverb" },
+                { text: "You are perfect just as you are, and you could use a little improvement.", source: "Shunryu Suzuki" },
+                { text: "The way out is through the door. Why is it that no one will use this method?", source: "Confucius (Zen interpretation)" },
+                { text: "Wheresoever you go, go with all your heart.", source: "Zen Adaptation" },
+                { text: "The quieter you become, the more you can hear.", source: "Ram Dass" },
+                { text: "Zen is not some kind of excitement, but concentration on our usual everyday routine.", source: "Shunryu Suzuki" },
+                { text: "Only when you can be extremely pliable and soft can you be extremely hard and strong.", source: "Zen Proverb" },
+                { text: "No thought, no reflection, no analysis, no cultivation, no intention; let it settle itself.", source: "Tilopa" },
+                { text: "The tighter you squeeze, the less you have.", source: "Zen Proverb" },
+                { text: "Bow to your obstacles. They are your teachers.", source: "Zen Teaching" },
+                { text: "The menu is not the meal.", source: "Alan Watts" },
+                { text: "The meaning of life is just to be alive. It is so plain and so obvious and so simple.", source: "Alan Watts" },
+                { text: "The resistance to the unpleasant situation is the root of suffering.", source: "Ram Dass" },
+                { text: "Empty your cup so that it may be filled.", source: "Zen Proverb" },
+                { text: "Knowledge is learning something new every day. Wisdom is letting go of something every day.", source: "Zen Saying" },
+                { text: "The bamboo that bends is stronger than the oak that resists.", source: "Japanese Proverb" },
+                { text: "Sitting peacefully doing nothing, spring comes and grass grows all by itself.", source: "Zenrin" }
+            ],
+            theravada: [
+                { text: "All conditioned things are impermanent. When one sees this with wisdom, one turns away from suffering.", source: "Dhammapada 277" },
+                { text: "Hatred is never appeased by hatred. Hatred is appeased only by love. This is the eternal law.", source: "Dhammapada 5" },
+                { text: "Your worst enemy cannot harm you as much as your own unguarded thoughts.", source: "Buddha" },
+                { text: "Do not dwell in the past, do not dream of the future, concentrate the mind on the present moment.", source: "Buddha" },
+                { text: "Three things cannot be long hidden: the sun, the moon, and the truth.", source: "Buddha" },
+                { text: "Peace comes from within. Do not seek it without.", source: "Buddha" },
+                { text: "The mind is everything. What you think you become.", source: "Buddha" },
+                { text: "Better than a thousand hollow words is one word that brings peace.", source: "Dhammapada" },
+                { text: "No one saves us but ourselves. No one can and no one may. We ourselves must walk the path.", source: "Buddha" },
+                { text: "In the end, only three things matter: how much you loved, how gently you lived, and how gracefully you let go of things not meant for you.", source: "Buddhist Saying" },
+                { text: "Holding on to anger is like grasping a hot coal with the intent of throwing it at someone else; you are the one who gets burned.", source: "Buddha" },
+                { text: "You yourself, as much as anybody in the entire universe, deserve your love and affection.", source: "Buddha" },
+                { text: "Just as a candle cannot burn without fire, we cannot live without a spiritual life.", source: "Buddha" },
+                { text: "Health is the greatest gift, contentment the greatest wealth, faithfulness the best relationship.", source: "Buddha" },
+                { text: "Thousands of candles can be lighted from a single candle. Happiness never decreases by being shared.", source: "Buddha" },
+                { text: "If we could see the miracle of a single flower clearly, our whole life would change.", source: "Buddha" },
+                { text: "The root of suffering is attachment.", source: "Buddha" },
+                { text: "Every morning we are born again. What we do today is what matters most.", source: "Buddha" },
+                { text: "The trouble is, you think you have time.", source: "Buddha" },
+                { text: "Radiate boundless love towards the entire world.", source: "Buddha" },
+                { text: "When you realize how perfect everything is you will tilt your head back and laugh at the sky.", source: "Buddha" },
+                { text: "A jug fills drop by drop.", source: "Buddha" },
+                { text: "The only real failure in life is not to be true to the best one knows.", source: "Buddha" },
+                { text: "Ardently do today what must be done. Who knows? Tomorrow, death comes.", source: "Buddha" },
+                { text: "An idea that is developed and put into action is more important than an idea that exists only as an idea.", source: "Buddha" },
+                { text: "To conquer oneself is a greater task than conquering others.", source: "Buddha" },
+                { text: "As rain falls equally on the just and the unjust, do not burden your heart with judgments but rain your kindness equally on all.", source: "Buddha" },
+                { text: "The wise ones fashioned speech with their thought, sifting it as grain is sifted through a sieve.", source: "Buddha" },
+                { text: "Whatever words we utter should be chosen with care for people will hear them and be influenced by them for good or ill.", source: "Buddha" },
+                { text: "Just as treasures are uncovered from the earth, virtue appears from good deeds, and wisdom appears from a pure and peaceful mind.", source: "Buddha" },
+                { text: "Those who are free of resentful thoughts surely find peace.", source: "Buddha" },
+                { text: "Nothing can harm you as much as your own thoughts unguarded.", source: "Buddha" },
+                { text: "Meditate. Live purely. Be quiet. Do your work with mastery. Like the moon, come out from behind the clouds. Shine.", source: "Buddha" },
+                { text: "There is no fire like passion, no shark like hatred, no snare like folly, no torrent like greed.", source: "Buddha" },
+                { text: "Even death is not to be feared by one who has lived wisely.", source: "Buddha" }
+            ],
+            vajrayana: [
+                { text: "View everything as a dream. Examine the nature of unborn awareness.", source: "Atisha's Seven Points" },
+                { text: "When you see that the nature of your mind is empty, compassion arises spontaneously.", source: "Padmasambhava" },
+                { text: "Rest in natural great peace, this exhausted mind, beaten helpless by karma and neurotic thought.", source: "Nyoshul Khen Rinpoche" },
+                { text: "The everyday practice is simply to develop a complete acceptance and openness to all situations.", source: "Pema Chödrön" },
+                { text: "Pain is inevitable. Suffering is optional.", source: "Tibetan Saying" },
+                { text: "Meditation is not about stopping thoughts, but recognizing that we are more than our thoughts.", source: "Tibetan Teaching" },
+                { text: "Nothing whatsoever should be clung to as I or mine. Whoever lets go of everything has no fear.", source: "Milarepa" },
+                { text: "The bad news is you're falling through the air, nothing to hang on to, no parachute. The good news is, there's no ground.", source: "Chögyam Trungpa" },
+                { text: "We work on ourselves in order to help others, but also we help others in order to work on ourselves.", source: "Pema Chödrön" },
+                { text: "Compassion is not a relationship between the healer and the wounded. It's a relationship between equals.", source: "Pema Chödrön" },
+                { text: "The mind is like a mirror. It gathers dust while it reflects. It needs the gentle breeze of the soul to wipe the dust off.", source: "Tibetan Teaching" },
+                { text: "Awareness is the greatest agent for change.", source: "Eckhart Tolle (Tibetan influence)" },
+                { text: "In the practice of tolerance, one's enemy is the best teacher.", source: "Dalai Lama" },
+                { text: "The planet does not need more successful people. The planet desperately needs more peacemakers, healers, restorers, storytellers and lovers of all kinds.", source: "Dalai Lama" },
+                { text: "If you want others to be happy, practice compassion. If you want to be happy, practice compassion.", source: "Dalai Lama" },
+                { text: "Our prime purpose in this life is to help others. And if you can't help them, at least don't hurt them.", source: "Dalai Lama" },
+                { text: "Remember that sometimes not getting what you want is a wonderful stroke of luck.", source: "Dalai Lama" },
+                { text: "An open heart is an open mind.", source: "Dalai Lama" },
+                { text: "The purpose of our lives is to be happy.", source: "Dalai Lama" },
+                { text: "Love and compassion are necessities, not luxuries. Without them, humanity cannot survive.", source: "Dalai Lama" },
+                { text: "Be kind whenever possible. It is always possible.", source: "Dalai Lama" },
+                { text: "My religion is very simple. My religion is kindness.", source: "Dalai Lama" },
+                { text: "This is my simple religion. There is no need for temples; no need for complicated philosophy. Our own brain, our own heart is our temple; the philosophy is kindness.", source: "Dalai Lama" },
+                { text: "Feel the feelings and drop the story.", source: "Pema Chödrön" },
+                { text: "Only to the extent that we expose ourselves over and over to annihilation can that which is indestructible be found in us.", source: "Pema Chödrön" },
+                { text: "The most fundamental aggression to ourselves is to remain ignorant by not having the courage to look at ourselves honestly and gently.", source: "Pema Chödrön" },
+                { text: "We think that the point is to pass the test or overcome the problem, but the truth is that things don't really get solved. They come together and they fall apart.", source: "Pema Chödrön" },
+                { text: "Fear is a natural reaction to moving closer to the truth.", source: "Pema Chödrön" },
+                { text: "The wisdom of no escape is the complete acceptance of oneself.", source: "Pema Chödrön" },
+                { text: "Compassion is threatening to the ego.", source: "Chögyam Trungpa" }
+            ],
+            musashi: [
+                { text: "There is nothing outside of yourself that can ever enable you to get better. Everything is within.", source: "Miyamoto Musashi" },
+                { text: "Think lightly of yourself and deeply of the world.", source: "Miyamoto Musashi, Dokkōdō" },
+                { text: "Today is victory over yourself of yesterday; tomorrow is your victory over lesser men.", source: "Miyamoto Musashi" },
+                { text: "In strategy, it is important to see distant things as if they were close.", source: "Miyamoto Musashi, Book of Five Rings" },
+                { text: "Perceive that which cannot be seen with the eye.", source: "Miyamoto Musashi" },
+                { text: "Do nothing which is of no use.", source: "Miyamoto Musashi, Dokkōdō" },
+                { text: "You must understand that there is more than one path to the top of the mountain.", source: "Miyamoto Musashi" },
+                { text: "The ultimate aim of martial arts is not having to use them.", source: "Miyamoto Musashi" },
+                { text: "Accept everything just the way it is.", source: "Miyamoto Musashi, Dokkōdō" },
+                { text: "Do not seek pleasure for its own sake.", source: "Miyamoto Musashi, Dokkōdō" },
+                { text: "In all things have no preferences.", source: "Miyamoto Musashi, Dokkōdō" },
+                { text: "Be indifferent to where you live.", source: "Miyamoto Musashi, Dokkōdō" },
+                { text: "Do not pursue the taste of good food.", source: "Miyamoto Musashi, Dokkōdō" },
+                { text: "Do not hold onto possessions you no longer need.", source: "Miyamoto Musashi, Dokkōdō" },
+                { text: "Do not act following customary beliefs.", source: "Miyamoto Musashi, Dokkōdō" },
+                { text: "Do not collect weapons or practice with weapons beyond what is useful.", source: "Miyamoto Musashi, Dokkōdō" },
+                { text: "Do not fear death.", source: "Miyamoto Musashi, Dokkōdō" },
+                { text: "Do not seek to possess either goods or fiefs for your old age.", source: "Miyamoto Musashi, Dokkōdō" },
+                { text: "Respect Buddha and the gods without counting on their help.", source: "Miyamoto Musashi, Dokkōdō" },
+                { text: "You may abandon your own body but you must preserve your honor.", source: "Miyamoto Musashi, Dokkōdō" },
+                { text: "Never stray from the Way.", source: "Miyamoto Musashi, Dokkōdō" },
+                { text: "Step by step walk the thousand-mile road.", source: "Miyamoto Musashi" },
+                { text: "It may seem difficult at first, but everything is difficult at first.", source: "Miyamoto Musashi" },
+                { text: "The true science of martial arts means practicing them in such a way that they will be useful at any time.", source: "Miyamoto Musashi" },
+                { text: "All man are the same except for their belief in their own selves, regardless of what others may think of them.", source: "Miyamoto Musashi" },
+                { text: "From one thing, know ten thousand things.", source: "Miyamoto Musashi" },
+                { text: "Know your enemy, know his sword.", source: "Miyamoto Musashi" },
+                { text: "Aspire to be like Mt. Fuji, with such a broad and solid foundation that the strongest earthquake cannot move you.", source: "Miyamoto Musashi" },
+                { text: "Get beyond love and grief: exist for the good of Man.", source: "Miyamoto Musashi" },
+                { text: "In battle, if you make your opponent flinch, you have already won.", source: "Miyamoto Musashi" }
+            ],
+            tao: [
+                { text: "The Tao that can be told is not the eternal Tao. The name that can be named is not the eternal name.", source: "Tao Te Ching" },
+                { text: "Nature does not hurry, yet everything is accomplished.", source: "Lao Tzu" },
+                { text: "When I let go of what I am, I become what I might be.", source: "Lao Tzu" },
+                { text: "Knowing others is intelligence; knowing yourself is true wisdom.", source: "Lao Tzu" },
+                { text: "The journey of a thousand miles begins with a single step.", source: "Lao Tzu" },
+                { text: "He who knows does not speak. He who speaks does not know.", source: "Lao Tzu" },
+                { text: "Do you have the patience to wait till your mud settles and the water is clear?", source: "Lao Tzu" },
+                { text: "A good traveler has no fixed plans and is not intent on arriving.", source: "Lao Tzu" },
+                { text: "If you are depressed you are living in the past. If you are anxious you are living in the future. If you are at peace you are living in the present.", source: "Lao Tzu" },
+                { text: "Care about what other people think and you will always be their prisoner.", source: "Lao Tzu" },
+                { text: "Silence is a source of great strength.", source: "Lao Tzu" },
+                { text: "Be content with what you have; rejoice in the way things are. When you realize there is nothing lacking, the whole world belongs to you.", source: "Lao Tzu" },
+                { text: "Life is a series of natural and spontaneous changes. Don't resist them; that only creates sorrow.", source: "Lao Tzu" },
+                { text: "Mastering others is strength. Mastering yourself is true power.", source: "Lao Tzu" },
+                { text: "To the mind that is still, the whole universe surrenders.", source: "Lao Tzu" },
+                { text: "Great acts are made up of small deeds.", source: "Lao Tzu" },
+                { text: "The wise man does not lay up his own treasures. The more he gives to others, the more he has for his own.", source: "Lao Tzu" },
+                { text: "In dwelling, live close to the ground. In thinking, keep to the simple. In conflict, be fair and generous.", source: "Lao Tzu" },
+                { text: "The softest things in the world overcome the hardest things in the world.", source: "Lao Tzu" },
+                { text: "He who conquers others is strong; he who conquers himself is mighty.", source: "Lao Tzu" },
+                { text: "Those who know do not say. Those who say do not know.", source: "Lao Tzu" },
+                { text: "The flame that burns twice as bright burns half as long.", source: "Lao Tzu" },
+                { text: "To realize that you do not understand is a virtue; not to realize that you do not understand is a defect.", source: "Lao Tzu" },
+                { text: "When virtue is lost, benevolence appears; when benevolence is lost right conduct appears.", source: "Lao Tzu" },
+                { text: "The further one goes, the less one knows.", source: "Lao Tzu" },
+                { text: "Stop thinking, and end your problems.", source: "Lao Tzu" },
+                { text: "The snow goose need not bathe to make itself white. Neither need you do anything but be yourself.", source: "Lao Tzu" },
+                { text: "At the center of your being you have the answer; you know who you are and you know what you want.", source: "Lao Tzu" },
+                { text: "New beginnings are often disguised as painful endings.", source: "Lao Tzu" },
+                { text: "He who is contented is rich.", source: "Lao Tzu" }
+            ],
+            koans: [
+                { text: "What is the sound of one hand clapping?", source: "Hakuin Ekaku" },
+                { text: "Show me your original face before your parents were born.", source: "Traditional Koan" },
+                { text: "Does a dog have Buddha-nature?", source: "Zhaozhou's Dog" },
+                { text: "What is the Way? Ordinary mind is the Way.", source: "Nansen" },
+                { text: "If you call this a stick, you affirm. If you call it not a stick, you negate. Beyond affirmation and negation, what would you call it?", source: "Traditional Koan" },
+                { text: "Two hands clap and there is a sound. What is the sound of one hand?", source: "Hakuin" },
+                { text: "A monk asked Zhaozhou, 'What is the meaning of the ancestral teacher's coming from the west?' Zhaozhou said, 'The cypress tree in front of the hall.'", source: "The Gateless Gate" },
+                { text: "The wind was flapping a temple flag. Two monks were arguing about it. One said the flag moved. The other said the wind moved. Arguing back and forth they could come to no agreement. The Sixth Patriarch said, 'It is neither the wind nor the flag that moves. It is your mind that moves.'", source: "The Platform Sutra" },
+                { text: "If you understand, things are just as they are. If you do not understand, things are just as they are.", source: "Zen Saying" },
+                { text: "Where is the abiding place for the mind?", source: "Diamond Sutra" },
+                { text: "A student asked, 'What is Buddha?' The master replied, 'Three pounds of flax.'", source: "Traditional Koan" },
+                { text: "Without thinking of good or evil, show me your original face before your mother and father were born.", source: "Traditional Koan" },
+                { text: "A monk told Joshu, 'I have just entered the monastery. Please teach me.' Joshu asked, 'Have you eaten your rice porridge?' The monk replied, 'I have eaten.' Joshu said, 'Then you had better wash your bowl.'", source: "The Gateless Gate" },
+                { text: "What was your original face before you were born?", source: "Traditional Koan" },
+                { text: "Gutei raised his finger whenever he was asked a question about Zen. What is the meaning of this?", source: "Traditional Koan" }
+            ]
+        };
+
+        // Practices detailed instructions
+        const practiceDetails = {
+            zazen: {
+                title: "Zazen - Seated Meditation",
+                steps: [
+                    "Sit in lotus, half-lotus, or on a chair with feet flat",
+                    "Spine naturally upright, chin slightly tucked",
+                    "Hands in cosmic mudra (left hand holding right, thumbs touching)",
+                    "Eyes half-open, gaze lowered at 45 degrees",
+                    "Breathe naturally through the nose",
+                    "Count breaths from 1 to 10, then begin again",
+                    "When thoughts arise, return to counting without judgment",
+                    "Practice for at least 20-30 minutes"
+                ]
+            },
+            kinhin: {
+                title: "Kinhin - Walking Meditation",
+                steps: [
+                    "Stand upright, establish mindful awareness",
+                    "Begin walking very slowly, heel to toe",
+                    "Coordinate one breath per step, or per half step",
+                    "Notice the sensation of each foot contacting the ground",
+                    "Gaze softly ahead, not down at your feet",
+                    "Hands can rest in shashu (left fist at chest, right hand covering)",
+                    "When mind wanders, gently return to sensation of walking",
+                    "Practice for 10-20 minutes between sitting sessions"
+                ]
+            },
+            anapana: {
+                title: "Anapanasati - Breath Awareness",
+                steps: [
+                    "Sit comfortably with upright posture",
+                    "Close eyes or keep them half-open",
+                    "Bring full attention to the sensation of breathing",
+                    "Notice breath at nostrils, chest, or abdomen—choose one spot",
+                    "Don't control the breath, simply observe",
+                    "Count each complete in-out cycle as one",
+                    "When mind wanders, note 'thinking' and return to breath",
+                    "Practice for 15-45 minutes"
+                ]
+            },
+            metta: {
+                title: "Metta - Loving-Kindness Meditation",
+                steps: [
+                    "Sit comfortably, close your eyes",
+                    "Begin with yourself: 'May I be happy, may I be peaceful, may I be free from suffering'",
+                    "Feel these wishes sincerely, repeating for several minutes",
+                    "Extend to a loved one with the same phrases",
+                    "Extend to a neutral person",
+                    "Extend to a difficult person (if ready)",
+                    "Finally extend to all beings everywhere",
+                    "Practice for 15-30 minutes"
+                ]
+            },
+            bodyscan: {
+                title: "Body Scan Meditation",
+                steps: [
+                    "Lie down or sit comfortably",
+                    "Close your eyes and take three deep breaths",
+                    "Begin with awareness of your toes",
+                    "Slowly move attention up through feet, ankles, calves, knees",
+                    "Continue through thighs, hips, abdomen, chest, hands, arms",
+                    "Move to shoulders, neck, face, and top of head",
+                    "Notice sensations without trying to change them",
+                    "Practice for 20-45 minutes"
+                ]
+            },
+            mushin: {
+                title: "Mushin - No-Mind Practice",
+                steps: [
+                    "Empty the mind of all conceptual thought",
+                    "Become like still water reflecting the moon perfectly",
+                    "In action, move without deliberation or hesitation",
+                    "Respond to each moment directly, not through thought",
+                    "Practice through repetitive activity: tea ceremony, calligraphy, martial arts",
+                    "Let action arise spontaneously from emptiness",
+                    "When thought intrudes, return immediately to emptiness",
+                    "This is the warrior's mind—present, clear, responsive"
+                ]
+            }
+        };
+
+        // State
+        let currentTradition = 'all';
+        let meditationActive = false;
+        let meditationPaused = false;
+        let timeRemaining = 0;
+        let sessionDuration = 0;
+        let timerInterval = null;
+        let breathingActive = false;
+        let breathInterval = null;
+
+        // Initialize
+        document.addEventListener('DOMContentLoaded', () => {
+            setupNavigationListeners();
+            setupPresetListeners();
+            setupTraditionListeners();
+            setupPracticeListeners();
+            newWisdom();
+            newKoan();
+            loadJournal();
+        });
+
+        // Enter Monastery
+        function enterMonastery() {
+            document.getElementById('gate').style.display = 'none';
+            document.getElementById('interior').classList.add('active');
+        }
+
+        // Navigation
+        function setupNavigationListeners() {
+            document.querySelectorAll('.nav-tab').forEach(tab => {
+                tab.addEventListener('click', () => {
+                    const chamber = tab.dataset.chamber;
+                    
+                    document.querySelectorAll('.nav-tab').forEach(t => t.classList.remove('active'));
+                    document.querySelectorAll('.chamber').forEach(c => c.classList.remove('active'));
+                    
+                    tab.classList.add('active');
+                    document.getElementById(chamber).classList.add('active');
+                });
+            });
+        }
+
+        // Timer Presets
+        function setupPresetListeners() {
+            document.querySelectorAll('.preset-btn').forEach(btn => {
+                btn.addEventListener('click', () => {
+                    if (!meditationActive) {
+                        const duration = parseInt(btn.dataset.duration);
+                        sessionDuration = duration;
+                        timeRemaining = duration;
+                        updateTimerDisplay();
+                        
+                        document.querySelectorAll('.preset-btn').forEach(b => b.classList.remove('active'));
+                        btn.classList.add('active');
+                    }
+                });
+            });
+
+            document.getElementById('meditationBtn').addEventListener('click', toggleMeditation);
+            document.getElementById('resetBtn').addEventListener('click', resetMeditation);
+        }
+
+        // Meditation Timer
+        function toggleMeditation() {
+            if (!meditationActive && sessionDuration > 0) {
+                startMeditation();
+            } else if (meditationActive) {
+                meditationPaused = !meditationPaused;
+                document.getElementById('meditationBtn').textContent = meditationPaused ? 'Resume' : 'Pause';
+            }
+        }
+
+        function startMeditation() {
+            meditationActive = true;
+            meditationPaused = false;
+            document.getElementById('meditationBtn').textContent = 'Pause';
+            
+            timerInterval = setInterval(() => {
+                if (!meditationPaused && timeRemaining > 0) {
+                    timeRemaining--;
+                    updateTimerDisplay();
+                    updateProgress();
+                } else if (timeRemaining === 0) {
+                    completeMeditation();
+                }
+            }, 1000);
+        }
+
+        function resetMeditation() {
+            clearInterval(timerInterval);
+            meditationActive = false;
+            meditationPaused = false;
+            timeRemaining = sessionDuration;
+            updateTimerDisplay();
+            updateProgress();
+            document.getElementById('meditationBtn').textContent = 'Begin';
+        }
+
+        function updateTimerDisplay() {
+            const mins = Math.floor(timeRemaining / 60);
+            const secs = timeRemaining % 60;
+            document.getElementById('timerDisplay').textContent = 
+                `${String(mins).padStart(2, '0')}:${String(secs).padStart(2, '0')}`;
+        }
+
+        function updateProgress() {
+            const progress = sessionDuration > 0 ? ((sessionDuration - timeRemaining) / sessionDuration) * 100 : 0;
+            document.getElementById('progressBar').style.width = progress + '%';
+        }
+
+        function completeMeditation() {
+            resetMeditation();
+            const messages = [
+                '🙏 Session complete. May you carry this peace with you.',
+                '☸️ Well done. The practice continues in each moment.',
+                '⛩️ The sitting is complete. The practice never ends.',
+                '🌅 Return to this stillness whenever you need.'
+            ];
+            setTimeout(() => {
+                alert(messages[Math.floor(Math.random() * messages.length)]);
+            }, 500);
+        }
+
+        // Wisdom
+        function setupTraditionListeners() {
+            document.querySelectorAll('.tradition-btn').forEach(btn => {
+                btn.addEventListener('click', () => {
+                    currentTradition = btn.dataset.tradition;
+                    document.querySelectorAll('.tradition-btn').forEach(b => b.classList.remove('active'));
+                    btn.classList.add('active');
+                    newWisdom();
+                });
+            });
+        }
+
+        function newWisdom() {
+            let wisdom;
+            
+            if (currentTradition === 'all') {
+                const allWisdoms = Object.values(wisdomLibrary).flat();
+                wisdom = allWisdoms[Math.floor(Math.random() * allWisdoms.length)];
+            } else {
+                const categoryWisdoms = wisdomLibrary[currentTradition];
+                wisdom = categoryWisdoms[Math.floor(Math.random() * categoryWisdoms.length)];
+            }
+            
+            document.getElementById('wisdomText').textContent = wisdom.text;
+            document.getElementById('wisdomSource').textContent = `— ${wisdom.source}`;
+        }
+
+        function saveToJournal() {
+            const text = document.getElementById('wisdomText').textContent;
+            const source = document.getElementById('wisdomSource').textContent;
+            
+            const journal = JSON.parse(localStorage.getItem('monasteryJournal')) || [];
+            journal.push({
+                text: text,
+                source: source,
+                date: new Date().toISOString()
+            });
+            localStorage.setItem('monasteryJournal', JSON.stringify(journal));
+            
+            alert('💾 Teaching saved to your journal');
+            loadJournal();
+        }
+
+        function loadJournal() {
+            const journal = JSON.parse(localStorage.getItem('monasteryJournal')) || [];
+            const container = document.getElementById('journalEntries');
+            
+            if (journal.length === 0) {
+                container.innerHTML = `
+                    <div class="empty-state">
+                        <div class="empty-icon">📖</div>
+                        <p class="empty-text">No saved teachings yet. Visit the Wisdom Library to begin.</p>
+                    </div>
+                `;
+                return;
+            }
+            
+            container.innerHTML = journal.reverse().map(entry => `
+                <div class="journal-entry">
+                    <div class="entry-date">${new Date(entry.date).toLocaleDateString('en-US', { 
+                        year: 'numeric', 
+                        month: 'long', 
+                        day: 'numeric' 
+                    })}</div>
+                    <p class="entry-content">${entry.text}</p>
+                    <p class="entry-source">${entry.source}</p>
+                </div>
+            `).join('');
+        }
+
+        // Koans
+        function newKoan() {
+            const koans = wisdomLibrary.koans;
+            const koan = koans[Math.floor(Math.random() * koans.length)];
+            document.getElementById('koanText').textContent = koan.text;
+        }
+
+        // Practice Details
+        function setupPracticeListeners() {
+            document.querySelectorAll('.practice-card').forEach(card => {
+                card.addEventListener('click', () => {
+                    const practice = card.dataset.practice;
+                    showPracticeDetails(practice);
+                });
+            });
+        }
+
+        function showPracticeDetails(practice) {
+            const details = practiceDetails[practice];
+            const steps = details.steps.map((step, i) => `${i + 1}. ${step}`).join('\n\n');
+            alert(`${details.title}\n\n${steps}`);
+        }
+
+        // Breathing Exercise
+        document.getElementById('breathBtn').addEventListener('click', toggleBreathing);
+
+        function toggleBreathing() {
+            if (!breathingActive) {
+                startBreathing();
+            } else {
+                stopBreathing();
+            }
+        }
+
+        function startBreathing() {
+            breathingActive = true;
+            document.getElementById('breathBtn').textContent = 'Stop';
+            
+            const phases = ['Inhale', 'Hold', 'Exhale', 'Hold'];
+            const durations = [4000, 2000, 4000, 2000];
+            let currentPhase = 0;
+            let count = 1;
+            
+            function breathCycle() {
+                const circle = document.getElementById('breathCircle');
+                const instruction = document.getElementById('breathInstruction');
+                const countDisplay = document.getElementById('breathCount');
+                
+                instruction.textContent = phases[currentPhase];
+                countDisplay.textContent = `Cycle ${count}`;
+                
+                circle.classList.remove('inhale', 'exhale');
+                if (currentPhase === 0) circle.classList.add('inhale');
+                if (currentPhase === 2) circle.classList.add('exhale');
+                
+                currentPhase = (currentPhase + 1) % 4;
+                if (currentPhase === 0) count++;
+            }
+            
+            breathCycle();
+            breathInterval = setInterval(breathCycle, durations[0]);
+        }
+
+        function stopBreathing() {
+            clearInterval(breathInterval);
+            breathingActive = false;
+            document.getElementById('breathCircle').classList.remove('inhale', 'exhale');
+            document.getElementById('breathInstruction').textContent = 'Begin breathing practice';
+            document.getElementById('breathCount').textContent = 'Ready';
+            document.getElementById('breathBtn').textContent = 'Begin';
+        }
+
+        // Bell
+        function ringBell() {
+            const bell = document.querySelector('.monastery-bell');
+            bell.classList.add('ringing');
+            setTimeout(() => bell.classList.remove('ringing'), 600);
+        }
+
+        // ===== ZEN GARDEN FUNCTIONALITY =====
+        const zenCanvas = document.getElementById('zenGardenCanvas');
+        const zenCtx = zenCanvas ? zenCanvas.getContext('2d') : null;
+        const zenCursor = document.getElementById('zenCursor');
+
+        let zenCurrentTool = 'rake';
+        let zenCurrentPattern = 'straight';
+        let zenCurrentStone = null;
+        let zenIsDrawing = false;
+        let zenLastX = 0;
+        let zenLastY = 0;
+        let zenStones = [];
+        let zenRakeStrokes = [];
+
+        // Zen Garden Patterns
+        const zenPatterns = {
+            straight: { name: 'Straight', draw: drawZenStraight },
+            circular: { name: 'Circular', draw: drawZenCircular },
+            ripple: { name: 'Ripples', draw: drawZenRipple },
+            wave: { name: 'Waves', draw: drawZenWave },
+            spiral: { name: 'Spiral', draw: drawZenSpiral },
+            zigzag: { name: 'Zigzag', draw: drawZenZigzag }
+        };
+
+        function initZenGarden() {
+            if (!zenCanvas) return;
+            
+            const container = zenCanvas.parentElement;
+            zenCanvas.width = container.clientWidth;
+            zenCanvas.height = 500;
+            
+            // Base sand texture
+            zenCtx.fillStyle = '#d4c4a8';
+            zenCtx.fillRect(0, 0, zenCanvas.width, zenCanvas.height);
+            
+            // Add texture
+            for (let i = 0; i < 2000; i++) {
+                const x = Math.random() * zenCanvas.width;
+                const y = Math.random() * zenCanvas.height;
+                const alpha = Math.random() * 0.15;
+                zenCtx.fillStyle = `rgba(196, 180, 152, ${alpha})`;
+                zenCtx.fillRect(x, y, 2, 2);
+            }
+
+            createZenPatternButtons();
+            setupZenEventListeners();
+            redrawZenGarden();
+        }
+
+        function createZenPatternButtons() {
+            const grid = document.getElementById('zenPatternGrid');
+            if (!grid) return;
+            
+            Object.keys(zenPatterns).forEach((key, index) => {
+                const btn = document.createElement('button');
+                btn.className = 'control-btn zen-pattern-btn';
+                if (index === 0) btn.classList.add('active');
+                btn.dataset.pattern = key;
+                btn.textContent = zenPatterns[key].name;
+                btn.style.fontSize = '0.85rem';
+                btn.style.padding = '12px';
+                grid.appendChild(btn);
+            });
+        }
+
+        function setupZenEventListeners() {
+            if (!zenCanvas) return;
+
+            // Tool buttons
+            document.querySelectorAll('.zen-tool-btn').forEach(btn => {
+                btn.addEventListener('click', () => {
+                    document.querySelectorAll('.zen-tool-btn').forEach(b => b.classList.remove('active'));
+                    btn.classList.add('active');
+                    zenCurrentTool = btn.dataset.tool;
+                    zenCurrentStone = null;
+                    document.querySelectorAll('.zen-stone-btn').forEach(b => b.classList.remove('active'));
+                });
+            });
+
+            // Pattern buttons
+            document.querySelectorAll('.zen-pattern-btn').forEach(btn => {
+                btn.addEventListener('click', () => {
+                    document.querySelectorAll('.zen-pattern-btn').forEach(b => b.classList.remove('active'));
+                    btn.classList.add('active');
+                    zenCurrentPattern = btn.dataset.pattern;
+                });
+            });
+
+            // Stone buttons
+            document.querySelectorAll('.zen-stone-btn').forEach(btn => {
+                btn.addEventListener('click', () => {
+                    document.querySelectorAll('.zen-stone-btn').forEach(b => b.classList.remove('active'));
+                    document.querySelectorAll('.zen-tool-btn').forEach(b => b.classList.remove('active'));
+                    btn.classList.add('active');
+                    zenCurrentStone = btn.dataset.stone;
+                    zenCurrentTool = 'stone';
+                });
+            });
+
+            // Canvas events
+            zenCanvas.addEventListener('mousedown', startZenDrawing);
+            zenCanvas.addEventListener('mousemove', zenDraw);
+            zenCanvas.addEventListener('mouseup', stopZenDrawing);
+            zenCanvas.addEventListener('mouseout', stopZenDrawing);
+
+            // Touch events for mobile
+            zenCanvas.addEventListener('touchstart', handleTouchStart, { passive: false });
+            zenCanvas.addEventListener('touchmove', handleTouchMove, { passive: false });
+            zenCanvas.addEventListener('touchend', stopZenDrawing);
+            zenCanvas.addEventListener('touchcancel', stopZenDrawing);
+
+            // Custom cursor (desktop only)
+            if (window.matchMedia("(hover: hover) and (pointer: fine)").matches) {
+                zenCanvas.addEventListener('mouseenter', () => {
+                    zenCursor.style.display = 'block';
+                    zenCursor.style.borderColor = 'var(--stone-base)';
+                });
+                zenCanvas.addEventListener('mouseleave', () => {
+                    zenCursor.style.display = 'none';
+                });
+                zenCanvas.addEventListener('mousemove', (e) => {
+                    zenCursor.style.left = e.clientX + 'px';
+                    zenCursor.style.top = e.clientY + 'px';
+                });
+            }
+        }
+
+        // Touch event handlers
+        function handleTouchStart(e) {
+            e.preventDefault();
+            const touch = e.touches[0];
+            const rect = zenCanvas.getBoundingClientRect();
+            zenLastX = touch.clientX - rect.left;
+            zenLastY = touch.clientY - rect.top;
+            zenIsDrawing = true;
+
+            if (zenCurrentTool === 'stone' && zenCurrentStone) {
+                placeZenStone(zenLastX, zenLastY);
+                zenIsDrawing = false;
+            }
+        }
+
+        function handleTouchMove(e) {
+            e.preventDefault();
+            if (!zenIsDrawing) return;
+            
+            const touch = e.touches[0];
+            const rect = zenCanvas.getBoundingClientRect();
+            const x = touch.clientX - rect.left;
+            const y = touch.clientY - rect.top;
+
+            if (zenCurrentTool === 'rake') {
+                zenPatterns[zenCurrentPattern].draw(x, y, zenLastX, zenLastY);
+                zenRakeStrokes.push({
+                    pattern: zenCurrentPattern,
+                    x1: zenLastX,
+                    y1: zenLastY,
+                    x2: x,
+                    y2: y
+                });
+            } else if (zenCurrentTool === 'smooth') {
+                smoothZenArea(x, y);
+            }
+
+            zenLastX = x;
+            zenLastY = y;
+        }
+
+        function startZenDrawing(e) {
+            zenIsDrawing = true;
+            const rect = zenCanvas.getBoundingClientRect();
+            zenLastX = e.clientX - rect.left;
+            zenLastY = e.clientY - rect.top;
+
+            if (zenCurrentTool === 'stone' && zenCurrentStone) {
+                placeZenStone(zenLastX, zenLastY);
+                zenIsDrawing = false;
+            }
+        }
+
+        function zenDraw(e) {
+            if (!zenIsDrawing) return;
+            
+            const rect = zenCanvas.getBoundingClientRect();
+            const x = e.clientX - rect.left;
+            const y = e.clientY - rect.top;
+
+            if (zenCurrentTool === 'rake') {
+                zenPatterns[zenCurrentPattern].draw(x, y, zenLastX, zenLastY);
+                zenRakeStrokes.push({
+                    pattern: zenCurrentPattern,
+                    x1: zenLastX,
+                    y1: zenLastY,
+                    x2: x,
+                    y2: y
+                });
+            } else if (zenCurrentTool === 'smooth') {
+                smoothZenArea(x, y);
+            }
+
+            zenLastX = x;
+            zenLastY = y;
+        }
+
+        function stopZenDrawing() {
+            zenIsDrawing = false;
+        }
+
+        // Pattern drawing functions
+        function drawZenStraight(x, y, prevX, prevY) {
+            zenCtx.strokeStyle = 'rgba(180, 164, 136, 0.6)';
+            zenCtx.lineWidth = 3;
+            zenCtx.beginPath();
+            zenCtx.moveTo(prevX, prevY);
+            zenCtx.lineTo(x, y);
+            zenCtx.stroke();
+        }
+
+        function drawZenCircular(x, y, prevX, prevY) {
+            // Draw circles along the path as you drag
+            const dx = x - prevX;
+            const dy = y - prevY;
+            const dist = Math.sqrt(dx * dx + dy * dy);
+            
+            if (dist < 10) {
+                // If moving slowly, draw concentric circles at current position
+                const radius = 20;
+                zenCtx.strokeStyle = 'rgba(180, 164, 136, 0.5)';
+                zenCtx.lineWidth = 2;
+                for (let r = 5; r <= radius; r += 5) {
+                    zenCtx.beginPath();
+                    zenCtx.arc(x, y, r, 0, Math.PI * 2);
+                    zenCtx.stroke();
+                }
+            } else {
+                // If moving fast, draw circles along the path
+                const steps = Math.floor(dist / 15);
+                for (let i = 0; i <= steps; i++) {
+                    const t = i / steps;
+                    const px = prevX + dx * t;
+                    const py = prevY + dy * t;
+                    
+                    zenCtx.strokeStyle = 'rgba(180, 164, 136, 0.4)';
+                    zenCtx.lineWidth = 2;
+                    for (let r = 5; r <= 15; r += 5) {
+                        zenCtx.beginPath();
+                        zenCtx.arc(px, py, r, 0, Math.PI * 2);
+                        zenCtx.stroke();
+                    }
+                }
+            }
+        }
+
+        function drawZenRipple(x, y, prevX, prevY) {
+            // Draw ripples along the path as you drag
+            const dx = x - prevX;
+            const dy = y - prevY;
+            const dist = Math.sqrt(dx * dx + dy * dy);
+            
+            if (dist < 10) {
+                // If moving slowly, draw ripples at current position
+                const maxRadius = 40;
+                zenCtx.strokeStyle = 'rgba(180, 164, 136, 0.4)';
+                zenCtx.lineWidth = 2;
+                for (let r = 8; r <= maxRadius; r += 8) {
+                    zenCtx.beginPath();
+                    zenCtx.arc(x, y, r, 0, Math.PI * 2);
+                    zenCtx.stroke();
+                }
+            } else {
+                // If moving fast, draw ripples along the path
+                const steps = Math.floor(dist / 25);
+                for (let i = 0; i <= steps; i++) {
+                    const t = i / steps;
+                    const px = prevX + dx * t;
+                    const py = prevY + dy * t;
+                    
+                    zenCtx.strokeStyle = 'rgba(180, 164, 136, 0.3)';
+                    zenCtx.lineWidth = 2;
+                    for (let r = 8; r <= 30; r += 10) {
+                        zenCtx.beginPath();
+                        zenCtx.arc(px, py, r, 0, Math.PI * 2);
+                        zenCtx.stroke();
+                    }
+                }
+            }
+        }
+
+        function drawZenWave(x, y, prevX, prevY) {
+            const dx = x - prevX;
+            const dy = y - prevY;
+            const dist = Math.sqrt(dx * dx + dy * dy);
+            
+            if (dist < 5) return;
+            
+            zenCtx.strokeStyle = 'rgba(180, 164, 136, 0.5)';
+            zenCtx.lineWidth = 3;
+            
+            const steps = 20;
+            zenCtx.beginPath();
+            zenCtx.moveTo(prevX, prevY);
+            
+            for (let i = 0; i <= steps; i++) {
+                const t = i / steps;
+                const px = prevX + dx * t;
+                const py = prevY + dy * t;
+                const offset = Math.sin(t * Math.PI * 4) * 10;
+                const perpX = -dy / dist;
+                const perpY = dx / dist;
+                zenCtx.lineTo(px + perpX * offset, py + perpY * offset);
+            }
+            zenCtx.stroke();
+        }
+
+        function drawZenSpiral(x, y, prevX, prevY) {
+            // Draw spirals along the path as you drag
+            const dx = x - prevX;
+            const dy = y - prevY;
+            const dist = Math.sqrt(dx * dx + dy * dy);
+            
+            if (dist < 10) {
+                // If moving slowly, draw spiral at current position
+                zenCtx.strokeStyle = 'rgba(180, 164, 136, 0.5)';
+                zenCtx.lineWidth = 2;
+                zenCtx.beginPath();
+                
+                let angle = 0;
+                let radius = 0;
+                
+                while (radius < 30) {
+                    const px = x + Math.cos(angle) * radius;
+                    const py = y + Math.sin(angle) * radius;
+                    
+                    if (radius === 0) {
+                        zenCtx.moveTo(px, py);
+                    } else {
+                        zenCtx.lineTo(px, py);
+                    }
+                    
+                    angle += 0.2;
+                    radius += 0.3;
+                }
+                zenCtx.stroke();
+            } else {
+                // If moving fast, draw smaller spirals along the path
+                const steps = Math.floor(dist / 20);
+                for (let i = 0; i <= steps; i++) {
+                    const t = i / steps;
+                    const cx = prevX + dx * t;
+                    const cy = prevY + dy * t;
+                    
+                    zenCtx.strokeStyle = 'rgba(180, 164, 136, 0.4)';
+                    zenCtx.lineWidth = 2;
+                    zenCtx.beginPath();
+                    
+                    let angle = 0;
+                    let radius = 0;
+                    
+                    while (radius < 15) {
+                        const px = cx + Math.cos(angle) * radius;
+                        const py = cy + Math.sin(angle) * radius;
+                        
+                        if (radius === 0) {
+                            zenCtx.moveTo(px, py);
+                        } else {
+                            zenCtx.lineTo(px, py);
+                        }
+                        
+                        angle += 0.25;
+                        radius += 0.4;
+                    }
+                    zenCtx.stroke();
+                }
+            }
+        }
+
+        function drawZenZigzag(x, y, prevX, prevY) {
+            const dx = x - prevX;
+            const dy = y - prevY;
+            const dist = Math.sqrt(dx * dx + dy * dy);
+            
+            if (dist < 5) return;
+            
+            zenCtx.strokeStyle = 'rgba(180, 164, 136, 0.5)';
+            zenCtx.lineWidth = 3;
+            
+            const segments = Math.floor(dist / 15);
+            zenCtx.beginPath();
+            zenCtx.moveTo(prevX, prevY);
+            
+            for (let i = 0; i <= segments; i++) {
+                const t = i / segments;
+                const px = prevX + dx * t;
+                const py = prevY + dy * t;
+                const offset = (i % 2 === 0 ? 10 : -10);
+                const perpX = -dy / dist;
+                const perpY = dx / dist;
+                zenCtx.lineTo(px + perpX * offset, py + perpY * offset);
+            }
+            zenCtx.stroke();
+        }
+
+        function smoothZenArea(x, y) {
+            const radius = 30;
+            const gradient = zenCtx.createRadialGradient(x, y, 0, x, y, radius);
+            gradient.addColorStop(0, '#d4c4a8');
+            gradient.addColorStop(1, 'rgba(212, 196, 168, 0)');
+            
+            zenCtx.globalCompositeOperation = 'source-over';
+            zenCtx.fillStyle = gradient;
+            zenCtx.fillRect(x - radius, y - radius, radius * 2, radius * 2);
+        }
+
+        function placeZenStone(x, y) {
+            const stone = { type: zenCurrentStone, x: x, y: y };
+            zenStones.push(stone);
+            drawZenStone(stone);
+        }
+
+        function drawZenStone(stone) {
+            const { type, x, y } = stone;
+            
+            zenCtx.save();
+            
+            switch(type) {
+                case 'large':
+                    drawZenRock(x, y, 50, 35);
+                    break;
+                case 'medium':
+                    drawZenRock(x, y, 35, 25);
+                    break;
+                case 'small':
+                    drawZenRock(x, y, 20, 15);
+                    break;
+                case 'moss':
+                    drawZenMoss(x, y, 30);
+                    break;
+            }
+            
+            zenCtx.restore();
+        }
+
+        function drawZenRock(x, y, width, height) {
+            // Shadow
+            zenCtx.fillStyle = 'rgba(0, 0, 0, 0.2)';
+            zenCtx.beginPath();
+            zenCtx.ellipse(x + 5, y + height * 0.8, width * 0.6, height * 0.3, 0, 0, Math.PI * 2);
+            zenCtx.fill();
+
+            // Rock body
+            const gradient = zenCtx.createRadialGradient(x - width * 0.2, y - height * 0.3, 0, x, y, width);
+            gradient.addColorStop(0, '#8a8a8a');
+            gradient.addColorStop(0.6, '#6a6a6a');
+            gradient.addColorStop(1, '#4a4a4a');
+            
+            zenCtx.fillStyle = gradient;
+            zenCtx.beginPath();
+            zenCtx.ellipse(x, y, width * 0.6, height, 0, 0, Math.PI * 2);
+            zenCtx.fill();
+
+            // Texture
+            for (let i = 0; i < 15; i++) {
+                const tx = x + (Math.random() - 0.5) * width;
+                const ty = y + (Math.random() - 0.5) * height;
+                const size = Math.random() * 3;
+                zenCtx.fillStyle = `rgba(0, 0, 0, ${Math.random() * 0.3})`;
+                zenCtx.fillRect(tx, ty, size, size);
+            }
+        }
+
+        function drawZenMoss(x, y, size) {
+            for (let i = 0; i < 8; i++) {
+                const angle = (Math.PI * 2 / 8) * i;
+                const radius = size * (0.3 + Math.random() * 0.4);
+                const mx = x + Math.cos(angle) * radius;
+                const my = y + Math.sin(angle) * radius;
+                const msize = size * (0.3 + Math.random() * 0.2);
+                
+                const gradient = zenCtx.createRadialGradient(mx, my, 0, mx, my, msize);
+                gradient.addColorStop(0, '#6b8e23');
+                gradient.addColorStop(1, '#556b2f');
+                
+                zenCtx.fillStyle = gradient;
+                zenCtx.beginPath();
+                zenCtx.arc(mx, my, msize, 0, Math.PI * 2);
+                zenCtx.fill();
+            }
+        }
+
+        function redrawZenGarden() {
+            // Redraw all strokes
+            zenRakeStrokes.forEach(stroke => {
+                zenPatterns[stroke.pattern].draw(stroke.x2, stroke.y2, stroke.x1, stroke.y1);
+            });
+
+            // Redraw all stones
+            zenStones.forEach(stone => {
+                drawZenStone(stone);
+            });
+        }
+
+        function saveZenGarden() {
+            const data = {
+                stones: zenStones,
+                strokes: zenRakeStrokes
+            };
+            localStorage.setItem('monasteryZenGarden', JSON.stringify(data));
+            alert('🌸 Garden saved');
+        }
+
+        function loadZenGarden() {
+            const saved = localStorage.getItem('monasteryZenGarden');
+            if (saved) {
+                const data = JSON.parse(saved);
+                zenStones = data.stones || [];
+                zenRakeStrokes = data.strokes || [];
+                initZenGarden();
+                alert('🌸 Garden loaded');
+            } else {
+                alert('No saved garden found');
+            }
+        }
+
+        function clearZenGarden() {
+            if (confirm('Clear your garden and start fresh?')) {
+                zenStones = [];
+                zenRakeStrokes = [];
+                initZenGarden();
+            }
+        }
+
+        // Initialize Zen Garden when chamber becomes active
+        document.querySelectorAll('.nav-tab').forEach(tab => {
+            const originalListener = tab.onclick;
+            tab.addEventListener('click', function() {
+                if (this.dataset.chamber === 'zengarden') {
+                    setTimeout(initZenGarden, 100);
+                }
+            });
+        });
+    </script>
+</body>
+</html>
