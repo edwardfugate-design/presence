@@ -406,3 +406,5 @@ window.yogaLibraryVariations = getAllPosesWithVariations();
 window.POSE_LIBRARY = typeof POSE_LIBRARY !== 'undefined' ? POSE_LIBRARY : {};
 
 console.log("Yoga Library Loaded! Total Poses:", window.yogaLibraryVariations.length);
+// Add this at the very bottom of your Yoga V3 script
+window.ALL_POSES = window.yogaLibraryVariations;
