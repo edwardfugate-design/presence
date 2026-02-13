@@ -2,203 +2,193 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-    <meta name="apple-mobile-web-app-capable" content="yes">
-    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-    <meta name="theme-color" content="#f8f9fa">
-    <title>presence • hub</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>presence • symphony hub</title>
     <script src="https://cdn.tailwindcss.com"></script>
+    <script crossorigin src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
+    <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
+    <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,600;1,400&family=Inter:wght@300;400;600&display=swap" rel="stylesheet">
     <style>
-        :root {
-            --dawn-start: #f8f9fa; --dawn-mid: #e9ecef; --dawn-end: #dee2e6;
-            --text-whisper: #6c757d; --text-soft: #495057; --text-present: #212529;
-            --accent-focus: #6366f1;
-            --monastery-gold: #d4af37;
+        :root { --indigo: #6366f1; --dawn: #fcfcfc; }
+        body { font-family: 'Inter', sans-serif; background: var(--dawn); margin: 0; overflow: hidden; height: 100vh; }
+        .font-serif { font-family: 'Cormorant Garamond', serif; }
+        
+        .stage-container { height: calc(100vh - 160px); overflow-y: auto; -webkit-overflow-scrolling: touch; }
+        iframe { width: 100%; height: 100%; border: none; transition: opacity 0.5s ease; }
+
+        .nav-item { transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1); opacity: 0.4; }
+        .nav-item.active { opacity: 1; color: var(--indigo); transform: translateY(-2px); }
+        
+        /* Ambient Glow Background */
+        .ambient-bg {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: radial-gradient(circle at 50% 50%, rgba(99, 102, 241, 0.02) 0%, transparent 70%);
+            z-index: -1; pointer-events: none;
         }
-        * {
-            -webkit-tap-highlight-color: transparent;
-            -webkit-touch-callout: none;
+        
+        .card-glass {
+            background: white; border: 1px solid rgba(0,0,0,0.03);
+            border-radius: 2.5rem; transition: all 0.4s ease;
         }
-        body {
-            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-            background: linear-gradient(180deg, var(--dawn-start) 0%, var(--dawn-mid) 50%, var(--dawn-end) 100%);
-            min-height: 100vh; 
-            min-height: -webkit-fill-available;
-            color: var(--text-soft); 
-            overflow-x: hidden;
-            touch-action: pan-y;
-            padding: env(safe-area-inset-top) env(safe-area-inset-right) env(safe-area-inset-bottom) env(safe-area-inset-left);
-        }
-        html { height: -webkit-fill-available; }
-        .aura-field {
-            position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%);
-            width: 80vw; height: 80vw; filter: blur(100px); z-index: -1;
-            transition: all 4s ease-in-out; opacity: 0.15; border-radius: 50%;
-            background: radial-gradient(circle, #8b98a5, transparent);
-        }
-        .nav-card {
-            background: rgba(255,255,255,0.4); border: 1px solid rgba(0,0,0,0.05);
-            transition: all 0.3s ease; backdrop-filter: blur(10px);
-            text-decoration: none; display: block; text-align: center;
-        }
-        @media (hover: hover) {
-            .nav-card:hover { background: white; transform: translateY(-4px); border-color: rgba(0,0,0,0.1); }
-        }
-        .nav-card:active { background: white; transform: scale(0.98); }
-        .stat-label { font-size: 1rem; font-weight: 500; color: var(--text-present); }
-        .card-description { font-size: 0.875rem; font-weight: 300; color: var(--text-soft); margin-top: 0.5rem; }
-        .premium-card { border: 1px solid rgba(212, 175, 55, 0.4) !important; }
-        .premium-label { color: var(--monastery-gold) !important; }
-        .toggle-switch {
-            position: relative; display: inline-block; width: 52px; height: 28px;
-            background: rgba(0,0,0,0.1); border-radius: 14px; cursor: pointer; transition: all 0.3s;
-        }
-        .toggle-switch.active { background: var(--accent-focus); }
-        .toggle-knob {
-            position: absolute; top: 2px; left: 2px; width: 24px; height: 24px;
-            background: white; border-radius: 50%; transition: all 0.3s; box-shadow: 0 2px 4px rgba(0,0,0,0.2);
-        }
-        .toggle-switch.active .toggle-knob { left: 26px; }
-        .monitoring-banner {
-            background: rgba(255,255,255,0.6); backdrop-filter: blur(10px);
-            border: 1px solid rgba(0,0,0,0.05); border-radius: 1rem;
-            padding: 1rem 1.5rem; display: flex; align-items: center; justify-content: space-between;
-            gap: 1rem; margin-bottom: 2rem;
-        }
-        .section-header {
-            width: 100%; max-width: 1152px; font-size: 0.7rem; text-transform: uppercase; 
-            letter-spacing: 0.2em; color: var(--text-whisper); margin: 3rem 0 1rem 1rem;
-        }
-        @media (max-width: 640px) {
-            .mobile-title { font-size: 2.5rem !important; }
-            .monitoring-banner { flex-direction: column; text-align: center; }
-        }
+        .card-glass:hover { transform: translateY(-5px); box-shadow: 0 20px 40px rgba(0,0,0,0.02); border-color: var(--indigo); }
     </style>
 </head>
-<body class="flex flex-col items-center py-12 sm:py-20 px-4 sm:px-6">
-    <div class="aura-field" id="aura"></div>
+<body>
+    <div id="root"></div>
 
-    <header class="text-center mb-8 sm:mb-12">
-        <h1 class="mobile-title" style="font-size: 4rem; font-weight: 200; color: var(--text-present); letter-spacing: -0.02em;">presence</h1>
-        <div class="stat-label mt-4" id="statsDisplay">0.0 hours cultivated</div>
-    </header>
+    <script type="text/babel">
+        const { useState, useEffect } = React;
 
-    <div class="monitoring-banner w-full max-w-6xl">
-        <div class="flex-1">
-            <div style="font-size: 0.9rem; font-weight: 500; color: var(--text-present); margin-bottom: 0.25rem;">Practice Tracking</div>
-            <div style="font-size: 0.75rem; color: var(--text-whisper);" id="trackingStatus">Track your practice time and build insights</div>
-        </div>
-        <div class="toggle-switch active" id="monitoringToggle" onclick="toggleMonitoring()">
-            <div class="toggle-knob"></div>
-        </div>
-    </div>
+        function App() {
+            // VIEW STATE: 'hub', 'flow', 'yoga', 'meditation', 'guided', 'breath', 'scan', 'sleep', 'ambient', 'lab', 'movement', 'ritual', 'journal', 'insights'
+            const [view, setView] = useState('hub');
+            const [intent, setIntent] = useState(localStorage.getItem('presence_intent') || "Neutrality");
 
-    <div class="flex flex-wrap justify-center gap-3 sm:gap-4 mb-12 sm:mb-20">
-        <button id="stillBtn" onclick="toggleSignal('still')" class="px-6 sm:px-8 py-3 rounded-full border border-black/5 text-[10px] uppercase tracking-widest transition-all min-h-[44px]">Still</button>
-        <button id="flowBtn" onclick="toggleSignal('flow')" class="px-6 sm:px-8 py-3 rounded-full border border-black/5 text-[10px] uppercase tracking-widest transition-all min-h-[44px]">Flow</button>
-        <button id="ritualBtn" onclick="toggleSignal('ritual')" class="px-6 sm:px-8 py-3 rounded-full border border-black/5 text-[10px] uppercase tracking-widest transition-all min-h-[44px]">Ritual</button>
-    </div>
+            useEffect(() => {
+                localStorage.setItem('presence_intent', intent);
+            }, [intent]);
 
-    <div class="w-full max-w-6xl">
-        <div class="section-header">Sacred Sanctuaries</div>
-        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-6 mb-12">
-            <a href="monastery-best-in-class.html" class="nav-card premium-card p-6 sm:p-10 rounded-[2rem]">
-                <div class="stat-label premium-label mb-2">Digital Monastery</div>
-                <div class="card-description">Interactive Zen Garden & Halls</div>
-            </a>
-            <a href="Mudra Guide.html" class="nav-card premium-card p-6 sm:p-10 rounded-[2rem]">
-                <div class="stat-label premium-label mb-2">Mudra Encyclopedia</div>
-                <div class="card-description">100+ Sacred Hand Gestures</div>
-            </a>
-        </div>
+            // This function handles the "Stage" content
+            const renderContent = () => {
+                if (view === 'hub') return <HubView setView={setView} intent={intent} setIntent={setIntent} />;
+                
+                // Mapping views to your file names
+                const fileMap = {
+                    yoga: 'presence_yoga_v3.html',
+                    meditation: 'presence_meditation.html',
+                    guided: 'presence_guided.html',
+                    breath: 'presence_breathwork.html',
+                    scan: 'presence_bodyscan.html',
+                    sleep: 'presence_sleep.html',
+                    ambient: 'presence_ambient_v2.html',
+                    lab: 'presence_alignment.html',
+                    movement: 'presence_movement.html',
+                    ritual: 'presence_rituals.html',
+                    flow: 'presence_flow.html',
+                    journal: 'presence_journal.html',
+                    insights: 'presence_insights.html'
+                };
 
-        <div class="section-header">Active Practice</div>
-        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6 mb-12">
-            <a href="presence_yoga_v3.html" class="nav-card p-6 sm:p-10 rounded-[2rem]"><div class="stat-label">Studio</div><div class="card-description">Yoga & Flow</div></a>
-            <a href="presence_meditation.html" class="nav-card p-6 sm:p-10 rounded-[2rem]"><div class="stat-label">Meditation</div><div class="card-description">Timed Session</div></a>
-            <a href="presence_guided.html" class="nav-card p-6 sm:p-10 rounded-[2rem]"><div class="stat-label">Guided</div><div class="card-description">Voice Sessions</div></a>
-            <a href="presence_breathwork.html" class="nav-card p-6 sm:p-10 rounded-[2rem]"><div class="stat-label">Breathwork</div><div class="card-description">Regulation</div></a>
-            <a href="presence_bodyscan.html" class="nav-card p-6 sm:p-10 rounded-[2rem]"><div class="stat-label">Body Scan</div><div class="card-description">Awareness</div></a>
-            <a href="presence_sleep.html" class="nav-card p-6 sm:p-10 rounded-[2rem]"><div class="stat-label">Sleep</div><div class="card-description">Rest & Recovery</div></a>
-        </div>
+                return <iframe src={fileMap[view]} className="animate-in fade-in duration-1000" />;
+            };
 
-        <div class="section-header">Deep Work</div>
-        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6 mb-12">
-            <a href="presence_ambient_v2.html" class="nav-card p-6 sm:p-10 rounded-[2rem]"><div class="stat-label">Ambient</div><div class="card-description">Soundscapes</div></a>
-            <a href="presence_alignment.html" class="nav-card p-6 sm:p-10 rounded-[2rem]"><div class="stat-label">Alignment Lab</div><div class="card-description">Biomechanics & Pose Library</div></a>
-            <a href="presence_movement.html" class="nav-card p-6 sm:p-10 rounded-[2rem]"><div class="stat-label">Movement</div><div class="card-description">Quick Breaks</div></a>
-            <a href="presence_rituals.html" class="nav-card p-6 sm:p-10 rounded-[2rem]"><div class="stat-label">Rituals</div><div class="card-description">Custom Sequences</div></a>
-            <a href="presence_flow.html" class="nav-card p-6 sm:p-10 rounded-[2rem]"><div class="stat-label">Intents</div><div class="card-description">Set Direction</div></a>
-        </div>
+            return (
+                <div className="flex flex-col h-screen relative">
+                    <div className="ambient-bg" />
 
-        <div class="section-header">System</div>
-        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
-            <a href="presence_journal.html" class="nav-card p-6 sm:p-10 rounded-[2rem]"><div class="stat-label">Journal</div><div class="card-description">Reflection</div></a>
-            <a href="presence_insights.html" class="nav-card p-6 sm:p-10 rounded-[2rem]"><div class="stat-label">Insights</div><div class="card-description">Progress</div></a>
-            <a href="presence_settings.html" class="nav-card p-6 sm:p-10 rounded-[2rem]"><div class="stat-label">Settings</div><div class="card-description">Preferences</div></a>
-        </div>
-    </div>
+                    {/* PERSISTENT HEADER (The "Conductor") */}
+                    <header className="h-20 flex justify-between items-center px-8 border-b border-slate-50 bg-white/60 backdrop-blur-xl z-50">
+                        <div className="flex flex-col">
+                            <span className="text-[7px] font-bold tracking-[0.4em] text-indigo-400 uppercase">Active Intent</span>
+                            <span className="font-serif italic text-lg text-slate-700">{intent}</span>
+                        </div>
+                        
+                        <div className="text-2xl font-serif italic font-bold tracking-tighter cursor-pointer select-none" onClick={() => setView('hub')}>
+                            presence<span className="text-indigo-500">•</span>
+                        </div>
 
-    <script>
-        const MONITORING_KEY = 'presence_monitoring_enabled';
-        function isMonitoringEnabled() {
-            const enabled = localStorage.getItem(MONITORING_KEY);
-            return enabled === null || enabled === 'true';
+                        <div className="w-10 h-10 rounded-full bg-slate-50 border border-slate-100 flex items-center justify-center text-xs">
+                            ✨
+                        </div>
+                    </header>
+
+                    {/* THE STAGE */}
+                    <main className="stage-container flex-grow">
+                        {renderContent()}
+                    </main>
+
+                    {/* GLOBAL NAVIGATION */}
+                    <nav className="h-20 bg-white border-t border-slate-50 flex justify-around items-center px-4 z-50">
+                        <NavItem icon="🏛️" label="Hub" active={view === 'hub'} onClick={() => setView('hub')} />
+                        <NavItem icon="🌊" label="Practice" active={['yoga', 'meditation', 'breath', 'scan'].includes(view)} onClick={() => setView('yoga')} />
+                        <NavItem icon="📐" label="Lab" active={view === 'lab'} onClick={() => setView('lab')} />
+                        <NavItem icon="📖" label="Journal" active={view === 'journal'} onClick={() => setView('journal')} />
+                    </nav>
+                </div>
+            );
         }
-        function toggleMonitoring() {
-            const currentState = isMonitoringEnabled();
-            const newState = !currentState;
-            localStorage.setItem(MONITORING_KEY, newState);
-            updateMonitoringUI();
-            const status = document.getElementById('trackingStatus');
-            status.textContent = newState ? 'Track your practice time and build insights' : 'Practice tracking disabled • No data collected';
-            status.style.color = newState ? 'var(--text-whisper)' : '#ef4444';
+
+        function NavItem({ icon, label, active, onClick }) {
+            return (
+                <button onClick={onClick} className={`nav-item flex flex-col items-center gap-1 ${active ? 'active' : 'text-slate-400'}`}>
+                    <span className="text-xl">{icon}</span>
+                    <span className="text-[8px] font-bold uppercase tracking-widest">{label}</span>
+                </button>
+            );
         }
-        function updateMonitoringUI() {
-            const enabled = isMonitoringEnabled();
-            const toggle = document.getElementById('monitoringToggle');
-            enabled ? toggle.classList.add('active') : toggle.classList.remove('active');
+
+        function HubView({ setView, intent, setIntent }) {
+            return (
+                <div className="p-8 md:p-16 max-w-7xl mx-auto space-y-20 animate-in fade-in slide-in-from-bottom-4 duration-1000">
+                    
+                    {/* Hero & Intent Setting */}
+                    <section className="text-center space-y-6">
+                        <h1 className="text-8xl font-serif tracking-tighter leading-none">presence</h1>
+                        <div className="flex flex-col items-center">
+                             <input 
+                                value={intent} 
+                                onChange={(e) => setIntent(e.target.value)}
+                                className="text-2xl font-serif italic text-indigo-500 bg-transparent text-center focus:outline-none border-b border-transparent focus:border-indigo-100 w-full max-w-xs"
+                                placeholder="Set Intent..."
+                            />
+                        </div>
+                    </section>
+
+                    {/* Main Categories */}
+                    <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+                        
+                        {/* CATEGORY: ACTIVE */}
+                        <div className="space-y-6">
+                            <h4 className="text-[10px] font-bold tracking-[0.4em] text-slate-300 uppercase pl-4">Active Practice</h4>
+                            <div className="space-y-3">
+                                <MenuCard icon="🌊" title="Studio" sub="Yoga & Flow" onClick={() => setView('yoga')} />
+                                <MenuCard icon="🧘" title="Meditation" sub="Timed Sessions" onClick={() => setView('meditation')} />
+                                <MenuCard icon="💨" title="Breathwork" sub="Regulation" onClick={() => setView('breath')} />
+                                <MenuCard icon="✨" title="Body Scan" sub="Awareness" onClick={() => setView('scan')} />
+                            </div>
+                        </div>
+
+                        {/* CATEGORY: DEEP WORK */}
+                        <div className="space-y-6">
+                            <h4 className="text-[10px] font-bold tracking-[0.4em] text-slate-300 uppercase pl-4">Deep Work</h4>
+                            <div className="space-y-3">
+                                <MenuCard icon="📐" title="Alignment Lab" sub="Biomechanics" onClick={() => setView('lab')} />
+                                <MenuCard icon="🎵" title="Ambient" sub="Soundscapes" onClick={() => setView('ambient')} />
+                                <MenuCard icon="🔄" title="Rituals" sub="Custom Flows" onClick={() => setView('ritual')} />
+                                <MenuCard icon="🎯" title="Intents" sub="Set Direction" onClick={() => setView('flow')} />
+                            </div>
+                        </div>
+
+                        {/* CATEGORY: SYSTEM */}
+                        <div className="space-y-6">
+                            <h4 className="text-[10px] font-bold tracking-[0.4em] text-slate-300 uppercase pl-4">System</h4>
+                            <div className="space-y-3">
+                                <MenuCard icon="📖" title="Journal" sub="Reflection" onClick={() => setView('journal')} />
+                                <MenuCard icon="📈" title="Insights" sub="Progress" onClick={() => setView('insights')} />
+                                <MenuCard icon="🌙" title="Sleep" sub="Recovery" onClick={() => setView('sleep')} />
+                            </div>
+                        </div>
+
+                    </div>
+                </div>
+            );
         }
-        const signals = {
-            still: localStorage.getItem('presence_still') === 'true',
-            flow: localStorage.getItem('presence_flow') === 'true',
-            ritual: localStorage.getItem('presence_ritual') === 'true'
-        };
-        function toggleSignal(s) {
-            signals[s] = !signals[s];
-            localStorage.setItem(`presence_${s}`, signals[s]);
-            updateUI();
+
+        function MenuCard({ icon, title, sub, onClick }) {
+            return (
+                <div onClick={onClick} className="card-glass p-6 flex items-center gap-5 cursor-pointer group">
+                    <div className="text-3xl group-hover:scale-110 transition-transform">{icon}</div>
+                    <div>
+                        <div className="text-xl font-serif italic text-slate-700">{title}</div>
+                        <div className="text-[9px] font-bold text-slate-300 uppercase tracking-widest">{sub}</div>
+                    </div>
+                </div>
+            );
         }
-        function updateUI() {
-            const totalMins = parseFloat(localStorage.getItem('totalPracticeMinutes') || '0');
-            const monitoringEnabled = isMonitoringEnabled();
-            const display = document.getElementById('statsDisplay');
-            if (monitoringEnabled && totalMins > 0) {
-                display.textContent = `${(totalMins/60).toFixed(1)} hours cultivated`;
-            } else if (!monitoringEnabled) {
-                display.textContent = 'tracking disabled';
-            } else {
-                display.textContent = '0.0 hours cultivated';
-            }
-            Object.keys(signals).forEach(key => {
-                const btn = document.getElementById(`${key}Btn`);
-                if (signals[key]) {
-                    btn.style.background = 'var(--text-present)';
-                    btn.style.color = 'white';
-                } else {
-                    btn.style.background = 'rgba(255,255,255,0.4)';
-                    btn.style.color = 'var(--text-soft)';
-                }
-            });
-            const strength = (signals.still?1:0) + (signals.flow?1:0) + (signals.ritual?1:0);
-            const aura = document.getElementById('aura');
-            aura.style.opacity = 0.1 + (strength * 0.15);
-            aura.style.transform = `translate(-50%, -50%) scale(${1 + (strength * 0.2)})`;
-        }
-        window.onload = function() {
-            updateMonitoringUI();
-            updateUI();
-        };
+
+        const root = ReactDOM.createRoot(document.getElementById('root'));
+        root.render(<App />);
     </script>
 </body>
 </html>
