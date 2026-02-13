@@ -7,55 +7,55 @@
     
     <script src="presence-content-manager.js"></script>
     <script src="all-libraries-compact.js"></script>
-    <script src="https://cdn.tailwindcss.com"></script>
-    <script crossorigin src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
-    <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
-    <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+    <script src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
+    <script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
     
+    <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
     <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@300;400;700&family=Instrument+Serif:italic&family=Inter:wght@400;600;900&display=swap" rel="stylesheet">
 
     <style>
-        :root { --accent-structure: #6366f1; --accent-philosophy: #f43f5e; --bg: #fafafa; }
-        body { font-family: 'Inter', sans-serif; background: var(--bg); color: #1e293b; margin: 0; }
+        :root { --accent-struct: #6366f1; --accent-phil: #f43f5e; --bg: #fafafa; }
+        body { font-family: 'Inter', sans-serif; background: var(--bg); color: #1e293b; margin: 0; -webkit-font-smoothing: antialiased; }
         .font-serif { font-family: 'Instrument Serif', serif; }
         .font-mono { font-family: 'JetBrains Mono', monospace; }
-        
-        .mode-structure { border-top: 6px solid var(--accent-structure); }
-        .mode-philosophy { border-top: 6px solid var(--accent-philosophy); }
-        
+        .mode-struct { border-top: 6px solid var(--accent-struct); }
+        .mode-phil { border-top: 6px solid var(--accent-phil); }
         .glass-card { background: rgba(255, 255, 255, 0.8); backdrop-filter: blur(16px); border: 1px solid rgba(0,0,0,0.05); }
         .no-scrollbar::-webkit-scrollbar { display: none; }
-        
-        /* Perspective Toggles */
-        .toggle-btn { transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1); }
-        .toggle-btn.active { transform: translateY(-2px); box-shadow: 0 10px 25px -5px rgba(0,0,0,0.1); }
-        
-        @keyframes pulse-soft { 0%, 100% { opacity: 1; transform: scale(1); } 50% { opacity: 0.7; transform: scale(1.05); } }
-        .pulse-view { animation: pulse-soft 4s ease-in-out infinite; }
+        input[type="range"] { -webkit-appearance: none; width: 100%; height: 4px; background: #e2e8f0; border-radius: 2px; outline: none; }
+        input[type="range"]::-webkit-slider-thumb { -webkit-appearance: none; width: 18px; height: 18px; background: #1e293b; border-radius: 50%; cursor: pointer; }
+        .animate-soft { animation: pulse 4s ease-in-out infinite; }
+        @keyframes pulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.7; } }
     </style>
 </head>
 <body>
     <div id="root"></div>
 
-    <script type="text/babel">
+    <script>
+        // Use standard JS instead of Babel to avoid browser warnings
         const { useState, useEffect, useMemo } = React;
 
         function PresenceLab() {
             const [allPoses, setAllPoses] = useState([]);
             const [selectedId, setSelectedId] = useState(null);
-            const [mode, setMode] = useState('structure'); // structure or philosophy
+            const [mode, setMode] = useState('structure'); 
             const [search, setSearch] = useState('');
             const [activeCategory, setActiveCategory] = useState('All');
 
             const CATEGORIES = ["All", "Standing", "Backbend", "Forward Fold", "Inversion", "Twist", "Hip Opener", "Restorative", "Arm Balance"];
 
             useEffect(() => {
-                const data = window.ALL_POSES || window.POSE_LIBRARY || [];
-                if (data.length > 0) {
-                    setAllPoses(data);
-                    if (!selectedId) setSelectedId(data[0].id);
-                }
-            }, []);
+                const loadData = () => {
+                    const data = window.ALL_POSES || window.POSE_LIBRARY || [];
+                    if (data.length > 0) {
+                        setAllPoses(data);
+                        if (!selectedId) setSelectedId(data[0].id);
+                    }
+                };
+                loadData();
+                const timer = setInterval(loadData, 1000);
+                return () => clearInterval(timer);
+            }, [selectedId]);
 
             const filtered = useMemo(() => {
                 return allPoses.filter(p => {
@@ -67,147 +67,100 @@
 
             const pose = useMemo(() => allPoses.find(p => p.id === selectedId), [selectedId, allPoses]);
 
-            if (!pose) return <div className="h-screen flex items-center justify-center font-serif italic text-2xl text-slate-400">integrating lineage...</div>;
+            if (!pose) return React.createElement('div', {className: "h-screen flex items-center justify-center font-serif italic text-2xl text-gray-400"}, "optimizing library...");
 
-            return (
-                <div className={`min-h-screen transition-all duration-700 ${mode === 'structure' ? 'mode-structure' : 'mode-philosophy'}`}>
-                    
-                    {/* Perspective Hub */}
-                    <nav className="bg-white/80 backdrop-blur-md border-b border-slate-100 p-6 sticky top-0 z-50">
-                        <div className="max-w-7xl mx-auto flex flex-col md:flex-row justify-between items-center gap-8">
-                            <div className="flex items-center gap-8">
-                                <a href="index.html" className="text-[10px] font-black uppercase tracking-[0.3em] text-slate-300 hover:text-slate-900 transition-colors">← HUB</a>
-                                <h1 className="text-4xl font-serif italic text-slate-900 leading-none">presents<span className={mode === 'structure' ? 'text-indigo-500' : 'text-rose-500'}>•</span>lab</h1>
-                            </div>
+            return React.createElement('div', { className: `min-h-screen transition-all duration-700 ${mode === 'structure' ? 'mode-struct' : 'mode-phil'}` },
+                // Header
+                React.createElement('nav', { className: "bg-white border-b border-gray-100 p-6 sticky top-0 z-50 shadow-sm" },
+                    React.createElement('div', { className: "max-w-7xl mx-auto flex flex-col md:flex-row justify-between items-center gap-6" },
+                        React.createElement('div', { className: "flex items-center gap-6" },
+                            React.createElement('a', { href: "index.html", className: "text-xs font-bold tracking-widest text-gray-300 hover:text-gray-900" }, "← HUB"),
+                            React.createElement('h1', { className: "text-4xl font-serif italic text-gray-900" }, "presents", 
+                                React.createElement('span', { className: mode === 'structure' ? 'text-indigo-500' : 'text-red-500' }, "•"), "lab")
+                        ),
+                        React.createElement('div', { className: "flex gap-2 p-1 bg-gray-100 rounded-full" },
+                            React.createElement('button', { 
+                                onClick: () => setMode('structure'),
+                                className: `px-6 py-2 rounded-full text-xs font-bold uppercase tracking-widest transition-all ${mode === 'structure' ? 'bg-indigo-600 text-white shadow-lg' : 'text-gray-400'}`
+                            }, "Structure"),
+                            React.createElement('button', { 
+                                onClick: () => setMode('philosophy'),
+                                className: `px-6 py-2 rounded-full text-xs font-bold uppercase tracking-widest transition-all ${mode === 'philosophy' ? 'bg-red-500 text-white shadow-lg' : 'text-gray-400'}`
+                            }, "Philosophy")
+                        )
+                    )
+                ),
 
-                            <div className="flex gap-2 p-1.5 bg-slate-100 rounded-[2rem]">
-                                <button onClick={() => setMode('structure')}
-                                    className={`toggle-btn px-8 py-3 rounded-[1.5rem] text-[10px] font-black uppercase tracking-widest ${mode === 'structure' ? 'bg-indigo-600 text-white active' : 'text-slate-400 hover:text-slate-600'}`}>
-                                    Structure + Alignment
-                                </button>
-                                <button onClick={() => setMode('philosophy')}
-                                    className={`toggle-btn px-8 py-3 rounded-[1.5rem] text-[10px] font-black uppercase tracking-widest ${mode === 'philosophy' ? 'bg-rose-500 text-white active' : 'text-slate-400 hover:text-slate-600'}`}>
-                                    Heart + Accessibility
-                                </button>
-                            </div>
-                        </div>
-                    </nav>
+                // Main Content
+                React.createElement('main', { className: "max-w-7xl mx-auto p-6 md:p-12 flex flex-col lg:flex-row gap-12" },
+                    // Sidebar
+                    React.createElement('aside', { className: "w-full lg:w-80 space-y-6" },
+                        React.createElement('input', { 
+                            type: "text", 
+                            placeholder: "Search 500+ poses...", 
+                            className: "w-full p-4 rounded-2xl bg-white border border-gray-100 font-serif italic text-lg outline-none focus:ring-2 focus:ring-gray-50",
+                            onChange: e => setSearch(e.target.value)
+                        }),
+                        React.createElement('div', { className: "flex flex-col gap-2 overflow-y-auto h-[60vh] no-scrollbar pr-2" },
+                            filtered.map(p => React.createElement('button', {
+                                key: p.id,
+                                onClick: () => setSelectedId(p.id),
+                                className: `p-5 text-left rounded-3xl transition-all ${selectedId === p.id ? 'bg-white shadow-xl ring-1 ring-gray-100' : 'opacity-40 hover:opacity-100'}`
+                            }, 
+                                React.createElement('div', {className: "text-[10px] font-bold uppercase text-indigo-400 mb-1"}, p.category),
+                                React.createElement('div', {className: "text-xl font-serif text-gray-800"}, p.name)
+                            ))
+                        )
+                    ),
 
-                    <main className="max-w-7xl mx-auto p-6 md:p-12 flex flex-col lg:flex-row gap-16">
-                        
-                        {/* 500+ Library Navigation */}
-                        <aside className="w-full lg:w-80 space-y-8">
-                            <div className="space-y-4">
-                                <input type="text" placeholder="Search 500+ poses..." 
-                                    className="w-full p-5 rounded-3xl bg-white border border-slate-100 font-serif italic text-lg shadow-sm focus:ring-2 focus:ring-slate-100 outline-none"
-                                    onChange={e => setSearch(e.target.value)} />
-                                
-                                <div className="flex flex-wrap gap-2">
-                                    {CATEGORIES.slice(0, 5).map(cat => (
-                                        <button key={cat} onClick={() => setActiveCategory(cat)}
-                                            className={`text-[9px] font-black uppercase px-3 py-1.5 rounded-full border transition-all ${activeCategory === cat ? 'bg-slate-900 text-white border-slate-900' : 'bg-white text-slate-400 border-slate-100 hover:border-slate-300'}`}>
-                                            {cat}
-                                        </button>
-                                    ))}
-                                </div>
-                            </div>
-                            
-                            <div className="flex flex-col gap-2 overflow-y-auto h-[60vh] no-scrollbar pr-4 border-r border-slate-50">
-                                {filtered.map(p => (
-                                    <button key={p.id} onClick={() => setSelectedId(p.id)}
-                                        className={`p-6 text-left rounded-[2rem] transition-all group ${selectedId === p.id ? 'bg-white shadow-xl ring-1 ring-slate-100' : 'opacity-40 hover:opacity-100'}`}>
-                                        <div className="text-[8px] font-black uppercase tracking-widest text-indigo-400 mb-2">{p.category}</div>
-                                        <div className="text-xl font-serif text-slate-800 group-hover:italic transition-all">{p.name}</div>
-                                        <div className="text-[10px] font-mono text-slate-300 mt-1">{p.sanskrit}</div>
-                                    </button>
-                                ))}
-                            </div>
-                        </aside>
+                    // Stage
+                    React.createElement('div', { className: "flex-1 space-y-8" },
+                        React.createElement('div', { className: "glass-card rounded-[3rem] p-10 md:p-16 min-h-[450px] relative overflow-hidden" },
+                            React.createElement('div', { className: "mb-12" },
+                                React.createElement('span', { className: "text-[10px] font-bold uppercase tracking-widest text-gray-300" }, "Active Analysis"),
+                                React.createElement('h2', { className: "text-6xl font-serif italic text-gray-900 tracking-tighter mt-2" }, pose.name),
+                                React.createElement('p', { className: "text-xl text-gray-400 font-serif italic" }, pose.sanskrit)
+                            ),
 
-                        {/* Interactive Analysis Hub */}
-                        <div className="flex-1 space-y-12">
-                            
-                            {/* Main Stage */}
-                            <div className="glass-card rounded-[4rem] p-12 md:p-20 min-h-[500px] flex flex-col items-center justify-center relative overflow-hidden">
-                                <div className="absolute top-12 left-12">
-                                    <div className="flex items-center gap-3 mb-4">
-                                        <span className={`w-2 h-2 rounded-full ${mode === 'structure' ? 'bg-indigo-500' : 'bg-rose-500'}`}></span>
-                                        <span className="text-[10px] font-black uppercase tracking-[.4em] text-slate-300">Lab Analysis</span>
-                                    </div>
-                                    <h2 className="text-7xl font-serif italic text-slate-900 tracking-tighter">{pose.name}</h2>
-                                    <p className="text-2xl text-slate-400 font-serif italic mt-2">{pose.sanskrit}</p>
-                                </div>
+                            mode === 'structure' ? 
+                                React.createElement('div', { className: "space-y-8 max-w-xl" },
+                                    pose.checkpoints?.map(cp => React.createElement('div', { key: cp.joint },
+                                        React.createElement('div', { className: "flex justify-between text-xs font-bold uppercase text-indigo-500 mb-3" },
+                                            React.createElement('span', null, cp.label),
+                                            React.createElement('span', {className: "font-mono"}, cp.ideal, "°")
+                                        ),
+                                        React.createElement('div', { className: "h-1 w-full bg-gray-100 rounded-full" },
+                                            React.createElement('div', { className: "h-full bg-indigo-500 rounded-full", style: { width: `${(cp.ideal / 180) * 100}%` } })
+                                        )
+                                    ))
+                                ) :
+                                React.createElement('div', { className: "text-center py-10 animate-soft" },
+                                    React.createElement('p', { className: "text-4xl font-serif italic text-gray-800 leading-tight" }, `"${pose.philosophy || "Soften into the heart of the shape."}"`)
+                                )
+                        ),
 
-                                {mode === 'structure' ? (
-                                    <div className="w-full max-w-2xl mt-32 space-y-10 animate-in slide-in-from-bottom duration-700">
-                                        {pose.checkpoints?.map(cp => (
-                                            <div key={cp.joint}>
-                                                <div className="flex justify-between text-[10px] font-black uppercase text-indigo-500 mb-4 tracking-widest">
-                                                    <span>{cp.label}</span>
-                                                    <span className="font-mono text-sm">{cp.ideal}°</span>
-                                                </div>
-                                                <div className="h-1.5 w-full bg-slate-100 rounded-full overflow-hidden">
-                                                    <div className="h-full bg-indigo-500 rounded-full transition-all duration-1000" style={{width: `${(cp.ideal/180)*100}%`}}></div>
-                                                </div>
-                                            </div>
-                                        ))}
-                                    </div>
-                                ) : (
-                                    <div className="text-center mt-32 animate-in fade-in zoom-in duration-1000">
-                                        <div className="pulse-view w-32 h-32 rounded-full bg-rose-50 flex items-center justify-center mx-auto mb-10">
-                                            <div className="w-6 h-6 rounded-full bg-rose-400/20 animate-ping"></div>
-                                        </div>
-                                        <p className="text-4xl font-serif italic text-slate-800 leading-tight max-w-2xl">
-                                            "{pose.philosophy || "Soften the internal gaze to find the union between physical effort and spiritual ease."}"
-                                        </p>
-                                    </div>
-                                )}
-                            </div>
-
-                            {/* Secondary Data Matrix */}
-                            <div className="grid md:grid-cols-2 gap-8">
-                                {mode === 'structure' ? (
-                                    <>
-                                        <div className="bg-slate-900 text-white p-12 rounded-[3.5rem] shadow-2xl relative overflow-hidden group">
-                                            <span className="text-[9px] font-black uppercase tracking-widest opacity-40">Intelligent Sequencing</span>
-                                            <p className="mt-6 font-serif italic text-2xl leading-snug">"{pose.sequencing || `Prioritize pelvic neutrality to protect the lumbar spine before loading the ${pose.muscles?.[0]}.`}"</p>
-                                        </div>
-                                        <div className="bg-white p-12 rounded-[3.5rem] border border-slate-100 flex flex-col justify-between">
-                                            <div>
-                                                <span className="text-[9px] font-black uppercase tracking-widest text-indigo-400">Target Muscle Chains</span>
-                                                <div className="flex flex-wrap gap-2 mt-6">
-                                                    {pose.muscles?.map(m => <span key={m} className="px-4 py-2 bg-slate-50 border border-slate-100 rounded-xl text-[10px] font-black uppercase text-slate-500">{m}</span>)}
-                                                </div>
-                                            </div>
-                                            <div className="mt-8 pt-8 border-t border-slate-50">
-                                                <span className="text-[9px] font-black uppercase tracking-widest text-slate-300 block mb-2">Structure Key</span>
-                                                <p className="text-xs text-slate-400 font-medium">Stabilize → Orient → Extend</p>
-                                            </div>
-                                        </div>
-                                    </>
-                                ) : (
-                                    <>
-                                        <div className="bg-rose-500 text-white p-12 rounded-[3.5rem] shadow-2xl shadow-rose-100">
-                                            <span className="text-[9px] font-black uppercase tracking-widest opacity-40">The Breath Work</span>
-                                            <p className="mt-6 font-serif italic text-3xl leading-snug">"{pose.breath || "Inhale to find space, Exhale to ground deeply."}"</p>
-                                        </div>
-                                        <div className="bg-white p-12 rounded-[3.5rem] border border-slate-100">
-                                            <span className="text-[9px] font-black uppercase tracking-widest text-rose-400">Accessibility & Inclusivity</span>
-                                            <p className="mt-6 text-lg font-serif italic text-slate-600 leading-relaxed">
-                                                {pose.accessibility || "Invite the floor to meet you by using props; focus on the sensation of expansion rather than the final shape."}
-                                            </p>
-                                        </div>
-                                    </>
-                                )}
-                            </div>
-                        </div>
-                    </main>
-                </div>
+                        // Detail Row
+                        React.createElement('div', { className: "grid md:grid-cols-2 gap-6" },
+                            React.createElement('div', { className: "bg-gray-900 text-white p-10 rounded-[2.5rem]" },
+                                React.createElement('span', { className: "text-[10px] font-bold uppercase tracking-widest opacity-40" }, mode === 'structure' ? "Intelligent Sequencing" : "The Breath"),
+                                React.createElement('p', { className: "mt-4 font-serif italic text-2xl" }, mode === 'structure' ? (pose.sequencing || "Stabilize foundations first.") : (pose.breath || "Deepen the Ujjayi."))
+                            ),
+                            React.createElement('div', { className: "bg-white p-10 rounded-[2.5rem] border border-gray-100" },
+                                React.createElement('span', { className: "text-[10px] font-bold uppercase tracking-widest text-gray-400" }, mode === 'structure' ? "Target Muscle Chains" : "Accessibility"),
+                                React.createElement('div', { className: "mt-4 flex flex-wrap gap-2" },
+                                    mode === 'structure' ? 
+                                        pose.muscles?.map(m => React.createElement('span', { key: m, className: "px-3 py-1 bg-gray-50 text-xs font-bold uppercase rounded-lg" }, m)) :
+                                        React.createElement('p', {className: "text-lg font-serif italic text-gray-500"}, pose.accessibility || "Use props to bring the earth closer.")
+                                )
+                            )
+                        )
+                    )
+                )
             );
         }
 
         const root = ReactDOM.createRoot(document.getElementById('root'));
-        root.render(<PresenceLab />);
+        root.render(React.createElement(PresenceLab));
     </script>
 </body>
 </html>
