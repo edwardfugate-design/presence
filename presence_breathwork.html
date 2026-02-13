@@ -3,11 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>presence • breathwork</title>
-    <script src="presence-content-manager.js"></script>
-    <script src="presence-monitoring.js"></script>
-    <script src="presence-auto-integrate.js"></script>
-    <script src="breathwork-library.js"></script>
+    <title>presence • meditation & breath</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@300;400;600&display=swap" rel="stylesheet">
     <style>
@@ -26,193 +22,200 @@
             background: rgba(255,255,255,0.4); border: 1px solid rgba(0,0,0,0.05);
             backdrop-filter: blur(10px); transition: all 0.3s ease; cursor: pointer;
         }
-        .technique-card:hover { background: rgba(255,255,255,0.7); transform: translateY(-2px); }
+        .technique-card:hover { background: rgba(255,255,255,0.7); transform: translateY(-2px); border-color: #6366f1; }
+        .time-pill {
+            padding: 8px 16px; border-radius: 999px; border: 1px solid rgba(0,0,0,0.1);
+            font-size: 0.75rem; cursor: pointer; transition: all 0.2s;
+        }
+        .time-pill.active { background: #6366f1; color: white; border-color: #6366f1; }
+        
         .breath-circle {
-            width: 300px; height: 300px; border-radius: 50%;
+            width: 280px; height: 280px; border-radius: 50%;
             background: radial-gradient(circle, rgba(139, 152, 165, 0.2), rgba(139, 152, 165, 0.05));
             border: 2px solid rgba(139, 152, 165, 0.3);
             transition: all 1s cubic-bezier(0.4, 0, 0.2, 1);
             display: flex; align-items: center; justify-content: center;
         }
-        .breath-circle.inhale {
-            transform: scale(1.3);
-            background: radial-gradient(circle, rgba(139, 152, 165, 0.4), rgba(139, 152, 165, 0.1));
-        }
-        .breath-circle.hold {
-            transform: scale(1.3);
-            background: radial-gradient(circle, rgba(139, 152, 165, 0.5), rgba(139, 152, 165, 0.15));
-        }
-        .breath-circle.exhale {
-            transform: scale(0.7);
-            background: radial-gradient(circle, rgba(139, 152, 165, 0.15), rgba(139, 152, 165, 0.03));
-        }
+        .breath-circle.inhale { transform: scale(1.3); background: rgba(139, 152, 165, 0.3); }
+        .breath-circle.exhale { transform: scale(0.8); background: rgba(139, 152, 165, 0.1); }
+        .breath-circle.hold { transform: scale(1.3); border-color: rgba(99, 102, 241, 0.4); }
     </style>
 </head>
 <body>
-    <div id="selectionView" class="p-8 md:p-16 max-w-4xl mx-auto">
-        <header class="mb-16">
-            <a href="index.html" class="stat-label text-indigo-400 mb-4 block">← Hub</a>
-            <h1 class="font-serif text-7xl tracking-tighter text-gray-900 mb-4">Breathwork</h1>
-            <p class="text-lg text-gray-500 font-light">Techniques for regulation</p>
+
+    <div id="selectionView" class="p-8 md:p-16 max-w-5xl mx-auto">
+        <header class="mb-12">
+            <h1 class="font-serif text-7xl tracking-tighter text-gray-900 mb-2">Presence</h1>
+            <p class="text-lg text-gray-500 font-light mb-8">Choose your duration and technique</p>
+            
+            <div class="stat-label mb-4">Session Duration (Minutes)</div>
+            <div class="flex flex-wrap gap-2 mb-8" id="timeSelector">
+                <button class="time-pill" onclick="setTime(5, this)">5</button>
+                <button class="time-pill active" onclick="setTime(10, this)">10</button>
+                <button class="time-pill" onclick="setTime(15, this)">15</button>
+                <button class="time-pill" onclick="setTime(20, this)">20</button>
+                <button class="time-pill" onclick="setTime(30, this)">30</button>
+                <button class="time-pill" onclick="setTime(60, this)">60</button>
+                <button class="time-pill" onclick="setRandomTime(this)">Random</button>
+                <button class="time-pill" onclick="setTime(null, this)">Infinite</button>
+            </div>
         </header>
 
-        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-            <div class="technique-card p-8 rounded-[2rem]" onclick="startTechnique('box')">
-                <div class="stat-label mb-3">Box Breathing</div>
-                <div class="text-2xl font-light text-gray-900 mb-2">4-4-4-4</div>
-                <p class="text-sm text-gray-600">Navy SEAL technique for calm focus</p>
-            </div>
-
-            <div class="technique-card p-8 rounded-[2rem]" onclick="startTechnique('478')">
-                <div class="stat-label mb-3">4-7-8 Technique</div>
-                <div class="text-2xl font-light text-gray-900 mb-2">4-7-8</div>
-                <p class="text-sm text-gray-600">Natural tranquilizer for sleep</p>
-            </div>
-
-            <div class="technique-card p-8 rounded-[2rem]" onclick="startTechnique('coherent')">
-                <div class="stat-label mb-3">Coherent Breathing</div>
-                <div class="text-2xl font-light text-gray-900 mb-2">5-5</div>
-                <p class="text-sm text-gray-600">Heart-brain coherence</p>
-            </div>
-
-            <div class="technique-card p-8 rounded-[2rem]" onclick="startTechnique('energizing')">
-                <div class="stat-label mb-3">Energizing Breath</div>
-                <div class="text-2xl font-light text-gray-900 mb-2">2-1-2</div>
-                <p class="text-sm text-gray-600">Quick energy boost</p>
-            </div>
-
-            <div class="technique-card p-8 rounded-[2rem]" onclick="startTechnique('extended')">
-                <div class="stat-label mb-3">Extended Exhale</div>
-                <div class="text-2xl font-light text-gray-900 mb-2">4-0-8</div>
-                <p class="text-sm text-gray-600">Activate parasympathetic nervous system</p>
-            </div>
-
-            <div class="technique-card p-8 rounded-[2rem]" onclick="startTechnique('custom')">
-                <div class="stat-label mb-3">Custom Ratio</div>
-                <div class="text-2xl font-light text-gray-900 mb-2">Your Choice</div>
-                <p class="text-sm text-gray-600">Create your own pattern</p>
-            </div>
-        </div>
+        <div id="libraryContainer"></div>
     </div>
 
-    <div id="practiceView" class="hidden flex flex-col items-center justify-center min-h-screen p-8">
-        <button onclick="endPractice()" class="stat-label text-indigo-400 mb-12 cursor-pointer">← End Session</button>
+    <div id="practiceView" class="hidden flex flex-col items-center justify-center min-h-screen p-8 text-center">
+        <div class="absolute top-8 left-8">
+            <button onclick="endPractice()" class="stat-label text-indigo-400 cursor-pointer">← End Session</button>
+        </div>
+        <div class="absolute top-8 right-8">
+            <div class="stat-label" id="timerDisplay">--:--</div>
+        </div>
         
         <div class="breath-circle mb-12" id="breathCircle">
-            <div class="text-center">
+            <div>
                 <div class="stat-label mb-2" id="phaseLabel">Ready</div>
                 <div class="text-6xl font-light text-gray-900" id="countDisplay">•</div>
             </div>
         </div>
 
-        <div class="text-center">
-            <div class="text-lg text-gray-600 mb-4" id="techniqueInfo"></div>
-            <div class="stat-label" id="roundCounter">Round 1</div>
+        <div class="max-w-md">
+            <h2 class="text-2xl font-serif text-gray-900 mb-2" id="activeName">Technique</h2>
+            <p class="text-gray-600 italic mb-6 mx-auto text-sm" id="activeInstructions"></p>
         </div>
     </div>
 
     <script>
-        const techniques = {
-            box: { name: 'Box Breathing', inhale: 4, hold1: 4, exhale: 4, hold2: 4 },
-            '478': { name: '4-7-8 Technique', inhale: 4, hold1: 7, exhale: 8, hold2: 0 },
-            coherent: { name: 'Coherent Breathing', inhale: 5, hold1: 0, exhale: 5, hold2: 0 },
-            energizing: { name: 'Energizing Breath', inhale: 2, hold1: 1, exhale: 2, hold2: 0 },
-            extended: { name: 'Extended Exhale', inhale: 4, hold1: 0, exhale: 8, hold2: 0 }
+        const MEDITATION_LIBRARY = {
+            mindfulness: {
+                title: "Mindfulness",
+                items: [
+                    { name: 'Breath Awareness', timing: {inhale: 4, hold1: 0, exhale: 4, hold2: 0}, desc: 'Focus on natural breath sensations.', instruct: 'Notice the air entering and leaving. If your mind wanders, return to the breath.' },
+                    { name: 'Body Scan', timing: {inhale: 6, hold1: 0, exhale: 6, hold2: 0}, desc: 'Systematic awareness of the body.', instruct: 'Slowly move your attention from your toes up to your head. Release any tension.' }
+                ]
+            },
+            breathwork: {
+                title: "Active Breathwork",
+                items: [
+                    { name: 'Box Breathing', timing: {inhale: 4, hold1: 4, exhale: 4, hold2: 4}, desc: 'Navy SEAL focus technique.', instruct: 'Equal counts for inhale, hold, and exhale. Great for instant calm.' },
+                    { name: '4-7-8 Sleep', timing: {inhale: 4, hold1: 7, exhale: 8, hold2: 0}, desc: 'Natural tranquilizer.', instruct: 'Inhale 4, hold 7, and a long exhale for 8.' },
+                    { name: 'Coherent Breath', timing: {inhale: 5, hold1: 0, exhale: 5, hold2: 0}, desc: 'Heart-brain balance.', instruct: 'A smooth, continuous flow without pauses.' }
+                ]
+            }
         };
 
-        let currentTechnique = null;
-        let currentPhase = 'ready';
-        let currentCount = 0;
-        let currentRound = 1;
-        let intervalId = null;
+        let sessionMinutes = 10;
+        let timeRemaining = 0;
+        let timerInterval = null;
+        let breathInterval = null;
+        let currentTech = null;
 
-        function startTechnique(type) {
-            if (type === 'custom') {
-                const inhale = parseInt(prompt('Inhale seconds:', '4'));
-                const hold1 = parseInt(prompt('Hold after inhale (0 for none):', '0'));
-                const exhale = parseInt(prompt('Exhale seconds:', '4'));
-                const hold2 = parseInt(prompt('Hold after exhale (0 for none):', '0'));
-                
-                currentTechnique = { name: 'Custom', inhale, hold1, exhale, hold2 };
-            } else {
-                currentTechnique = techniques[type];
-            }
-
-            document.getElementById('selectionView').classList.add('hidden');
-            document.getElementById('practiceView').classList.remove('hidden');
-            document.getElementById('techniqueInfo').textContent = currentTechnique.name;
-
-            setTimeout(() => beginBreathCycle(), 2000);
+        function setTime(mins, btn) {
+            sessionMinutes = mins;
+            document.querySelectorAll('.time-pill').forEach(p => p.classList.remove('active'));
+            btn.classList.add('active');
         }
 
-        function beginBreathCycle() {
-            runPhase('inhale', currentTechnique.inhale);
+        function setRandomTime(btn) {
+            const options = [5, 10, 15, 20, 30, 60];
+            sessionMinutes = options[Math.floor(Math.random() * options.length)];
+            setTime(sessionMinutes, btn);
+            btn.textContent = `Random (${sessionMinutes}m)`;
+        }
+
+        function renderLibrary() {
+            const container = document.getElementById('libraryContainer');
+            container.innerHTML = '';
+            for (const [key, category] of Object.entries(MEDITATION_LIBRARY)) {
+                const html = `
+                    <div class="mb-12">
+                        <div class="stat-label mb-6 text-indigo-500">${category.title}</div>
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                            ${category.items.map(item => `
+                                <div class="technique-card p-8 rounded-[2rem]" onclick='startPractice(${JSON.stringify(item)})'>
+                                    <div class="text-2xl font-light text-gray-900 mb-2">${item.name}</div>
+                                    <p class="text-sm text-gray-600">${item.desc}</p>
+                                </div>
+                            `).join('')}
+                        </div>
+                    </div>
+                `;
+                container.innerHTML += html;
+            }
+        }
+
+        function startPractice(tech) {
+            currentTech = tech;
+            document.getElementById('selectionView').classList.add('hidden');
+            document.getElementById('practiceView').classList.remove('hidden');
+            document.getElementById('activeName').textContent = tech.name;
+            document.getElementById('activeInstructions').textContent = tech.instruct;
+            
+            // Setup Timer
+            if (sessionMinutes) {
+                timeRemaining = sessionMinutes * 60;
+                startTimer();
+            } else {
+                document.getElementById('timerDisplay').textContent = "∞";
+            }
+            
+            runPhase('inhale', tech.timing.inhale);
+        }
+
+        function startTimer() {
+            timerInterval = setInterval(() => {
+                timeRemaining--;
+                let m = Math.floor(timeRemaining / 60);
+                let s = timeRemaining % 60;
+                document.getElementById('timerDisplay').textContent = `${m}:${s < 10 ? '0' + s : s}`;
+                
+                if (timeRemaining <= 0) {
+                    endPractice();
+                    alert("Session complete.");
+                }
+            }, 1000);
         }
 
         function runPhase(phase, duration) {
-            if (duration === 0) {
-                nextPhase(phase);
-                return;
-            }
-
-            currentPhase = phase;
-            currentCount = duration;
+            if (duration === 0) return nextPhase(phase);
             
             const circle = document.getElementById('breathCircle');
             const label = document.getElementById('phaseLabel');
             const display = document.getElementById('countDisplay');
 
             circle.className = 'breath-circle ' + phase;
+            label.textContent = phase.includes('hold') ? 'Hold' : (phase === 'inhale' ? 'In' : 'Out');
             
-            const labels = {
-                inhale: 'Breathe In',
-                hold: 'Hold',
-                exhale: 'Breathe Out',
-                hold2: 'Hold'
-            };
-            
-            label.textContent = labels[phase];
-            display.textContent = duration;
+            let count = duration;
+            display.textContent = count;
 
-            intervalId = setInterval(() => {
-                currentCount--;
-                display.textContent = currentCount;
-
-                if (currentCount <= 0) {
-                    clearInterval(intervalId);
+            breathInterval = setInterval(() => {
+                count--;
+                display.textContent = count > 0 ? count : '•';
+                if (count <= 0) {
+                    clearInterval(breathInterval);
                     nextPhase(phase);
                 }
             }, 1000);
         }
 
-        function nextPhase(currentPhase) {
-            const sequence = ['inhale', 'hold', 'exhale', 'hold2'];
-            const currentIndex = sequence.indexOf(currentPhase);
-            const nextIndex = (currentIndex + 1) % sequence.length;
-            const nextPhase = sequence[nextIndex];
-
-            if (nextPhase === 'inhale') {
-                currentRound++;
-                document.getElementById('roundCounter').textContent = `Round ${currentRound}`;
-            }
-
-            const durations = {
-                inhale: currentTechnique.inhale,
-                hold: currentTechnique.hold1,
-                exhale: currentTechnique.exhale,
-                hold2: currentTechnique.hold2
-            };
-
-            runPhase(nextPhase, durations[nextPhase]);
+        function nextPhase(current) {
+            const sequence = ['inhale', 'hold1', 'exhale', 'hold2'];
+            const nextIdx = (sequence.indexOf(current) + 1) % 4;
+            const next = sequence[nextIdx];
+            const durations = [currentTech.timing.inhale, currentTech.timing.hold1, currentTech.timing.exhale, currentTech.timing.hold2];
+            runPhase(next, durations[nextIdx]);
         }
 
         function endPractice() {
-            clearInterval(intervalId);
+            clearInterval(timerInterval);
+            clearInterval(breathInterval);
             document.getElementById('selectionView').classList.remove('hidden');
             document.getElementById('practiceView').classList.add('hidden');
-            currentRound = 1;
-            document.getElementById('roundCounter').textContent = 'Round 1';
+            document.getElementById('timerDisplay').textContent = "--:--";
         }
+
+        renderLibrary();
     </script>
 </body>
 </html>
