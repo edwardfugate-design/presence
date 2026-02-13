@@ -65,6 +65,23 @@
     <div id="root"></div>
 
     <script>
+        // Suppress browser extension message channel errors
+        window.addEventListener('error', function(e) {
+            if (e.message && e.message.includes('message channel closed')) {
+                e.preventDefault();
+                e.stopPropagation();
+                return false;
+            }
+        });
+
+        window.addEventListener('unhandledrejection', function(e) {
+            if (e.reason && e.reason.message && e.reason.message.includes('message channel closed')) {
+                e.preventDefault();
+                e.stopPropagation();
+                return false;
+            }
+        });
+
         const { useState, useEffect, useMemo } = React;
 
         function LabApp() {
