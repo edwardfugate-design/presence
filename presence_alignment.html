@@ -3,17 +3,17 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Presence • Alignment Lab</title>
+    <title>Presence • Alignment Lab v3.3</title>
     <script src="https://cdn.tailwindcss.com"></script>
-    <script src="https://unpkg.com/react@18/umd/react.development.js"></script>
-    <script src="https://unpkg.com/react-dom@18/umd/react-dom.development.js"></script>
+    <script crossorigin src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
+    <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
     <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
-    
-    <script src="yoga-v3.js"></script>
-
     <style>
-        body { background-color: #fcfcfd; margin: 0; padding: 0; }
-        .bio-card { background: white; border: 1px solid #eef2ff; border-radius: 2rem; box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1); }
+        @import url('https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@400;600&family=Inter:wght@300;400;600&display=swap');
+        body { font-family: 'Inter', sans-serif; background-color: #fcfcfd; margin: 0; padding: 0; }
+        .font-serif { font-family: 'Cormorant Garamond', serif; }
+        .bio-card { background: white; border: 1px solid #eef2ff; border-radius: 2rem; box-shadow: 0 10px 25px -5px rgba(0,0,0,0.05); }
+        .modal-overlay { background: rgba(15, 23, 42, 0.4); backdrop-filter: blur(4px); }
     </style>
 </head>
 <body>
@@ -22,69 +22,138 @@
     <script type="text/babel">
         const { useState, useEffect } = React;
 
+        const POSE_LIBRARY = [
+            { 
+                id: 'p1', name: 'Mountain Pose', sanskrit: 'Tadasana', category: 'Standing', level: 'Beginner',
+                crandellCues: ["Root the four corners of the feet", "Engage quadriceps to lift the kneecaps", "Broaden the collarbones"],
+                mainCues: ["Find the stillness in the center of the storm", "Allow the breath to flow like a river through the spine", "Connect to your internal earth element"]
+            },
+            { 
+                id: 'p3', name: 'Warrior II', sanskrit: 'Virabhadrasana II', category: 'Standing', level: 'Beginner',
+                crandellCues: ["Track front knee toward the pinky toe", "Pin the outer edge of the back foot down", "Level the pelvis"],
+                mainCues: ["Gaze softly over the front fingertips", "Embody the peaceful warrior", "Balance effort and surrender"]
+            },
+            { 
+                id: 'p30', name: 'Triangle Pose', sanskrit: 'Trikonasana', category: 'Standing', level: 'Intermediate',
+                crandellCues: ["Lengthen both sides of the waist", "Roll the top shoulder back and down", "Press into the big toe mound"],
+                mainCues: ["Open the heart to the sky", "Visualize energy radiating from the core to the extremities", "Honor the geometry of the body"]
+            },
+            { 
+                id: 'p36', name: 'Crow Pose', sanskrit: 'Bakasana', category: 'Arm Balance', level: 'Advanced',
+                crandellCues: ["Protraction of the shoulder blades", "Squeeze the inner thighs against the arms", "Shift weight forward until the feet feel light"],
+                mainCues: ["Trust your foundation", "Find the lift through the pelvic floor", "Breathe into the space between the shoulder blades"]
+            }
+        ];
+
         function AlignmentLab() {
-            const [masterData, setMasterData] = useState([]);
+            const [search, setSearch] = useState('');
+            const [selectedPose, setSelectedPose] = useState(null);
             const [status, setStatus] = useState('connecting');
 
             useEffect(() => {
-                // Check for data every 500ms
-                const timer = setInterval(() => {
-                    const vault = window.ALL_POSES || window.allPoses;
-                    
-                    if (vault && Array.isArray(vault) && vault.length > 0) {
-                        setMasterData(vault);
-                        setStatus('ready');
-                        clearInterval(timer);
-                    }
-                }, 500);
-
-                // If after 5 seconds nothing happens, show an error
-                const timeout = setTimeout(() => {
-                    if (masterData.length === 0) setStatus('error');
-                }, 5000);
-
-                return () => { clearInterval(timer); clearTimeout(timeout); };
+                const timer = setTimeout(() => setStatus('ready'), 1000);
+                return () => clearTimeout(timer);
             }, []);
+
+            const filteredData = POSE_LIBRARY.filter(p => 
+                p.name.toLowerCase().includes(search.toLowerCase()) || 
+                p.sanskrit.toLowerCase().includes(search.toLowerCase())
+            );
 
             if (status === 'connecting') {
                 return (
-                    <div className="h-screen flex items-center justify-center bg-indigo-50">
-                        <div className="text-center">
-                            <div className="w-12 h-12 border-4 border-indigo-600 border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
-                            <p className="text-indigo-900 font-medium">Syncing Biometric Vault...</p>
+                    <div className="h-screen flex items-center justify-center bg-indigo-50/50">
+                        <div className="text-center animate-pulse">
+                            <div className="w-16 h-16 border-b-2 border-indigo-600 rounded-full animate-spin mx-auto mb-4"></div>
+                            <p className="text-indigo-900 font-serif text-xl italic">Presence Lab is Loading...</p>
                         </div>
                     </div>
                 );
             }
 
-            if (status === 'error') {
-                return (
-                    <div className="h-screen flex items-center justify-center bg-red-50 p-6">
-                        <div className="max-w-md bg-white p-8 rounded-3xl shadow-xl border border-red-100">
-                            <h2 className="text-2xl font-bold text-red-600 mb-4">Connection Failed</h2>
-                            <p className="text-gray-600 mb-6 text-sm">The Lab can't see your 500+ poses. This is usually because <b>pose-database.js</b> has a typo or isn't in this folder.</p>
-                            <button onClick={() => location.reload()} className="w-full bg-indigo-600 text-white py-3 rounded-xl font-bold">Try Again</button>
-                        </div>
-                    </div>
-                );
-            }
-
-            // If we are here, status is 'ready'
             return (
-                <div className="p-8 max-w-6xl mx-auto">
-                    <h1 className="text-4xl font-serif text-indigo-950 mb-8">presence • lab</h1>
-                    <div className="bio-card p-10">
-                        <h2 className="text-2xl text-indigo-900">Vault Online</h2>
-                        <p className="text-indigo-400 mt-2">Connected to {masterData.length} poses.</p>
-                        <div className="mt-8 grid grid-cols-1 md:grid-cols-2 gap-4">
-                            {masterData.slice(0, 4).map(pose => (
-                                <div key={pose.id} className="p-4 bg-indigo-50 rounded-xl border border-indigo-100">
-                                    <div className="font-bold">{pose.name}</div>
-                                    <div className="text-xs italic text-indigo-400">{pose.sanskrit}</div>
-                                </div>
-                            ))}
+                <div className="p-8 max-w-5xl mx-auto min-h-screen">
+                    {/* Header */}
+                    <div className="flex flex-col md:flex-row md:items-center justify-between mb-12 gap-6">
+                        <div>
+                            <h1 className="text-5xl font-serif text-indigo-950">presence • lab</h1>
+                            <p className="text-indigo-400 mt-2 font-light tracking-widest uppercase text-xs">Biometric & Cues Database</p>
                         </div>
+                        <input 
+                            type="text" 
+                            placeholder="Search cues..." 
+                            className="bg-transparent border-b-2 border-indigo-100 py-2 outline-none transition-all text-indigo-900 italic w-64"
+                            onChange={(e) => setSearch(e.target.value)}
+                        />
                     </div>
+
+                    {/* Main Grid */}
+                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                        {filteredData.map(pose => (
+                            <div 
+                                key={pose.id} 
+                                onClick={() => setSelectedPose(pose)}
+                                className="bio-card p-6 hover:scale-[1.02] transition-transform cursor-pointer border-indigo-50 hover:border-indigo-200"
+                            >
+                                <div className="text-[10px] text-indigo-400 font-bold uppercase tracking-tighter mb-2">{pose.category}</div>
+                                <h3 className="text-xl font-bold text-slate-800">{pose.name}</h3>
+                                <p className="text-sm italic text-indigo-500 font-serif mb-4">{pose.sanskrit}</p>
+                                <div className="text-[10px] bg-indigo-50 text-indigo-700 px-2 py-1 rounded inline-block font-black uppercase">Level: {pose.level}</div>
+                            </div>
+                        ))}
+                    </div>
+
+                    {/* Detail Modal */}
+                    {selectedPose && (
+                        <div className="fixed inset-0 modal-overlay z-50 flex items-center justify-center p-4">
+                            <div className="bg-white rounded-[3rem] max-w-2xl w-full max-h-[90vh] overflow-y-auto shadow-2xl">
+                                <div className="p-10">
+                                    <div className="flex justify-between items-start mb-8">
+                                        <div>
+                                            <h2 className="text-4xl font-serif text-slate-900">{selectedPose.name}</h2>
+                                            <p className="text-xl text-indigo-500 font-serif italic">{selectedPose.sanskrit}</p>
+                                        </div>
+                                        <button onClick={() => setSelectedPose(null)} className="text-slate-300 hover:text-slate-900 text-2xl">✕</button>
+                                    </div>
+
+                                    <div className="space-y-8">
+                                        <section>
+                                            <h4 className="text-xs font-black uppercase tracking-widest text-emerald-600 mb-4 flex items-center gap-2">
+                                                <span className="w-8 h-[1px] bg-emerald-200"></span> Anatomy & Foundation (Crandell)
+                                            </h4>
+                                            <ul className="space-y-3">
+                                                {selectedPose.crandellCues.map((cue, i) => (
+                                                    <li key={i} className="flex gap-3 text-slate-600 text-sm leading-relaxed">
+                                                        <span className="text-emerald-500 font-bold">↳</span> {cue}
+                                                    </li>
+                                                ))}
+                                            </ul>
+                                        </section>
+
+                                        <section>
+                                            <h4 className="text-xs font-black uppercase tracking-widest text-indigo-600 mb-4 flex items-center gap-2">
+                                                <span className="w-8 h-[1px] bg-indigo-200"></span> Subtle Body & Soul (Main)
+                                            </h4>
+                                            <ul className="space-y-3">
+                                                {selectedPose.mainCues.map((cue, i) => (
+                                                    <li key={i} className="flex gap-3 text-slate-600 text-sm leading-relaxed italic">
+                                                        <span className="text-indigo-400 font-bold">✧</span> {cue}
+                                                    </li>
+                                                ))}
+                                            </ul>
+                                        </section>
+                                    </div>
+
+                                    <button 
+                                        onClick={() => setSelectedPose(null)}
+                                        className="mt-12 w-full py-4 bg-slate-900 text-white rounded-2xl font-bold hover:bg-indigo-600 transition-colors"
+                                    >
+                                        Return to Vault
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    )}
                 </div>
             );
         }
