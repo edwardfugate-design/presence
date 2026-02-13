@@ -10,18 +10,24 @@
     <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
     <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,600;1,400&family=Inter:wght@300;400;600&display=swap" rel="stylesheet">
     <style>
-        :root { --indigo: #6366f1; --dawn: #fcfcfc; }
-        body { font-family: 'Inter', sans-serif; background: var(--dawn); color: #1e293b; margin: 0; }
+        :root { --indigo: #6366f1; --dawn: #fcfcfc; --emerald: #10b981; }
+        body { font-family: 'Inter', sans-serif; background: var(--dawn); color: #1e293b; margin: 0; overflow-x: hidden; }
         .font-serif { font-family: 'Cormorant Garamond', serif; }
+        
         .breath-circle {
-            width: 160px; height: 160px; border-radius: 50%;
-            background: rgba(99, 102, 241, 0.1); border: 1px solid rgba(99, 102, 241, 0.2);
+            width: 180px; height: 180px; border-radius: 50%;
+            background: rgba(99, 102, 241, 0.05);
+            border: 1px solid rgba(99, 102, 241, 0.1);
             display: flex; align-items: center; justify-content: center;
             animation: breathe 8s infinite ease-in-out;
         }
-        @keyframes breathe { 0%, 100% { transform: scale(0.85); } 50% { transform: scale(1.1); } }
-        .module-card { transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1); }
-        .module-card:hover { transform: translateY(-2px); border-color: var(--indigo); }
+        @keyframes breathe {
+            0%, 100% { transform: scale(0.9); opacity: 0.8; }
+            50% { transform: scale(1.1); opacity: 1; background: rgba(99, 102, 241, 0.1); }
+        }
+
+        .fade-in { animation: fadeIn 1s ease-out forwards; }
+        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
     </style>
 </head>
 <body class="p-6 md:p-12">
@@ -31,12 +37,12 @@
         const { useState, useEffect } = React;
 
         const MODULE_DEFS = {
-            meditation: { name: 'Meditation', icon: '🧘', duration: 10, prompt: "Observe the thoughts without judgment." },
-            yoga: { name: 'Yoga Flow', icon: '🌊', duration: 20, prompt: "Move with the rhythm of your breath." },
-            breathwork: { name: 'Breathwork', icon: '💨', duration: 5, prompt: "Deep inhales, effortless exhales." },
-            bodyscan: { name: 'Body Scan', icon: '✨', duration: 10, prompt: "Scan for tension from head to toe." },
-            journal: { name: 'Journal', icon: '📖', duration: 5, prompt: "Write whatever flows to the surface." },
-            ambient: { name: 'Ambient Sound', icon: '🎵', duration: 15, prompt: "Let the sound wash over your awareness." }
+            meditation: { name: 'Meditation', icon: '🧘', prompt: "Observe the thoughts without judgment." },
+            yoga: { name: 'Yoga Flow', icon: '🌊', prompt: "Move with the rhythm of your breath." },
+            breathwork: { name: 'Breathwork', icon: '💨', prompt: "Deep inhales, effortless exhales." },
+            bodyscan: { name: 'Body Scan', icon: '✨', prompt: "Scan for tension from head to toe." },
+            journal: { name: 'Journal', icon: '📖', prompt: "Write whatever flows to the surface." },
+            ambient: { name: 'Ambient Sound', icon: '🎵', prompt: "Let the sound wash over your awareness." }
         };
 
         function App() {
@@ -52,7 +58,7 @@
             }, []);
 
             const saveRitual = () => {
-                if (!newRitual.name || newRitual.steps.length === 0) return alert("Add a name and at least one module.");
+                if (!newRitual.name || newRitual.steps.length === 0) return alert("Please add a name and steps.");
                 const updated = [...rituals, { ...newRitual, id: Date.now() }];
                 localStorage.setItem('presence_rituals_v3', JSON.stringify(updated));
                 setRituals(updated);
@@ -60,126 +66,105 @@
                 setView('list');
             };
 
-            const GlobalNav = () => (
-                <nav className="flex justify-between items-center mb-12 border-b border-slate-100 pb-6">
-                    <div className="text-xl font-serif italic font-bold">presence<span className="text-indigo-500">•</span></div>
-                    <div className="flex gap-6">
-                        <a href="index.html" className="text-[10px] font-bold uppercase tracking-widest text-slate-400 hover:text-indigo-600 transition-colors">Intents</a>
-                        <button onClick={() => setView('list')} className="text-[10px] font-bold uppercase tracking-widest text-indigo-600">Rituals</button>
-                        <a href="presence_alignment.html" className="text-[10px] font-bold uppercase tracking-widest text-slate-400 hover:text-indigo-600 transition-colors">Lab</a>
-                    </div>
-                </nav>
-            );
-
-            // --- VIEW: CREATE NEW RITUAL ---
-            if (view === 'create') return (
-                <div className="max-w-3xl mx-auto animate-in fade-in duration-500">
-                    <GlobalNav />
-                    <header className="mb-10">
-                        <button onClick={() => setView('list')} className="text-xs text-indigo-500 mb-4 tracking-widest uppercase">← Back</button>
-                        <h2 className="text-5xl font-serif italic">Design Ritual</h2>
-                    </header>
-
-                    <div className="bg-white rounded-[2.5rem] p-10 shadow-sm border border-slate-100 space-y-8">
-                        <div>
-                            <label className="text-[10px] font-bold tracking-widest uppercase text-slate-400 block mb-2">Ritual Name</label>
-                            <input value={newRitual.name} onChange={e => setNewRitual({...newRitual, name: e.target.value})} placeholder="e.g. Sunset Unwind" className="w-full text-3xl font-serif focus:outline-none border-b border-slate-100 pb-2" />
-                        </div>
-
-                        <div>
-                            <label className="text-[10px] font-bold tracking-widest uppercase text-slate-400 block mb-2">Time of Day</label>
-                            <div className="flex gap-2">
-                                {['morning', 'afternoon', 'evening', 'night'].map(t => (
-                                    <button key={t} onClick={() => setNewRitual({...newRitual, time: t})} className={`px-4 py-2 rounded-full text-[10px] font-bold uppercase tracking-widest transition-all ${newRitual.time === t ? 'bg-indigo-600 text-white' : 'bg-slate-50 text-slate-400'}`}>{t}</button>
-                                ))}
-                            </div>
-                        </div>
-
-                        <div>
-                            <label className="text-[10px] font-bold tracking-widest uppercase text-slate-400 block mb-4">Add Modules</label>
-                            <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
-                                {Object.entries(MODULE_DEFS).map(([key, mod]) => (
-                                    <button key={key} onClick={() => setNewRitual({...newRitual, steps: [...newRitual.steps, key]})} className="module-card border border-slate-50 p-4 rounded-2xl text-left bg-slate-50/50">
-                                        <div className="text-2xl mb-1">{mod.icon}</div>
-                                        <div className="text-xs font-bold">{mod.name}</div>
-                                    </button>
-                                ))}
-                            </div>
-                        </div>
-
-                        {newRitual.steps.length > 0 && (
-                            <div>
-                                <label className="text-[10px] font-bold tracking-widest uppercase text-slate-400 block mb-2">Your Sequence</label>
-                                <div className="flex flex-wrap gap-2">
-                                    {newRitual.steps.map((s, i) => (
-                                        <div key={i} className="px-3 py-1 bg-indigo-50 text-indigo-600 rounded-full text-[10px] font-bold flex items-center gap-2">
-                                            {MODULE_DEFS[s].icon} {MODULE_DEFS[s].name}
-                                            <span onClick={() => {
-                                                const updated = [...newRitual.steps];
-                                                updated.splice(i, 1);
-                                                setNewRitual({...newRitual, steps: updated});
-                                            }} className="cursor-pointer hover:text-red-500">✕</span>
-                                        </div>
-                                    ))}
-                                </div>
-                            </div>
-                        )}
-                    </div>
-                    <button onClick={saveRitual} className="w-full bg-slate-900 text-white py-5 rounded-full mt-8 text-xs font-bold tracking-[0.2em] uppercase shadow-xl hover:bg-black transition-all">Save Ritual Profile</button>
-                </div>
-            );
-
-            // --- VIEW: PLAYER ---
+            // --- VIEW: PLAYER (THE JOURNEY) ---
             if (view === 'play') {
                 const mod = MODULE_DEFS[activeRitual.steps[stepIndex]];
                 const isLast = stepIndex === activeRitual.steps.length - 1;
+                
                 return (
-                    <div className="max-w-4xl mx-auto flex flex-col items-center justify-center min-h-[70vh] text-center">
-                        <div className="fixed top-12 left-12"><button onClick={() => setView('list')} className="text-[10px] font-bold tracking-widest uppercase text-slate-300">✕ Exit</button></div>
-                        <div className="breath-circle mb-10"><span className="text-6xl">{mod.icon}</span></div>
-                        <h2 className="text-6xl font-serif italic mb-2">{mod.name}</h2>
-                        <p className="text-xl font-serif text-slate-400 italic mb-12 max-w-sm">"{mod.prompt}"</p>
-                        <button onClick={() => isLast ? setView('list') : setStepIndex(stepIndex + 1)} className="bg-slate-900 text-white px-12 py-4 rounded-full text-xs font-bold tracking-widest uppercase shadow-xl hover:bg-indigo-600 transition-all">{isLast ? "Complete" : "Next Phase →"}</button>
+                    <div className="max-w-4xl mx-auto flex flex-col items-center justify-center min-h-[80vh] text-center fade-in">
+                        <div className="breath-circle mb-12">
+                            <span className="text-7xl">{mod.icon}</span>
+                        </div>
+                        
+                        <h2 className="text-6xl font-serif italic mb-3">{mod.name}</h2>
+                        <p className="text-xl font-serif text-slate-400 italic mb-16 max-w-sm">"{mod.prompt}"</p>
+                        
+                        <button 
+                            onClick={() => {
+                                if (isLast) {
+                                    // REDIRECT TO MASTER INDEX
+                                    window.location.href = 'index.html';
+                                } else {
+                                    setStepIndex(stepIndex + 1);
+                                }
+                            }} 
+                            className={`px-16 py-5 rounded-full text-[10px] font-bold tracking-[0.3em] uppercase shadow-2xl transition-all hover:scale-105 active:scale-95 ${isLast ? 'bg-emerald-500 text-white' : 'bg-slate-900 text-white'}`}
+                        >
+                            {isLast ? "Complete & Return to Hub" : "Next Movement →"}
+                        </button>
+
+                        <div className="flex gap-3 mt-16">
+                            {activeRitual.steps.map((_, i) => (
+                                <div key={i} className={`h-1 rounded-full transition-all duration-500 ${i === stepIndex ? 'bg-indigo-500 w-8' : 'bg-slate-200 w-2'}`} />
+                            ))}
+                        </div>
                     </div>
                 );
             }
 
-            // --- VIEW: LIST (HUB) ---
-            return (
-                <div className="max-w-5xl mx-auto">
-                    <GlobalNav />
-                    <header className="flex justify-between items-end mb-12">
+            // --- VIEW: CREATE ---
+            if (view === 'create') return (
+                <div className="max-w-2xl mx-auto py-10 fade-in">
+                    <button onClick={() => setView('list')} className="text-[10px] font-bold tracking-widest uppercase text-slate-400 mb-8">← Cancel</button>
+                    <h2 className="text-6xl font-serif tracking-tighter mb-12">New Ritual</h2>
+                    <div className="space-y-10 bg-white p-10 rounded-[3rem] border border-slate-100">
+                        <input value={newRitual.name} onChange={e => setNewRitual({...newRitual, name: e.target.value})} placeholder="Ritual Name..." className="w-full text-4xl font-serif border-b border-slate-100 focus:outline-none focus:border-indigo-500 pb-4" />
+                        
                         <div>
-                            <span className="text-[10px] tracking-[0.5em] font-bold text-indigo-500 uppercase">Personal Library</span>
-                            <h1 className="text-7xl font-serif tracking-tighter leading-none mt-2">Rituals</h1>
+                            <span className="text-[10px] font-bold uppercase tracking-[0.2em] text-slate-400 block mb-4">Focus Time</span>
+                            <div className="flex flex-wrap gap-2">
+                                {['morning', 'afternoon', 'evening', 'night'].map(t => (
+                                    <button key={t} onClick={() => setNewRitual({...newRitual, time: t})} className={`px-5 py-2 rounded-full text-[10px] font-bold uppercase tracking-widest ${newRitual.time === t ? 'bg-indigo-600 text-white' : 'bg-slate-50 text-slate-400'}`}>{t}</button>
+                                ))}
+                            </div>
                         </div>
-                        <button onClick={() => setView('create')} className="bg-slate-900 text-white px-8 py-4 rounded-full text-[10px] font-bold tracking-widest hover:scale-105 transition-transform">+ NEW RITUAL</button>
+
+                        <div>
+                            <span className="text-[10px] font-bold uppercase tracking-[0.2em] text-slate-400 block mb-4">Sequence</span>
+                            <div className="grid grid-cols-3 gap-2">
+                                {Object.entries(MODULE_DEFS).map(([key, m]) => (
+                                    <button key={key} onClick={() => setNewRitual({...newRitual, steps: [...newRitual.steps, key]})} className="p-4 bg-slate-50 rounded-2xl hover:bg-indigo-50 transition-colors text-center">
+                                        <div className="text-2xl">{m.icon}</div>
+                                        <div className="text-[8px] font-bold uppercase mt-1">{m.name}</div>
+                                    </button>
+                                ))}
+                            </div>
+                        </div>
+                    </div>
+                    <button onClick={saveRitual} className="w-full bg-slate-900 text-white py-6 rounded-full mt-8 font-bold text-[10px] tracking-[0.3em] uppercase shadow-xl">Save & Register Flow</button>
+                </div>
+            );
+
+            // --- VIEW: LIST ---
+            return (
+                <div className="max-w-5xl mx-auto fade-in">
+                    <header className="flex justify-between items-end mb-16">
+                        <div>
+                            <button onClick={() => window.location.href = 'index.html'} className="text-[10px] font-bold tracking-widest text-slate-400 uppercase hover:text-indigo-500 transition-colors">← Master Index</button>
+                            <h1 className="text-8xl font-serif tracking-tighter mt-2">Rituals</h1>
+                        </div>
+                        <button onClick={() => setView('create')} className="bg-slate-900 text-white px-10 py-5 rounded-full text-[10px] font-bold tracking-widest hover:scale-105 transition-transform shadow-lg">+ DESIGN FLOW</button>
                     </header>
 
-                    {rituals.length === 0 ? (
-                        <div className="p-20 text-center border-2 border-dashed border-slate-100 rounded-[3rem]">
-                            <p className="font-serif text-2xl text-slate-400 italic">No rituals designed yet.</p>
-                        </div>
-                    ) : (
-                        <div className="grid gap-4">
-                            {rituals.map(r => (
-                                <div key={r.id} onClick={() => {setActiveRitual(r); setStepIndex(0); setView('play');}} className="bg-white border border-slate-50 p-8 rounded-[2.5rem] flex items-center justify-between hover:shadow-xl transition-all cursor-pointer group">
-                                    <div>
-                                        <div className="flex items-center gap-3 mb-1">
-                                            <h3 className="text-3xl font-serif italic">{r.name}</h3>
-                                            <span className="text-[8px] font-bold bg-indigo-50 text-indigo-500 px-2 py-0.5 rounded-full uppercase tracking-widest">{r.time}</span>
-                                        </div>
-                                        <div className="flex gap-2">
-                                            {r.steps.map((s, i) => <span key={i} className="text-lg">{MODULE_DEFS[s].icon}</span>)}
-                                        </div>
+                    <div className="grid gap-6">
+                        {rituals.map(r => (
+                            <div key={r.id} onClick={() => {setActiveRitual(r); setStepIndex(0); setView('play');}} className="group bg-white border border-slate-100 p-10 rounded-[3rem] flex flex-col md:flex-row justify-between items-center hover:shadow-2xl transition-all cursor-pointer">
+                                <div className="text-center md:text-left">
+                                    <div className="flex items-center gap-4 mb-2">
+                                        <h3 className="text-4xl font-serif italic">{r.name}</h3>
+                                        <span className="text-[9px] bg-indigo-50 text-indigo-500 px-3 py-1 rounded-full font-bold uppercase tracking-widest">{r.time}</span>
                                     </div>
-                                    <div className="bg-slate-50 group-hover:bg-indigo-600 group-hover:text-white p-4 rounded-full transition-colors">
-                                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+                                    <div className="flex gap-2 justify-center md:justify-start">
+                                        {r.steps.map((s, i) => <span key={i} className="text-xl opacity-60 group-hover:opacity-100 transition-opacity">{MODULE_DEFS[s].icon}</span>)}
                                     </div>
                                 </div>
-                            ))}
-                        </div>
-                    )}
+                                <div className="mt-8 md:mt-0 bg-slate-50 group-hover:bg-indigo-600 group-hover:text-white p-5 rounded-full transition-all">
+                                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+                                </div>
+                            </div>
+                        ))}
+                    </div>
                 </div>
             );
         }
