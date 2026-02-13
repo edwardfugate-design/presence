@@ -4,6 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Presence • Alignment Lab v4.1</title>
+    
     <script src="https://cdn.tailwindcss.com"></script>
     <script crossorigin src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
     <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
@@ -13,15 +14,23 @@
 
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@400;600&family=Inter:wght@300;400;600&display=swap');
+        
         body { font-family: 'Inter', sans-serif; background-color: #fcfcfd; color: #1e293b; }
         .font-serif { font-family: 'Cormorant Garamond', serif; }
+        
+        /* Filter Navigation Styles */
         .filter-btn { transition: all 0.3s ease; border-bottom: 2px solid transparent; padding-bottom: 6px; font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.1em; color: #94a3b8; }
         .filter-btn.active { border-bottom-color: #4f46e5; color: #4f46e5; font-weight: 700; }
+        
+        /* Pose Card Styles */
         .bio-card { background: white; border: 1px solid #eef2ff; border-radius: 1.25rem; transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1); cursor: pointer; position: relative; overflow: hidden; }
         .bio-card:hover { border-color: #4f46e5; transform: translateY(-4px); box-shadow: 0 20px 25px -5px rgb(0 0 0 / 0.05); }
+        
         .variation-badge { position: absolute; top: 1rem; right: 1rem; background: #fef3c7; color: #92400e; font-size: 8px; font-weight: 800; padding: 2px 6px; border-radius: 9999px; text-transform: uppercase; }
+        
         .modal-overlay { background: rgba(15, 23, 42, 0.6); backdrop-filter: blur(8px); z-index: 100; position: fixed; inset: 0; display: flex; align-items: center; justify-content: center; padding: 1rem; }
-        /* Hide scrollbar but keep functionality */
+        
+        /* Utility */
         .no-scrollbar::-webkit-scrollbar { display: none; }
         .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
     </style>
@@ -42,26 +51,30 @@
             const categories = ['All', 'Standing', 'Backbend', 'Forward Fold', 'Twist', 'Hip Opener', 'Inversion', 'Restorative'];
 
             useEffect(() => {
-                const timer = setInterval(() => {
-                    const vault = window.ALL_POSES;
-                    if (vault && vault.length > 0) {
-                        setMasterData(vault);
+                const checkData = setInterval(() => {
+                    if (window.ALL_POSES && window.ALL_POSES.length > 0) {
+                        setMasterData(window.ALL_POSES);
                         setStatus('ready');
-                        clearInterval(timer);
+                        clearInterval(checkData);
                     }
-                }, 300);
-                return () => clearInterval(timer);
+                }, 200);
+                return () => clearInterval(checkData);
             }, []);
 
-            const filteredData = masterData.filter(p => {
-                const matchesSearch = p.name?.toLowerCase().includes(search.toLowerCase()) || 
-                                     p.sanskrit?.toLowerCase().includes(search.toLowerCase());
-                const matchesCategory = activeCategory === 'All' || p.family === activeCategory;
+            const filteredData = masterData.filter(pose => {
+                const query = search.toLowerCase();
+                const matchesSearch = (pose.name?.toLowerCase().includes(query) || 
+                                     pose.sanskrit?.toLowerCase().includes(query));
+                const matchesCategory = activeCategory === 'All' || pose.family === activeCategory;
                 return matchesSearch && matchesCategory;
             });
 
             if (status === 'loading') {
-                return <div className="h-screen flex items-center justify-center font-serif italic text-indigo-900 text-2xl animate-pulse">Synchronizing Biometric Vault...</div>;
+                return (
+                    <div className="h-screen flex items-center justify-center font-serif italic text-indigo-900 text-2xl animate-pulse">
+                        Synchronizing Biometric Vault...
+                    </div>
+                );
             }
 
             return (
@@ -71,20 +84,20 @@
                             <div>
                                 <h1 className="text-5xl font-serif text-slate-900 tracking-tight">presence • lab</h1>
                                 <p className="text-indigo-500 uppercase tracking-[0.4em] text-[10px] mt-3 font-bold">
-                                    Total Library Capacity: {masterData.length} Poses / Variations
+                                    Library Capacity: {masterData.length} Elements
                                 </p>
                             </div>
                             <div className="relative w-full md:w-80">
                                 <input 
                                     type="text" 
-                                    placeholder="Search by name or Sanskrit..." 
+                                    placeholder="Search Matrix..." 
                                     className="bg-white border border-slate-100 rounded-full px-6 py-3 outline-none focus:border-indigo-400 w-full shadow-sm text-sm italic transition-all"
                                     onChange={(e) => setSearch(e.target.value)}
                                 />
                             </div>
                         </div>
 
-                        <div className="flex gap-6 border-b border-slate-100 overflow-x-auto pb-1 no-scrollbar">
+                        <nav className="flex gap-6 border-b border-slate-100 overflow-x-auto pb-1 no-scrollbar">
                             {categories.map(cat => (
                                 <button 
                                     key={cat}
@@ -94,10 +107,10 @@
                                     {cat}
                                 </button>
                             ))}
-                        </div>
+                        </nav>
                     </header>
 
-                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+                    <main className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
                         {filteredData.map(pose => (
                             <div key={pose.id} onClick={() => setSelectedPose(pose)} className="bio-card p-6 group">
                                 {pose.isVariation && <span className="variation-badge">Variation</span>}
@@ -115,35 +128,35 @@
                                             <div key={i} className={`w-1 h-1 rounded-full ${i < (pose.intensity || 1) ? 'bg-indigo-400' : 'bg-slate-100'}`}></div>
                                         ))}
                                     </div>
-                                    <span className="text-[9px] font-mono text-slate-300">#{pose.id}</span>
+                                    <span className="text-[9px] font-mono text-slate-300">REF_{pose.id}</span>
                                 </div>
                             </div>
                         ))}
-                    </div>
+                    </main>
 
                     {selectedPose && (
                         <div className="modal-overlay" onClick={() => setSelectedPose(null)}>
                             <div className="bg-white rounded-[2.5rem] max-w-2xl w-full max-h-[90vh] overflow-y-auto p-10 relative shadow-2xl" onClick={e => e.stopPropagation()}>
                                 <button onClick={() => setSelectedPose(null)} className="absolute top-8 right-8 text-slate-300 hover:text-slate-900 text-2xl transition-colors">✕</button>
                                 
-                                <span className="text-indigo-500 text-[10px] font-bold uppercase tracking-widest">{selectedPose.family} Matrix</span>
+                                <span className="text-indigo-500 text-[10px] font-bold uppercase tracking-widest">{selectedPose.family} Sequence</span>
                                 <h2 className="text-4xl font-serif text-slate-900 mt-2 mb-1">{selectedPose.name}</h2>
                                 <p className="text-xl text-slate-400 font-serif italic mb-8 border-b border-slate-50 pb-6">{selectedPose.sanskrit}</p>
                                 
                                 <div className="space-y-8">
                                     <section>
                                         <h4 className="text-[10px] font-black uppercase tracking-widest text-slate-900 mb-4 flex items-center gap-2">
-                                            <span className="w-1.5 h-1.5 rounded-full bg-indigo-500"></span> Biometric Cues
+                                            <span className="w-1.5 h-1.5 rounded-full bg-indigo-500"></span> Technical Cues
                                         </h4>
                                         <p className="text-sm text-slate-600 leading-relaxed bg-slate-50 p-6 rounded-2xl italic">
-                                            {selectedPose.instructions || "Focus on grounding and breath integration for this posture."}
+                                            {selectedPose.instructions || "Alignment data pending for this entry."}
                                         </p>
                                     </section>
 
-                                    {/* Related Variations Inside Modal */}
+                                    {/* Variation Switcher Inside Modal */}
                                     {selectedPose.variations && selectedPose.variations.length > 0 && (
                                         <section>
-                                            <h4 className="text-[10px] font-black uppercase tracking-widest text-slate-400 mb-4">Available Variations</h4>
+                                            <h4 className="text-[10px] font-black uppercase tracking-widest text-slate-400 mb-4">Related Variations</h4>
                                             <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
                                                 {selectedPose.variations.map(v => (
                                                     <button 
@@ -152,7 +165,7 @@
                                                         className="text-left p-3 rounded-xl border border-slate-50 hover:border-indigo-200 hover:bg-indigo-50 transition-all group flex justify-between items-center"
                                                     >
                                                         <span className="text-[11px] font-medium text-slate-700">{v.name}</span>
-                                                        <span className="text-[10px] italic text-slate-300 group-hover:text-indigo-400">details →</span>
+                                                        <span className="text-[10px] italic text-slate-300 group-hover:text-indigo-400">View Data →</span>
                                                     </button>
                                                 ))}
                                             </div>
@@ -161,7 +174,7 @@
 
                                     <div className="grid grid-cols-2 gap-6">
                                         <section>
-                                            <h4 className="text-[10px] font-black uppercase tracking-widest text-slate-400 mb-3">Target Areas</h4>
+                                            <h4 className="text-[10px] font-black uppercase tracking-widest text-slate-400 mb-3">Biometrics</h4>
                                             <div className="flex flex-wrap gap-2">
                                                 {selectedPose.muscles?.map(m => (
                                                     <span key={m} className="text-[10px] bg-slate-100 text-slate-600 px-3 py-1 rounded-full font-medium">{m}</span>
@@ -169,7 +182,7 @@
                                             </div>
                                         </section>
                                         <section>
-                                            <h4 className="text-[10px] font-black uppercase tracking-widest text-slate-400 mb-3">Key Benefits</h4>
+                                            <h4 className="text-[10px] font-black uppercase tracking-widest text-slate-400 mb-3">Benefits</h4>
                                             <div className="flex flex-wrap gap-2">
                                                 {selectedPose.benefits?.map(b => (
                                                     <span key={b} className="text-[10px] bg-indigo-50 text-indigo-600 px-3 py-1 rounded-full font-medium">{b}</span>
@@ -179,8 +192,8 @@
                                     </div>
 
                                     <div className="pt-6 border-t border-slate-50 flex justify-between items-center text-[10px] font-mono text-slate-300 uppercase tracking-widest">
-                                        <span>Intensity: {selectedPose.intensity}/5</span>
-                                        <span>Duration: {selectedPose.duration}s</span>
+                                        <span>Intensity Level: {selectedPose.intensity}/5</span>
+                                        <span>Target Duration: {selectedPose.duration}s</span>
                                     </div>
                                 </div>
                             </div>
