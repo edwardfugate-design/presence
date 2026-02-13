@@ -21,10 +21,12 @@
         .font-serif { font-family: 'Instrument Serif', serif; }
         .no-scrollbar::-webkit-scrollbar { display: none; }
         
+        /* Custom Slider Styling */
         input[type="range"] { -webkit-appearance: none; width: 100%; background: transparent; }
         input[type="range"]::-webkit-slider-thumb {
             appearance: none; width: 18px; height: 18px; background: #4f46e5;
             border-radius: 50%; border: 3px solid white; box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            cursor: pointer;
         }
     </style>
 </head>
@@ -42,112 +44,90 @@
             const [angles, setAngles] = useState({});
 
             useEffect(() => {
-                const loadData = () => {
-                    const raw = window.ALL_POSES || window.yogaLibraryVariations || [];
+                const syncData = () => {
+                    const raw = window.ALL_POSES || [];
                     if (raw.length > 0) {
-                        const clean = raw.map((p, i) => ({
-                            id: p.id || `pose-${i}`,
-                            name: p.name || "Unnamed Pose",
-                            sanskrit: p.sanskrit || "Asana",
-                            family: p.family || p.category || "Standing",
-                            muscles: p.muscles || ["Full Body"],
-                            intensity: p.level || p.intensity || 1,
-                            instructions: p.instructions || "Focus on alignment.",
-                            checkpoints: p.checkpoints || [
-                                { joint: 'spine', label: 'Spinal Stack', ideal: 180, range: [170, 190] }
-                            ]
-                        }));
-                        setMasterData(clean);
+                        setMasterData(raw);
                         setStatus('ready');
                         return true;
                     }
                     return false;
                 };
 
-                const timer = setInterval(() => { if(loadData()) clearInterval(timer); }, 300);
-                setTimeout(() => { clearInterval(timer); if(masterData.length === 0) setStatus('error'); }, 4000);
-                return () => clearInterval(timer);
+                const interval = setInterval(() => { if(syncData()) clearInterval(interval); }, 200);
+                setTimeout(() => { clearInterval(interval); if(masterData.length === 0) setStatus('error'); }, 4000);
+                return () => clearInterval(interval);
             }, []);
 
             const filtered = useMemo(() => {
                 return masterData.filter(p => 
-                    p.name.toLowerCase().includes(search.toLowerCase()) || 
-                    p.sanskrit.toLowerCase().includes(search.toLowerCase())
+                    p.name.toLowerCase().includes(search.toLowerCase())
                 );
             }, [search, masterData]);
 
-            if (status === 'loading') return <div className="h-screen flex items-center justify-center font-serif italic text-xl text-slate-400">Syncing Matrix...</div>;
+            if (status === 'loading') return <div className="h-screen flex items-center justify-center font-serif italic text-xl">Initializing Lab...</div>;
             
-            if (status === 'error') return <div className="h-screen flex flex-col items-center justify-center p-12 text-center">
-                <h2 className="font-serif text-2xl mb-2">Data Connection Offline</h2>
-                <p className="text-xs text-slate-400">Ensure pose-database.js is in your root folder and contains window.ALL_POSES</p>
-            </div>;
-
             return (
                 <div className="max-w-7xl mx-auto px-6 py-12">
-                    <header className="flex flex-col md:flex-row justify-between items-end gap-6 mb-12">
-                        <div>
-                            <h1 className="text-6xl font-serif italic tracking-tighter text-indigo-950">presence<span className="text-indigo-500">•</span>lab</h1>
-                            <p className="text-[10px] font-bold uppercase tracking-[0.3em] text-slate-300 mt-4">{masterData.length} Units Online</p>
-                        </div>
-                        {/* FIXED: Search Input with ID, Name, and Aria-Label */}
+                    <header className="flex flex-col md:flex-row justify-between items-end gap-6 mb-16">
+                        <h1 className="text-6xl font-serif italic text-indigo-950">presence<span className="text-indigo-500">•</span>lab</h1>
                         <div className="w-full md:w-80">
+                            {/* FIX: Search input now has an ID and a hidden label for accessibility */}
                             <label htmlFor="pose-search" className="sr-only">Search Poses</label>
                             <input 
                                 id="pose-search" 
                                 name="pose-search"
                                 type="text" 
-                                placeholder="Search by name..." 
-                                aria-label="Search for a yoga pose"
-                                className="w-full p-4 rounded-2xl border border-slate-100 outline-none focus:ring-2 focus:ring-indigo-500/10 font-serif italic"
+                                placeholder="Search poses..." 
+                                className="w-full p-4 rounded-2xl border border-slate-100 outline-none focus:ring-2 focus:ring-indigo-500/10 font-serif italic bg-white"
                                 onChange={(e) => setSearch(e.target.value)}
-                                value={search}
                             />
                         </div>
                     </header>
 
-                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
                         {filtered.map(pose => (
-                            <div key={pose.id} onClick={() => { setSelectedPose(pose); }}
-                                 className="group bg-white p-8 rounded-[2rem] border border-slate-100 hover:border-indigo-200 transition-all cursor-pointer">
-                                <span className="text-[9px] font-black text-indigo-400 uppercase tracking-widest">{pose.family}</span>
+                            <div key={pose.id} onClick={() => setSelectedPose(pose)}
+                                 className="bg-white p-8 rounded-[2.5rem] border border-slate-50 hover:border-indigo-100 transition-all cursor-pointer hover:shadow-2xl">
+                                <span className="text-[9px] font-black text-indigo-400 uppercase tracking-widest">{pose.level || 'General'}</span>
                                 <h3 className="text-2xl font-serif text-slate-800 mt-2">{pose.name}</h3>
-                                <p className="text-xs italic text-slate-400">{pose.sanskrit}</p>
                             </div>
                         ))}
                     </div>
 
                     {selectedPose && (
-                        <div className="fixed inset-0 z-[100] bg-white/90 backdrop-blur-xl flex items-center justify-center p-4" onClick={() => setSelectedPose(null)}>
-                            <div className="bg-white rounded-[3rem] shadow-2xl border border-slate-100 w-full max-w-5xl overflow-hidden flex flex-col md:flex-row" onClick={e => e.stopPropagation()}>
+                        <div className="fixed inset-0 z-[100] bg-white/95 backdrop-blur-md flex items-center justify-center p-4" onClick={() => setSelectedPose(null)}>
+                            <div className="bg-white rounded-[3.5rem] shadow-2xl border border-slate-100 w-full max-w-5xl overflow-hidden flex flex-col md:flex-row" onClick={e => e.stopPropagation()}>
                                 <div className="w-full md:w-1/2 p-12 bg-slate-50/50">
-                                    <h2 className="text-4xl font-serif italic mb-8 text-indigo-950">{selectedPose.name}</h2>
-                                    <div className="space-y-10">
-                                        {selectedPose.checkpoints.map(cp => {
-                                            const val = angles[cp.joint] || cp.ideal;
-                                            return (
-                                                <div key={cp.joint}>
-                                                    <div className="flex justify-between mb-4 text-[10px] font-black uppercase tracking-widest text-slate-500">
-                                                        <label htmlFor={`range-${cp.joint}`}>{cp.label}</label>
-                                                        <span>{val}°</span>
-                                                    </div>
-                                                    {/* FIXED: Slider with ID and Name */}
-                                                    <input 
-                                                        id={`range-${cp.joint}`} 
-                                                        name={`angle-${cp.joint}`}
-                                                        type="range" min="0" max="180" 
-                                                        value={val} 
-                                                        onChange={(e) => setAngles({...angles, [cp.joint]: parseInt(e.target.value)})} 
-                                                    />
+                                    <h2 className="text-4xl font-serif italic mb-8">{selectedPose.name}</h2>
+                                    
+                                    {selectedPose.checkpoints && selectedPose.checkpoints.map(cp => {
+                                        const val = angles[cp.joint] || cp.ideal;
+                                        const sliderId = `range-${selectedPose.id}-${cp.joint}`;
+                                        return (
+                                            <div key={cp.joint} className="mb-8">
+                                                <div className="flex justify-between mb-2 text-[10px] font-black uppercase text-slate-500">
+                                                    {/* FIX: Label added for every slider */}
+                                                    <label htmlFor={sliderId}>{cp.label}</label>
+                                                    <span>{val}°</span>
                                                 </div>
-                                            );
-                                        })}
-                                    </div>
+                                                {/* FIX: Slider has ID and Name */}
+                                                <input 
+                                                    id={sliderId} 
+                                                    name={sliderId} 
+                                                    type="range" 
+                                                    min="0" max="180" 
+                                                    value={val} 
+                                                    onChange={(e) => setAngles({...angles, [cp.joint]: parseInt(e.target.value)})} 
+                                                />
+                                            </div>
+                                        );
+                                    })}
                                 </div>
-                                <div className="w-full md:w-1/2 p-12 flex flex-col justify-between">
-                                    <button aria-label="Close" className="self-end text-2xl text-slate-300" onClick={() => setSelectedPose(null)}>✕</button>
-                                    <div className="bg-slate-900 text-white p-8 rounded-[2rem]">
-                                        <p className="font-serif italic text-lg leading-relaxed opacity-80">"{selectedPose.instructions}"</p>
+                                <div className="w-full md:w-1/2 p-12 flex flex-col justify-between items-end">
+                                    <button className="text-2xl text-slate-300 hover:text-indigo-600" onClick={() => setSelectedPose(null)}>✕</button>
+                                    <div className="bg-slate-900 text-white p-10 rounded-[3rem] w-full shadow-xl">
+                                        <p className="font-serif italic text-xl leading-relaxed">"{selectedPose.instructions}"</p>
                                     </div>
                                 </div>
                             </div>
