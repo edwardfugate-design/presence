@@ -3,60 +3,75 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>presence • meditation & breath</title>
+    <title>presence • stillness</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@300;400;600&display=swap" rel="stylesheet">
     <style>
         :root {
-            --dawn-start: #f8f9fa; --dawn-mid: #e9ecef; --dawn-end: #dee2e6;
-            --text-whisper: #6c757d; --text-soft: #495057; --text-present: #212529;
+            --dawn-start: #fdfcfb; --dawn-end: #e2d1c3;
+            --accent: #6366f1;
         }
         body {
             font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-            background: linear-gradient(180deg, var(--dawn-start) 0%, var(--dawn-mid) 50%, var(--dawn-end) 100%);
-            min-height: 100vh; color: var(--text-soft); overflow-x: hidden;
+            background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+            min-height: 100vh; color: #4a5568; overflow-x: hidden;
         }
         .font-serif { font-family: 'Cormorant Garamond', serif; }
-        .stat-label { font-size: 0.7rem; letter-spacing: 0.3em; text-transform: uppercase; color: var(--text-whisper); }
-        .technique-card {
-            background: rgba(255,255,255,0.4); border: 1px solid rgba(0,0,0,0.05);
-            backdrop-filter: blur(10px); transition: all 0.3s ease; cursor: pointer;
-        }
-        .technique-card:hover { background: rgba(255,255,255,0.7); transform: translateY(-2px); border-color: #6366f1; }
-        .time-pill {
-            padding: 8px 16px; border-radius: 999px; border: 1px solid rgba(0,0,0,0.1);
-            font-size: 0.75rem; cursor: pointer; transition: all 0.2s;
-        }
-        .time-pill.active { background: #6366f1; color: white; border-color: #6366f1; }
+        .stat-label { font-size: 0.65rem; letter-spacing: 0.4em; text-transform: uppercase; color: #94a3b8; }
         
-        .breath-circle {
-            width: 280px; height: 280px; border-radius: 50%;
-            background: radial-gradient(circle, rgba(139, 152, 165, 0.2), rgba(139, 152, 165, 0.05));
-            border: 2px solid rgba(139, 152, 165, 0.3);
-            transition: all 1s cubic-bezier(0.4, 0, 0.2, 1);
-            display: flex; align-items: center; justify-content: center;
+        .technique-card {
+            background: rgba(255,255,255,0.3); border: 1px solid rgba(255,255,255,0.2);
+            backdrop-filter: blur(12px); transition: all 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+            cursor: pointer;
         }
-        .breath-circle.inhale { transform: scale(1.3); background: rgba(139, 152, 165, 0.3); }
-        .breath-circle.exhale { transform: scale(0.8); background: rgba(139, 152, 165, 0.1); }
-        .breath-circle.hold { transform: scale(1.3); border-color: rgba(99, 102, 241, 0.4); }
+        .technique-card:hover { 
+            background: rgba(255,255,255,0.6); 
+            transform: translateY(-4px); 
+            box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.05);
+        }
+
+        .time-pill {
+            padding: 10px 20px; border-radius: 999px; border: 1px solid rgba(0,0,0,0.05);
+            font-size: 0.75rem; transition: all 0.4s; background: rgba(255,255,255,0.4);
+        }
+        .time-pill.active { background: #1e293b; color: white; border-color: #1e293b; }
+
+        .breath-circle {
+            width: 260px; height: 260px; border-radius: 50%;
+            background: white;
+            box-shadow: 0 0 50px rgba(255,255,255,0.5);
+            transition: all 2s cubic-bezier(0.4, 0, 0.2, 1);
+            display: flex; align-items: center; justify-content: center;
+            position: relative;
+        }
+
+        /* The Zen Glow Effects */
+        .breath-circle.inhale { 
+            transform: scale(1.35); 
+            box-shadow: 0 0 100px rgba(99, 102, 241, 0.2); 
+        }
+        .breath-circle.exhale { 
+            transform: scale(0.85); 
+            box-shadow: 0 0 30px rgba(0,0,0,0.05); 
+        }
+        .breath-circle.hold { 
+            border: 1px solid rgba(99, 102, 241, 0.3);
+        }
+
+        #activeInstructions { transition: opacity 2s ease; }
+        .fade-out { opacity: 0.3; }
     </style>
 </head>
 <body>
 
-    <div id="selectionView" class="p-8 md:p-16 max-w-5xl mx-auto">
-        <header class="mb-12">
-            <h1 class="font-serif text-7xl tracking-tighter text-gray-900 mb-2">Presence</h1>
-            <p class="text-lg text-gray-500 font-light mb-8">Choose your duration and technique</p>
-            
-            <div class="stat-label mb-4">Session Duration (Minutes)</div>
-            <div class="flex flex-wrap gap-2 mb-8" id="timeSelector">
-                <button class="time-pill" onclick="setTime(5, this)">5</button>
-                <button class="time-pill active" onclick="setTime(10, this)">10</button>
-                <button class="time-pill" onclick="setTime(15, this)">15</button>
-                <button class="time-pill" onclick="setTime(20, this)">20</button>
-                <button class="time-pill" onclick="setTime(30, this)">30</button>
-                <button class="time-pill" onclick="setTime(60, this)">60</button>
-                <button class="time-pill" onclick="setRandomTime(this)">Random</button>
+    <div id="selectionView" class="p-8 md:p-20 max-w-6xl mx-auto">
+        <header class="mb-16 text-center">
+            <h1 class="font-serif text-8xl tracking-tighter text-slate-900 mb-4">Presence</h1>
+            <div class="stat-label mb-8">Select Duration</div>
+            <div class="flex flex-wrap justify-center gap-3 mb-12">
+                <button class="time-pill" onclick="setTime(5, this)">5m</button>
+                <button class="time-pill active" onclick="setTime(10, this)">10m</button>
+                <button class="time-pill" onclick="setTime(20, this)">20m</button>
                 <button class="time-pill" onclick="setTime(null, this)">Infinite</button>
             </div>
         </header>
@@ -64,42 +79,43 @@
         <div id="libraryContainer"></div>
     </div>
 
-    <div id="practiceView" class="hidden flex flex-col items-center justify-center min-h-screen p-8 text-center">
-        <div class="absolute top-8 left-8">
-            <button onclick="endPractice()" class="stat-label text-indigo-400 cursor-pointer">← End Session</button>
+    <div id="practiceView" class="hidden flex flex-col items-center justify-center min-h-screen p-8">
+        <div class="absolute top-12 left-12">
+            <button onclick="endPractice()" class="stat-label hover:text-indigo-600 transition-colors cursor-pointer">← Exit</button>
         </div>
-        <div class="absolute top-8 right-8">
-            <div class="stat-label" id="timerDisplay">--:--</div>
+        <div class="absolute top-12 right-12">
+            <div class="stat-label font-medium" id="timerDisplay">--:--</div>
         </div>
         
-        <div class="breath-circle mb-12" id="breathCircle">
-            <div>
-                <div class="stat-label mb-2" id="phaseLabel">Ready</div>
-                <div class="text-6xl font-light text-gray-900" id="countDisplay">•</div>
+        <div class="breath-circle mb-20" id="breathCircle">
+            <div class="text-center">
+                <div class="stat-label mb-2 opacity-60" id="phaseLabel">Ready</div>
+                <div class="text-5xl font-light text-slate-800" id="countDisplay">•</div>
             </div>
         </div>
 
-        <div class="max-w-md">
-            <h2 class="text-2xl font-serif text-gray-900 mb-2" id="activeName">Technique</h2>
-            <p class="text-gray-600 italic mb-6 mx-auto text-sm" id="activeInstructions"></p>
+        <div class="max-w-sm text-center">
+            <h2 class="text-3xl font-serif text-slate-900 mb-4" id="activeName">Technique</h2>
+            <p class="text-slate-500 leading-relaxed text-sm italic" id="activeInstructions"></p>
         </div>
     </div>
 
     <script>
+        // Library stays the same, just keeping it lean for copy-paste
         const MEDITATION_LIBRARY = {
-            mindfulness: {
-                title: "Mindfulness",
+            calm: {
+                title: "Calm",
                 items: [
-                    { name: 'Breath Awareness', timing: {inhale: 4, hold1: 0, exhale: 4, hold2: 0}, desc: 'Focus on natural breath sensations.', instruct: 'Notice the air entering and leaving. If your mind wanders, return to the breath.' },
-                    { name: 'Body Scan', timing: {inhale: 6, hold1: 0, exhale: 6, hold2: 0}, desc: 'Systematic awareness of the body.', instruct: 'Slowly move your attention from your toes up to your head. Release any tension.' }
+                    { name: '4-7-8 Sleep', timing: {inhale: 4, hold1: 7, exhale: 8, hold2: 0}, instruct: 'Inhale nose, hold 7, whoosh out for 8.' },
+                    { name: 'Box Breath', timing: {inhale: 4, hold1: 4, exhale: 4, hold2: 4}, instruct: 'Equal parts for steady focus.' },
+                    { name: 'Physiological Sigh', timing: {inhale: 3, hold1: 1, exhale: 6, hold2: 0}, instruct: 'Double inhale, long sigh out.' }
                 ]
             },
-            breathwork: {
-                title: "Active Breathwork",
+            energy: {
+                title: "Energy",
                 items: [
-                    { name: 'Box Breathing', timing: {inhale: 4, hold1: 4, exhale: 4, hold2: 4}, desc: 'Navy SEAL focus technique.', instruct: 'Equal counts for inhale, hold, and exhale. Great for instant calm.' },
-                    { name: '4-7-8 Sleep', timing: {inhale: 4, hold1: 7, exhale: 8, hold2: 0}, desc: 'Natural tranquilizer.', instruct: 'Inhale 4, hold 7, and a long exhale for 8.' },
-                    { name: 'Coherent Breath', timing: {inhale: 5, hold1: 0, exhale: 5, hold2: 0}, desc: 'Heart-brain balance.', instruct: 'A smooth, continuous flow without pauses.' }
+                    { name: 'Power Flow', timing: {inhale: 2, hold1: 0, exhale: 1, hold2: 0}, instruct: 'Sharp inhales, quick exhales.' },
+                    { name: 'The Morning', timing: {inhale: 4, hold1: 0, exhale: 2, hold2: 0}, instruct: 'Invigorate the nervous system.' }
                 ]
             }
         };
@@ -109,6 +125,7 @@
         let timerInterval = null;
         let breathInterval = null;
         let currentTech = null;
+        let rounds = 0;
 
         function setTime(mins, btn) {
             sessionMinutes = mins;
@@ -116,25 +133,18 @@
             btn.classList.add('active');
         }
 
-        function setRandomTime(btn) {
-            const options = [5, 10, 15, 20, 30, 60];
-            sessionMinutes = options[Math.floor(Math.random() * options.length)];
-            setTime(sessionMinutes, btn);
-            btn.textContent = `Random (${sessionMinutes}m)`;
-        }
-
         function renderLibrary() {
             const container = document.getElementById('libraryContainer');
             container.innerHTML = '';
             for (const [key, category] of Object.entries(MEDITATION_LIBRARY)) {
                 const html = `
-                    <div class="mb-12">
-                        <div class="stat-label mb-6 text-indigo-500">${category.title}</div>
-                        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div class="mb-16">
+                        <div class="stat-label mb-8 text-indigo-500 text-center">${category.title}</div>
+                        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
                             ${category.items.map(item => `
-                                <div class="technique-card p-8 rounded-[2rem]" onclick='startPractice(${JSON.stringify(item)})'>
-                                    <div class="text-2xl font-light text-gray-900 mb-2">${item.name}</div>
-                                    <p class="text-sm text-gray-600">${item.desc}</p>
+                                <div class="technique-card p-10 rounded-[2.5rem]" onclick='startPractice(${JSON.stringify(item)})'>
+                                    <div class="text-2xl font-light text-slate-900 mb-2">${item.name}</div>
+                                    <div class="stat-label opacity-50">View Details</div>
                                 </div>
                             `).join('')}
                         </div>
@@ -146,12 +156,13 @@
 
         function startPractice(tech) {
             currentTech = tech;
+            rounds = 0;
             document.getElementById('selectionView').classList.add('hidden');
             document.getElementById('practiceView').classList.remove('hidden');
             document.getElementById('activeName').textContent = tech.name;
             document.getElementById('activeInstructions').textContent = tech.instruct;
+            document.getElementById('activeInstructions').classList.remove('fade-out');
             
-            // Setup Timer
             if (sessionMinutes) {
                 timeRemaining = sessionMinutes * 60;
                 startTimer();
@@ -168,11 +179,7 @@
                 let m = Math.floor(timeRemaining / 60);
                 let s = timeRemaining % 60;
                 document.getElementById('timerDisplay').textContent = `${m}:${s < 10 ? '0' + s : s}`;
-                
-                if (timeRemaining <= 0) {
-                    endPractice();
-                    alert("Session complete.");
-                }
+                if (timeRemaining <= 0) endPractice();
             }, 1000);
         }
 
@@ -203,6 +210,13 @@
             const sequence = ['inhale', 'hold1', 'exhale', 'hold2'];
             const nextIdx = (sequence.indexOf(current) + 1) % 4;
             const next = sequence[nextIdx];
+
+            if(next === 'inhale') {
+                rounds++;
+                // After 3 rounds, fade the instructions for a "Zen" feel
+                if(rounds >= 3) document.getElementById('activeInstructions').classList.add('fade-out');
+            }
+
             const durations = [currentTech.timing.inhale, currentTech.timing.hold1, currentTech.timing.exhale, currentTech.timing.hold2];
             runPhase(next, durations[nextIdx]);
         }
@@ -212,7 +226,6 @@
             clearInterval(breathInterval);
             document.getElementById('selectionView').classList.remove('hidden');
             document.getElementById('practiceView').classList.add('hidden');
-            document.getElementById('timerDisplay').textContent = "--:--";
         }
 
         renderLibrary();
