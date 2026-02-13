@@ -3,19 +3,23 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Presence • Alignment Lab v3.5</title>
+    <title>Presence • Alignment Lab v3.7</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script crossorigin src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
     <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
     <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+    
+    <script src="yoga-v3.js"></script>
+
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@400;600&family=Inter:wght@300;400;600&display=swap');
-        body { font-family: 'Inter', sans-serif; background-color: #f8fafc; margin: 0; padding: 0; color: #1e293b; }
+        body { font-family: 'Inter', sans-serif; background-color: #fcfcfd; color: #1e293b; }
         .font-serif { font-family: 'Cormorant Garamond', serif; }
-        .bio-card { background: white; border: 1px solid #e2e8f0; border-radius: 1.5rem; transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1); }
-        .bio-card:hover { transform: translateY(-4px); border-color: #6366f1; box-shadow: 0 20px 25px -5px rgb(0 0 0 / 0.1); }
-        .modal-overlay { background: rgba(15, 23, 42, 0.7); backdrop-filter: blur(8px); z-index: 100; }
-        .hide-scrollbar::-webkit-scrollbar { display: none; }
+        .filter-btn { transition: all 0.3s ease; border-bottom: 2px solid transparent; }
+        .filter-btn.active { border-bottom-color: #4f46e5; color: #4f46e5; font-weight: 600; }
+        .bio-card { background: white; border: 1px solid #eef2ff; border-radius: 1.5rem; transition: all 0.3s ease; cursor: pointer; }
+        .bio-card:hover { border-color: #4f46e5; transform: translateY(-2px); box-shadow: 0 12px 24px rgba(0,0,0,0.04); }
+        .modal-overlay { background: rgba(15, 23, 42, 0.4); backdrop-filter: blur(12px); z-index: 100; position: fixed; inset: 0; display: flex; align-items: center; justify-content: center; padding: 1.5rem; }
     </style>
 </head>
 <body>
@@ -24,226 +28,114 @@
     <script type="text/babel">
         const { useState, useEffect } = React;
 
-        const POSE_LIBRARY = [
-            { 
-                id: 'p1', name: 'Mountain Pose', sanskrit: 'Tadasana', category: 'Standing', level: 'Beginner',
-                crandellCues: [
-                    "Root the four corners of the feet; lift the inner arches.",
-                    "Engage quadriceps to lift the kneecaps without locking joints.",
-                    "Stack shoulders directly over hips and ears over shoulders."
-                ],
-                mainCues: [
-                    "Find the 'Golden Thread' pulling the crown of the head toward the sky.",
-                    "Ground into the earth to feel the rebound of grace upward.",
-                    "Stand as a witness to your own breath, unwavering and calm."
-                ]
-            },
-            { 
-                id: 'p2', name: 'Warrior I', sanskrit: 'Virabhadrasana I', category: 'Standing', level: 'Beginner',
-                crandellCues: [
-                    "Rotate the back hip forward to square the pelvis toward the front.",
-                    "Ground the outer edge of the back foot at a 45-degree angle.",
-                    "Lift the frontal hip bones toward the lower ribs to protect the low back."
-                ],
-                mainCues: [
-                    "Rise up from the heart; let the arms be an extension of your spirit.",
-                    "Face your challenges with a soft gaze and a firm foundation.",
-                    "Breathe into the back body, expanding your field of awareness."
-                ]
-            },
-            { 
-                id: 'p3', name: 'Warrior II', sanskrit: 'Virabhadrasana II', category: 'Standing', level: 'Beginner',
-                crandellCues: [
-                    "Track the front knee toward the pinky toe side of the foot.",
-                    "Extend arms actively from the center of the chest.",
-                    "Firm the back tricep and reach through the back fingertips."
-                ],
-                mainCues: [
-                    "Gaze over the middle finger into the horizon of your potential.",
-                    "Settle into the 'center'—neither leaning toward the future nor the past.",
-                    "Embody the strength of the warrior with the heart of a poet."
-                ]
-            },
-            { 
-                id: 'p4', name: 'Triangle Pose', sanskrit: 'Trikonasana', category: 'Standing', level: 'Intermediate',
-                crandellCues: [
-                    "Lengthen the bottom side of the torso; avoid collapsing the ribs.",
-                    "Micro-bend the front knee to avoid hyperextension.",
-                    "Stack the top shoulder directly above the bottom shoulder."
-                ],
-                mainCues: [
-                    "Feel the geometry of the body radiating in five directions.",
-                    "Rotate the heart toward the sky, opening to the light.",
-                    "Find the spaciousness between the bones as you expand."
-                ]
-            },
-            { 
-                id: 'p5', name: 'Cobra Pose', sanskrit: 'Bhujangasana', category: 'Backbends', level: 'Beginner',
-                crandellCues: [
-                    "Press the tops of the feet down until the kneecaps lift.",
-                    "Hug the elbows into the side ribs and pull the heart forward.",
-                    "Broaden the collarbones and slide the shoulder blades down."
-                ],
-                mainCues: [
-                    "Rise only as high as the breath allows; don't force the height.",
-                    "Soften the eyes and the jaw, even as the spine works hard.",
-                    "Lead with the heart, offering your presence to the world."
-                ]
-            },
-            { 
-                id: 'p6', name: 'Crow Pose', sanskrit: 'Bakasana', category: 'Arm Balance', level: 'Advanced',
-                crandellCues: [
-                    "Spread fingers wide and grip the mat with the fingertips (clawing).",
-                    "Protraction: Push the floor away to round the upper back.",
-                    "Squeeze the inner thighs against the outer upper arms."
-                ],
-                mainCues: [
-                    "Trust the hands; they are your new feet.",
-                    "Find the 'Uddiyana Bandha'—the lift in the core that makes you weightless.",
-                    "Focus your gaze forward, where you want to go, not down."
-                ]
-            },
-            { 
-                id: 'p7', name: 'Bridge Pose', sanskrit: 'Setu Bandha', category: 'Backbends', level: 'Beginner',
-                crandellCues: [
-                    "Keep feet hip-width apart and parallel; don't let knees splay.",
-                    "Interlace fingers under the back and walk the shoulders together.",
-                    "Press the back of the head into the mat to maintain a neck curve."
-                ],
-                mainCues: [
-                    "Build a bridge between the physical and the spiritual.",
-                    "Open the chest to receive the abundance of the breath.",
-                    "Feel the support of the earth beneath your heels."
-                ]
-            }
-        ];
-
         function AlignmentLab() {
             const [search, setSearch] = useState('');
+            const [activeCategory, setActiveCategory] = useState('All');
             const [selectedPose, setSelectedPose] = useState(null);
-            const [status, setStatus] = useState('connecting');
+            const [masterData, setMasterData] = useState([]);
+            const [status, setStatus] = useState('loading');
+
+            const categories = ['All', 'Standing', 'Floor', 'Core', 'Backbends'];
 
             useEffect(() => {
-                const timer = setTimeout(() => setStatus('ready'), 800);
-                return () => clearTimeout(timer);
+                const timer = setInterval(() => {
+                    const vault = window.POSE_LIBRARY || window.yogaData;
+                    if (vault && vault.length > 0) {
+                        setMasterData(vault);
+                        setStatus('ready');
+                        clearInterval(timer);
+                    }
+                }, 500);
+                return () => clearInterval(timer);
             }, []);
 
-            const filteredData = POSE_LIBRARY.filter(p => 
-                p.name.toLowerCase().includes(search.toLowerCase()) || 
-                p.sanskrit.toLowerCase().includes(search.toLowerCase())
-            );
+            // FILTER LOGIC
+            const filteredData = masterData.filter(p => {
+                const matchesSearch = p.name.toLowerCase().includes(search.toLowerCase()) || 
+                                    p.sanskrit.toLowerCase().includes(search.toLowerCase());
+                const matchesCategory = activeCategory === 'All' || p.category === activeCategory;
+                return matchesSearch && matchesCategory;
+            });
 
-            if (status === 'connecting') {
-                return (
-                    <div className="h-screen flex items-center justify-center bg-white">
-                        <div className="text-center">
-                            <div className="w-12 h-12 border-2 border-indigo-600 border-t-transparent rounded-full animate-spin mx-auto mb-6"></div>
-                            <p className="text-indigo-900 font-serif text-xl italic tracking-tight">Accessing Biometric Vault...</p>
-                        </div>
-                    </div>
-                );
-            }
+            if (status === 'loading') return <div className="h-screen flex items-center justify-center font-serif italic text-indigo-900">Synchronizing Vault...</div>;
 
             return (
-                <div className="p-6 md:p-12 max-w-7xl mx-auto min-h-screen">
+                <div className="p-8 max-w-6xl mx-auto min-h-screen">
                     {/* Header */}
-                    <div className="flex flex-col lg:flex-row lg:items-end justify-between mb-16 gap-8">
-                        <div>
-                            <div className="flex items-center gap-3 mb-2">
-                                <span className="h-px w-8 bg-indigo-600"></span>
-                                <span className="text-xs font-bold tracking-[0.3em] uppercase text-indigo-600">The Lab</span>
+                    <header className="mb-12">
+                        <div className="flex flex-col md:flex-row justify-between items-start md:items-end gap-6 mb-8">
+                            <div>
+                                <h1 className="text-5xl font-serif text-slate-900">presence • lab</h1>
+                                <p className="text-indigo-400 uppercase tracking-[0.3em] text-[9px] mt-2 font-black">Biometric Database • {masterData.length} Poses</p>
                             </div>
-                            <h1 className="text-6xl font-serif text-slate-900 leading-none">presence • lab</h1>
-                            <p className="text-slate-400 mt-4 font-light italic">Refining the intersection of anatomy and mindfulness.</p>
-                        </div>
-                        <div className="relative group">
                             <input 
                                 type="text" 
-                                placeholder="Filter the vault..." 
-                                className="bg-white border border-slate-200 rounded-2xl px-6 py-4 outline-none focus:ring-2 focus:ring-indigo-100 transition-all text-slate-800 italic w-full lg:w-80 shadow-sm"
+                                placeholder="Search by name..." 
+                                className="bg-transparent border-b border-slate-200 py-2 outline-none focus:border-indigo-500 w-full md:w-64 italic transition-all"
                                 onChange={(e) => setSearch(e.target.value)}
                             />
                         </div>
-                    </div>
+
+                        {/* Category Navigation */}
+                        <div className="flex gap-8 border-b border-slate-100 pb-2 overflow-x-auto">
+                            {categories.map(cat => (
+                                <button 
+                                    key={cat}
+                                    onClick={() => setActiveCategory(cat)}
+                                    className={`filter-btn pb-2 text-sm tracking-wide uppercase ${activeCategory === cat ? 'active' : 'text-slate-400'}`}
+                                >
+                                    {cat}
+                                </button>
+                            ))}
+                        </div>
+                    </header>
 
                     {/* Grid */}
-                    <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-8">
+                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                         {filteredData.map(pose => (
-                            <div 
-                                key={pose.id} 
-                                onClick={() => setSelectedPose(pose)}
-                                className="bio-card p-8 cursor-pointer flex flex-col h-full"
-                            >
-                                <div className="flex justify-between items-center mb-6">
-                                    <span className="text-[10px] font-black tracking-widest uppercase text-indigo-500">{pose.category}</span>
-                                    <div className="w-2 h-2 rounded-full bg-indigo-100"></div>
+                            <div key={pose.id} onClick={() => setSelectedPose(pose)} className="bio-card p-8 group">
+                                <div className="flex justify-between items-start mb-4">
+                                    <span className="text-[9px] font-bold text-indigo-500 bg-indigo-50 px-2 py-0.5 rounded uppercase">{pose.category}</span>
+                                    <span className="text-[9px] text-slate-300 font-mono">{pose.id}</span>
                                 </div>
-                                <h3 className="text-2xl font-serif text-slate-900 mb-1">{pose.name}</h3>
-                                <p className="text-sm italic text-slate-400 font-serif mb-8 border-b pb-4">{pose.sanskrit}</p>
-                                <div className="mt-auto flex items-center justify-between">
-                                    <span className="text-[10px] font-bold text-slate-400 uppercase">Index: {pose.level}</span>
-                                    <span className="text-xs font-bold text-indigo-600 group-hover:translate-x-1 transition-transform tracking-tighter">View Alignment Matrix →</span>
-                                </div>
+                                <h3 className="text-2xl font-serif text-slate-800 group-hover:text-indigo-600 transition-colors">{pose.name}</h3>
+                                <p className="text-sm italic text-slate-400 font-serif mb-6">{pose.sanskrit}</p>
+                                <div className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Level: {pose.level}</div>
                             </div>
                         ))}
                     </div>
 
+                    {/* Empty State */}
+                    {filteredData.length === 0 && (
+                        <div className="text-center py-20 text-slate-400 italic">No poses found in this category.</div>
+                    )}
+
                     {/* Modal */}
                     {selectedPose && (
-                        <div className="fixed inset-0 modal-overlay flex items-center justify-center p-4">
-                            <div className="bg-white rounded-[2.5rem] max-w-3xl w-full max-h-[85vh] overflow-hidden shadow-2xl flex flex-col relative">
-                                <button 
-                                    onClick={() => setSelectedPose(null)}
-                                    className="absolute top-8 right-8 text-slate-300 hover:text-slate-900 transition-colors z-10"
-                                >
-                                    <svg className="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.5" d="M6 18L18 6M6 6l12 12"></path></svg>
-                                </button>
+                        <div className="modal-overlay" onClick={() => setSelectedPose(null)}>
+                            <div className="bg-white rounded-[3rem] max-w-2xl w-full max-h-[85vh] overflow-y-auto p-12 relative shadow-2xl" onClick={e => e.stopPropagation()}>
+                                <button onClick={() => setSelectedPose(null)} className="absolute top-10 right-10 text-slate-300 hover:text-slate-900 transition-colors">✕</button>
                                 
-                                <div className="p-10 md:p-14 overflow-y-auto hide-scrollbar">
-                                    <header className="mb-12 border-b pb-8">
-                                        <div className="text-[10px] font-black tracking-[0.3em] uppercase text-indigo-500 mb-4">Pose Matrix v1.0</div>
-                                        <h2 className="text-5xl font-serif text-slate-900">{selectedPose.name}</h2>
-                                        <p className="text-2xl text-slate-400 font-serif italic mt-2">{selectedPose.sanskrit}</p>
-                                    </header>
-
-                                    <div className="grid md:grid-cols-2 gap-12">
-                                        <section>
-                                            <div className="flex items-center gap-3 mb-6">
-                                                <div className="w-10 h-10 rounded-xl bg-slate-900 flex items-center justify-center text-white text-[10px] font-bold">JC</div>
-                                                <h4 className="text-xs font-black uppercase tracking-widest text-slate-900">Jason Crandell<br/><span className="text-slate-400 font-normal">Structural Foundation</span></h4>
-                                            </div>
-                                            <ul className="space-y-5">
-                                                {selectedPose.crandellCues.map((cue, i) => (
-                                                    <li key={i} className="flex gap-4 text-slate-600 text-sm leading-relaxed border-l-2 border-indigo-50 pl-4">
-                                                        {cue}
-                                                    </li>
-                                                ))}
-                                            </ul>
-                                        </section>
-
-                                        <section>
-                                            <div className="flex items-center gap-3 mb-6">
-                                                <div className="w-10 h-10 rounded-xl bg-indigo-50 flex items-center justify-center text-indigo-600 text-[10px] font-bold">DM</div>
-                                                <h4 className="text-xs font-black uppercase tracking-widest text-indigo-900">Darren Main<br/><span className="text-indigo-300 font-normal">Mindfulness & Energy</span></h4>
-                                            </div>
-                                            <ul className="space-y-5">
-                                                {selectedPose.mainCues.map((cue, i) => (
-                                                    <li key={i} className="flex gap-4 text-slate-500 text-sm leading-relaxed italic border-l-2 border-indigo-50 pl-4">
-                                                        {cue}
-                                                    </li>
-                                                ))}
-                                            </ul>
-                                        </section>
-                                    </div>
-                                    
-                                    <div className="mt-12 pt-8 border-t flex justify-center">
-                                        <button 
-                                            onClick={() => setSelectedPose(null)}
-                                            className="px-10 py-4 bg-indigo-600 text-white rounded-full text-sm font-bold shadow-lg shadow-indigo-100 hover:bg-slate-900 transition-all active:scale-95"
-                                        >
-                                            Close Biometric Entry
-                                        </button>
-                                    </div>
+                                <h2 className="text-4xl font-serif text-slate-900 mb-2">{selectedPose.name}</h2>
+                                <p className="text-xl text-indigo-500 font-serif italic mb-10 border-b pb-6">{selectedPose.sanskrit}</p>
+                                
+                                <div className="grid md:grid-cols-2 gap-12">
+                                    <section>
+                                        <h4 className="text-[10px] font-black uppercase tracking-widest text-slate-900 mb-6 flex items-center gap-2">
+                                            <span className="w-1.5 h-1.5 rounded-full bg-slate-900"></span> Anatomical Foundation
+                                        </h4>
+                                        <ul className="space-y-4 text-[13px] text-slate-600 leading-relaxed">
+                                            {selectedPose.anatomy?.map((cue, i) => <li key={i} className="flex gap-2"><span>•</span> {cue}</li>)}
+                                        </ul>
+                                    </section>
+                                    <section>
+                                        <h4 className="text-[10px] font-black uppercase tracking-widest text-indigo-500 mb-6 flex items-center gap-2">
+                                            <span className="w-1.5 h-1.5 rounded-full bg-indigo-500"></span> Subtle Body & Soul
+                                        </h4>
+                                        <ul className="space-y-4 text-[13px] text-slate-600 italic leading-relaxed">
+                                            {selectedPose.mindfulness?.map((cue, i) => <li key={i} className="flex gap-2"><span>✧</span> {cue}</li>)}
+                                        </ul>
+                                    </section>
                                 </div>
                             </div>
                         </div>
