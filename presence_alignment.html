@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Presence • Alignment Lab v4.0</title>
+    <title>Presence • Alignment Lab v4.1</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script crossorigin src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
     <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
@@ -19,8 +19,11 @@
         .filter-btn.active { border-bottom-color: #4f46e5; color: #4f46e5; font-weight: 700; }
         .bio-card { background: white; border: 1px solid #eef2ff; border-radius: 1.25rem; transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1); cursor: pointer; position: relative; overflow: hidden; }
         .bio-card:hover { border-color: #4f46e5; transform: translateY(-4px); box-shadow: 0 20px 25px -5px rgb(0 0 0 / 0.05); }
-        .variation-badge { position: absolute; top: 1rem; right: 1rem; background: #fef3c7; color: #92400e; font-size: 8px; font-weight: 800; padding: 2px 6px; rounded-full; text-transform: uppercase; }
+        .variation-badge { position: absolute; top: 1rem; right: 1rem; background: #fef3c7; color: #92400e; font-size: 8px; font-weight: 800; padding: 2px 6px; border-radius: 9999px; text-transform: uppercase; }
         .modal-overlay { background: rgba(15, 23, 42, 0.6); backdrop-filter: blur(8px); z-index: 100; position: fixed; inset: 0; display: flex; align-items: center; justify-content: center; padding: 1rem; }
+        /* Hide scrollbar but keep functionality */
+        .no-scrollbar::-webkit-scrollbar { display: none; }
+        .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
     </style>
 </head>
 <body>
@@ -36,12 +39,10 @@
             const [masterData, setMasterData] = useState([]);
             const [status, setStatus] = useState('loading');
 
-            // Categories based on your JS 'family' property
             const categories = ['All', 'Standing', 'Backbend', 'Forward Fold', 'Twist', 'Hip Opener', 'Inversion', 'Restorative'];
 
             useEffect(() => {
                 const timer = setInterval(() => {
-                    // This matches the window.ALL_POSES you created at the bottom of your JS
                     const vault = window.ALL_POSES;
                     if (vault && vault.length > 0) {
                         setMasterData(vault);
@@ -135,9 +136,28 @@
                                             <span className="w-1.5 h-1.5 rounded-full bg-indigo-500"></span> Biometric Cues
                                         </h4>
                                         <p className="text-sm text-slate-600 leading-relaxed bg-slate-50 p-6 rounded-2xl italic">
-                                            {selectedPose.instructions || "Refining alignment data for this variation..."}
+                                            {selectedPose.instructions || "Focus on grounding and breath integration for this posture."}
                                         </p>
                                     </section>
+
+                                    {/* Related Variations Inside Modal */}
+                                    {selectedPose.variations && selectedPose.variations.length > 0 && (
+                                        <section>
+                                            <h4 className="text-[10px] font-black uppercase tracking-widest text-slate-400 mb-4">Available Variations</h4>
+                                            <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                                                {selectedPose.variations.map(v => (
+                                                    <button 
+                                                        key={v.id}
+                                                        onClick={() => setSelectedPose({...v, family: selectedPose.family, variations: []})}
+                                                        className="text-left p-3 rounded-xl border border-slate-50 hover:border-indigo-200 hover:bg-indigo-50 transition-all group flex justify-between items-center"
+                                                    >
+                                                        <span className="text-[11px] font-medium text-slate-700">{v.name}</span>
+                                                        <span className="text-[10px] italic text-slate-300 group-hover:text-indigo-400">details →</span>
+                                                    </button>
+                                                ))}
+                                            </div>
+                                        </section>
+                                    )}
 
                                     <div className="grid grid-cols-2 gap-6">
                                         <section>
@@ -158,9 +178,9 @@
                                         </section>
                                     </div>
 
-                                    <div className="pt-6 border-t border-slate-50 flex justify-between items-center text-[10px] font-mono text-slate-300">
-                                        <span>INTENSITY: {selectedPose.intensity}/5</span>
-                                        <span>EST. DURATION: {selectedPose.duration}s</span>
+                                    <div className="pt-6 border-t border-slate-50 flex justify-between items-center text-[10px] font-mono text-slate-300 uppercase tracking-widest">
+                                        <span>Intensity: {selectedPose.intensity}/5</span>
+                                        <span>Duration: {selectedPose.duration}s</span>
                                     </div>
                                 </div>
                             </div>
