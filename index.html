@@ -1,166 +1,235 @@
-<script type="text/babel">
-    const { useState, useEffect, useMemo } = React;
-
-    function AlignmentLab() {
-        const masterData = window.ALL_POSES || [];
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Presence • Yoga Studio v3.2</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script crossorigin src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
+    <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
+    <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@400;600&family=Inter:wght@300;400;600&display=swap');
         
-        // 1. INITIAL LOAD: Try to get saved sequence from localStorage
-        const [flow, setFlow] = useState(() => {
-            const saved = localStorage.getItem('presence_saved_sequence');
-            return saved ? JSON.parse(saved) : [];
-        });
+        :root { --studio-green: #002b1d; }
+        body { font-family: 'Inter', sans-serif; background-color: #fcfcfc; color: #334155; }
+        .font-serif { font-family: 'Cormorant Garamond', serif; }
+        
+        /* Custom UI Elements */
+        .method-btn { transition: all 0.2s ease; border: 1px solid #e2e8f0; font-size: 11px; border-radius: 12px; }
+        .method-btn.active { background-color: var(--studio-green); color: white; border-color: var(--studio-green); font-weight: 600; }
+        
+        /* Range Slider Styling */
+        input[type=range] { -webkit-appearance: none; background: transparent; width: 100%; }
+        input[type=range]::-webkit-slider-runnable-track { height: 4px; background: #e2e8f0; border-radius: 2px; }
+        input[type=range]::-webkit-slider-thumb { -webkit-appearance: none; height: 18px; width: 18px; border-radius: 50%; background: var(--studio-green); cursor: pointer; margin-top: -7px; border: 2px solid white; box-shadow: 0 2px 4px rgba(0,0,0,0.1); }
 
-        const [search, setSearch] = useState('');
-        const [activeLevel, setActiveLevel] = useState('Beginner');
-        const [selectedCategory, setSelectedCategory] = useState('All Categories');
-        const [globalHoldType, setGlobalHoldType] = useState('breath');
-        const [globalHoldVal, setGlobalHoldVal] = useState(5);
+        /* Print Optimization */
+        @media print {
+            aside, header, .no-print { display: none !important; }
+            main { padding: 0 !important; background: white !important; }
+            .pose-card { break-inside: avoid; border: 1px solid #eee !important; margin-bottom: 1rem !important; }
+        }
+    </style>
+</head>
+<body>
+    <div id="root"></div>
 
-        // 2. AUTO-SAVE: Every time the 'flow' state changes, update localStorage
-        useEffect(() => {
-            localStorage.setItem('presence_saved_sequence', JSON.stringify(flow));
-        }, [flow]);
+    <script type="text/babel">
+        const { useState, useMemo } = React;
 
-        if (masterData.length === 0) {
+        const POSE_LIBRARY = [
+            { 
+                id: 'p1', name: 'Mountain (Tadasana)', category: 'Standing', level: 'Beginner', 
+                variations: [
+                    {id:'v1', name:'Extended Arms'}, {id:'v2', name:'Side Bend'}, {id:'v5', name:'Eagle Arms'}, {id:'v8', name:'One-Legged Balance'}
+                ] 
+            },
+            { 
+                id: 'p2', name: 'Warrior I', category: 'Standing', level: 'Beginner', 
+                variations: [
+                    {id:'v13', name:'Humble Warrior'}, {id:'v14', name:'Eagle Arms'}, {id:'v18', name:'Bound Hands'}
+                ] 
+            },
+            { 
+                id: 'p3', name: 'Warrior II', category: 'Standing', level: 'Beginner', 
+                variations: [
+                    {id:'v22', name:'Reverse Warrior'}, {id:'v23', name:'Archer Arms'}, {id:'v26', name:'Bound (Baddha)'}
+                ] 
+            },
+            { 
+                id: 'p30', name: 'Triangle', category: 'Standing', level: 'Intermediate', 
+                variations: [
+                    {id:'v38', name:'Extended'}, {id:'v39', name:'Revolved'}, {id:'v40', name:'Bound'}
+                ] 
+            },
+            { 
+                id: 'p32', name: 'Forward Fold', category: 'Floor', level: 'Beginner', 
+                variations: [
+                    {id:'v54', name:'Classic Seated'}, {id:'v55', name:'One Legged'}, {id:'v58', name:'Seated Twist'}
+                ] 
+            },
+            { 
+                id: 'p36', name: 'Crow Pose', category: 'Core', level: 'Advanced', 
+                variations: [
+                    {id:'v89', name:'Crane (Straight Arms)'}, {id:'v90', name:'Side Crow'}
+                ] 
+            }
+        ];
+
+        function App() {
+            const [search, setSearch] = useState('');
+            const [activeLevel, setActiveLevel] = useState('Beginner');
+            const [selectedCategory, setSelectedCategory] = useState('All Categories');
+            const [flow, setFlow] = useState([]);
+            
+            // Global Defaults
+            const [globalHoldType, setGlobalHoldType] = useState('breath');
+            const [globalHoldVal, setGlobalHoldVal] = useState(5);
+
+            // Filtering Logic
+            const filteredList = useMemo(() => {
+                return POSE_LIBRARY.filter(p => {
+                    const matchesSearch = p.name.toLowerCase().includes(search.toLowerCase()) || 
+                                          p.variations.some(v => v.name.toLowerCase().includes(search.toLowerCase()));
+                    const matchesLevel = p.level === activeLevel;
+                    const matchesCategory = selectedCategory === 'All Categories' || p.category === selectedCategory;
+                    return matchesSearch && matchesLevel && matchesCategory;
+                });
+            }, [search, activeLevel, selectedCategory]);
+
+            const addPose = (parent, variation = null) => {
+                const displayName = variation ? `${parent.name.split(' (')[0]}: ${variation.name}` : parent.name;
+                const newPose = {
+                    instanceId: crypto.randomUUID(),
+                    name: displayName,
+                    category: parent.category,
+                    holdType: globalHoldType,
+                    holdVal: globalHoldVal
+                };
+                setFlow([...flow, newPose]);
+            };
+
+            const updatePoseHold = (id, field, val) => {
+                setFlow(flow.map(item => item.instanceId === id ? { ...item, [field]: val } : item));
+            };
+
+            const removePose = (id) => setFlow(flow.filter(item => item.instanceId !== id));
+
+            const totalMinutes = Math.round(flow.reduce((acc, item) => {
+                const seconds = (item.holdType === 'breath' ? item.holdVal * 6 : item.holdVal) + 5; 
+                return acc + seconds;
+            }, 0) / 60);
+
             return (
-                <div className="h-screen flex items-center justify-center bg-slate-50">
-                    <div className="bg-white p-12 rounded-[3rem] shadow-xl border border-red-100 text-center max-w-md">
-                        <div className="text-4xl mb-4">⚠️</div>
-                        <h2 className="font-serif text-2xl text-slate-800 mb-2">Connection Failed</h2>
-                        <p className="text-slate-500 text-sm">Make sure <strong>pose-database.js</strong> is in this folder.</p>
+                <div className="flex flex-col h-screen overflow-hidden bg-[#fafafa]">
+                    <header className="no-print p-4 bg-white border-b flex items-center justify-between px-8 shadow-sm z-20">
+                        <div className="flex items-center gap-3">
+                            <div className="w-8 h-8 bg-[#002b1d] rounded-lg flex items-center justify-center text-white font-serif text-lg">P</div>
+                            <h1 className="font-serif text-2xl font-bold text-[#002b1d]">Presence Studio</h1>
+                        </div>
+                        <div className="flex gap-4 items-center">
+                            <button onClick={() => window.print()} className="text-xs font-bold uppercase tracking-widest text-slate-400 hover:text-emerald-600 transition-colors">Print Sequence</button>
+                            <div className="h-4 w-px bg-slate-200"></div>
+                            <div className="text-right">
+                                <p className="text-[9px] uppercase font-bold text-slate-400 leading-none">Class Duration</p>
+                                <p className="text-xl font-serif font-bold text-emerald-900">{totalMinutes} min</p>
+                            </div>
+                        </div>
+                    </header>
+
+                    <div className="flex flex-1 overflow-hidden">
+                        {/* SIDEBAR */}
+                        <aside className="no-print w-80 border-r bg-white overflow-y-auto p-6 space-y-8">
+                            <section className="space-y-3 bg-slate-50 p-4 rounded-2xl border border-slate-100">
+                                <label className="text-[10px] font-bold text-slate-400 uppercase tracking-tighter">Default Hold</label>
+                                <div className="flex gap-1">
+                                    <button onClick={() => setGlobalHoldType('breath')} className={`flex-1 py-2 method-btn ${globalHoldType === 'breath' ? 'active' : 'bg-white'}`}>🌬️ Breath</button>
+                                    <button onClick={() => setGlobalHoldType('time')} className={`flex-1 py-2 method-btn ${globalHoldType === 'time' ? 'active' : 'bg-white'}`}>⏱️ Timed</button>
+                                </div>
+                                <input type="range" min="1" max="60" value={globalHoldVal} onChange={(e) => setGlobalHoldVal(parseInt(e.target.value))} />
+                            </section>
+
+                            <section className="space-y-4">
+                                <div className="flex bg-slate-100 p-1 rounded-xl">
+                                    {['Beginner', 'Intermediate', 'Advanced'].map(lvl => (
+                                        <button key={lvl} onClick={() => setActiveLevel(lvl)} className={`flex-1 py-1.5 text-[10px] rounded-lg transition-all ${activeLevel === lvl ? 'bg-white shadow-sm font-bold text-slate-800' : 'text-slate-400 hover:text-slate-600'}`}>{lvl}</button>
+                                    ))}
+                                </div>
+                                <select className="w-full p-2 border border-slate-200 rounded-xl text-xs bg-transparent" value={selectedCategory} onChange={e => setSelectedCategory(e.target.value)}>
+                                    {["All Categories", "Standing", "Floor", "Core", "Backbends"].map(c => <option key={c}>{c}</option>)}
+                                </select>
+                                <input type="text" placeholder="Search library..." className="w-full p-2 text-sm border-b border-slate-100 focus:border-emerald-500 outline-none transition-colors italic" onChange={e => setSearch(e.target.value)} />
+                                
+                                <div className="space-y-4 pt-2">
+                                    {filteredList.map(p => (
+                                        <div key={p.id} className="group">
+                                            <div onClick={() => addPose(p)} className="flex justify-between items-center cursor-pointer hover:text-emerald-600 font-semibold text-slate-700 text-sm">
+                                                <span>{p.name}</span>
+                                                <span className="text-slate-300 group-hover:text-emerald-500">+</span>
+                                            </div>
+                                            <div className="mt-1 ml-3 border-l-2 border-slate-50 space-y-1">
+                                                {p.variations.map(v => (
+                                                    <div key={v.id} onClick={() => addPose(p, v)} className="pl-3 py-1 text-[11px] text-slate-400 cursor-pointer flex justify-between hover:text-emerald-500 hover:bg-emerald-50/50 rounded-r-md">
+                                                        <span>• {v.name}</span>
+                                                        <span className="opacity-0 group-hover:opacity-100">+</span>
+                                                    </div>
+                                                ))}
+                                            </div>
+                                        </div>
+                                    ))}
+                                </div>
+                            </section>
+                        </aside>
+
+                        {/* MAIN BUILDER */}
+                        <main className="flex-1 overflow-y-auto p-12 scroll-smooth">
+                            <div className="max-w-2xl mx-auto space-y-6">
+                                {flow.length === 0 && (
+                                    <div className="text-center py-20 border-2 border-dashed border-slate-200 rounded-[3rem]">
+                                        <p className="font-serif text-2xl text-slate-300">Your sequence is empty.<br/>Select poses to begin.</p>
+                                    </div>
+                                )}
+                                
+                                {flow.map((item, i) => (
+                                    <div key={item.instanceId} className="pose-card bg-white rounded-[2rem] p-8 shadow-sm border border-slate-200 transition-all hover:shadow-md relative group">
+                                        <button onClick={() => removePose(item.instanceId)} className="no-print absolute top-6 right-8 text-slate-200 hover:text-red-400 transition-colors">✕</button>
+                                        
+                                        <div className="flex items-baseline gap-4 mb-6">
+                                            <span className="font-serif text-slate-300 text-4xl">{String(i + 1).padStart(2, '0')}</span>
+                                            <h3 className="font-serif text-3xl text-slate-800">{item.name}</h3>
+                                        </div>
+
+                                        <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+                                            <div className="no-print">
+                                                <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Hold Mode</label>
+                                                <div className="flex gap-2 mt-2">
+                                                    <button onClick={() => updatePoseHold(item.instanceId, 'holdType', 'breath')} className={`flex-1 py-2 method-btn ${item.holdType === 'breath' ? 'active' : 'bg-white'}`}>🌬️ Breath</button>
+                                                    <button onClick={() => updatePoseHold(item.instanceId, 'holdType', 'time')} className={`flex-1 py-2 method-btn ${item.holdType === 'time' ? 'active' : 'bg-white'}`}>⏱️ Timed</button>
+                                                </div>
+                                            </div>
+                                            <div>
+                                                <div className="flex justify-between text-[10px] font-bold uppercase mb-2">
+                                                    <label className="text-slate-400">Duration</label>
+                                                    <span className="text-emerald-700">{item.holdVal} {item.holdType === 'breath' ? 'Breaths' : 'Seconds'}</span>
+                                                </div>
+                                                <input className="no-print" type="range" min={item.holdType === 'breath' ? "1" : "5"} max={item.holdType === 'breath' ? "30" : "300"} value={item.holdVal} onChange={e => updatePoseHold(item.instanceId, 'holdVal', parseInt(e.target.value))} />
+                                                <div className="hidden print:block text-sm italic text-slate-500 mt-1">
+                                                    Hold for {item.holdVal} {item.holdType === 'breath' ? 'breaths' : 'seconds'}
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                ))}
+                            </div>
+                        </main>
                     </div>
                 </div>
             );
         }
 
-        const filteredList = useMemo(() => {
-            return masterData.filter(p => {
-                const matchesSearch = p.name.toLowerCase().includes(search.toLowerCase()) || 
-                                     (p.sanskrit && p.sanskrit.toLowerCase().includes(search.toLowerCase()));
-                const matchesLevel = p.level === activeLevel;
-                const matchesCategory = selectedCategory === 'All Categories' || p.category === selectedCategory;
-                return matchesSearch && matchesLevel && matchesCategory;
-            });
-        }, [search, activeLevel, selectedCategory]);
-
-        const addPose = (pose) => {
-            const newEntry = {
-                instanceId: crypto.randomUUID(),
-                ...pose,
-                holdType: globalHoldType,
-                holdVal: globalHoldVal
-            };
-            setFlow([...flow, newEntry]);
-        };
-
-        const updateItemHold = (id, field, val) => {
-            setFlow(flow.map(f => f.instanceId === id ? { ...f, [field]: val } : f));
-        };
-
-        const clearSequence = () => {
-            if(confirm("Clear your entire sequence?")) setFlow([]);
-        };
-
-        const totalMinutes = Math.round(flow.reduce((acc, item) => {
-            const seconds = (item.holdType === 'breath' ? item.holdVal * 6 : parseInt(item.holdVal)) + 5; 
-            return acc + seconds;
-        }, 0) / 60);
-
-        return (
-            <div className="flex flex-col h-screen overflow-hidden bg-[#fcfcfc]">
-                <header className="p-6 bg-white border-b flex items-center justify-between px-10 shadow-sm z-20">
-                    <div className="flex items-center gap-4">
-                        <div className="w-10 h-10 bg-[#002b1d] rounded-full flex items-center justify-center text-white font-serif text-xl font-bold">P</div>
-                        <div>
-                            <h1 className="font-serif text-2xl font-bold text-[#002b1d] leading-none">presence • lab</h1>
-                            <p className="text-[9px] text-slate-400 uppercase tracking-widest mt-1">Auto-Saving Enabled</p>
-                        </div>
-                    </div>
-                    <div className="flex items-center gap-6">
-                         <div className="text-right">
-                            <p className="text-[10px] uppercase font-bold text-slate-400">Total Est.</p>
-                            <p className="text-2xl font-serif font-bold text-emerald-900">{totalMinutes} min</p>
-                        </div>
-                        <div className="flex gap-2">
-                            <button onClick={clearSequence} className="no-print border border-slate-200 px-4 py-2 rounded-full text-[10px] font-bold hover:bg-red-50 hover:text-red-600 transition-all">CLEAR</button>
-                            <button onClick={() => window.print()} className="bg-slate-900 text-white px-6 py-2 rounded-full text-xs font-bold hover:bg-emerald-800 transition-colors">EXPORT</button>
-                        </div>
-                    </div>
-                </header>
-
-                <div className="flex flex-1 overflow-hidden">
-                    <aside className="no-print w-80 border-r bg-white overflow-y-auto p-6 space-y-8">
-                        <section className="space-y-4">
-                            <div className="flex bg-slate-100 p-1 rounded-xl">
-                                {['Beginner', 'Intermediate', 'Advanced'].map(lvl => (
-                                    <button key={lvl} onClick={() => setActiveLevel(lvl)} className={`flex-1 py-2 text-[10px] rounded-lg transition-all ${activeLevel === lvl ? 'bg-white shadow-sm font-bold text-slate-800' : 'text-slate-400'}`}>{lvl}</button>
-                                ))}
-                            </div>
-                            <input type="text" placeholder="Search 500+ poses..." className="w-full p-2 text-sm border-b border-slate-100 focus:border-emerald-500 outline-none italic" onChange={e => setSearch(e.target.value)} />
-                            
-                            <div className="space-y-2 pt-2">
-                                {filteredList.slice(0, 30).map(p => (
-                                    <div key={p.id} onClick={() => addPose(p)} className="group p-3 rounded-xl hover:bg-emerald-50 cursor-pointer transition-all border border-transparent hover:border-emerald-100">
-                                        <div className="flex justify-between items-center">
-                                            <span className="font-semibold text-slate-700 text-[13px]">{p.name}</span>
-                                            <span className="text-emerald-500 opacity-0 group-hover:opacity-100 font-bold">+</span>
-                                        </div>
-                                        {p.sanskrit && <p className="text-[9px] text-slate-400 italic">{p.sanskrit}</p>}
-                                    </div>
-                                ))}
-                            </div>
-                        </section>
-                    </aside>
-
-                    <main className="flex-1 overflow-y-auto p-12 bg-[#fafafa]">
-                        <div className="max-w-2xl mx-auto space-y-6">
-                            {flow.length === 0 && (
-                                <div className="text-center py-24 border-2 border-dashed border-slate-200 rounded-[3rem]">
-                                    <p className="font-serif text-xl text-slate-300">Choose a level and add your first pose.</p>
-                                </div>
-                            )}
-
-                            {flow.map((item, i) => (
-                                <div key={item.instanceId} className="bg-white rounded-[2rem] p-8 shadow-sm border border-slate-200 group">
-                                    <div className="flex justify-between items-start">
-                                        <div className="flex gap-4">
-                                            <span className="text-emerald-200 font-serif text-4xl leading-none">{i+1}</span>
-                                            <div>
-                                                <h3 className="font-serif text-2xl text-slate-800">{item.name}</h3>
-                                                <p className="text-xs text-slate-400 italic mb-4">{item.sanskrit}</p>
-                                            </div>
-                                        </div>
-                                        <button onClick={() => setFlow(flow.filter(f => f.instanceId !== item.instanceId))} className="no-print text-slate-200 hover:text-red-400 transition-colors">✕</button>
-                                    </div>
-                                    
-                                    <div className="grid grid-cols-2 gap-4 mt-2">
-                                        <div className="bg-slate-50 p-4 rounded-2xl border border-slate-100 no-print">
-                                            <p className="text-[9px] font-bold text-slate-400 uppercase mb-3 tracking-widest">Hold Method</p>
-                                            <div className="flex gap-1">
-                                                <button onClick={() => updateItemHold(item.instanceId, 'holdType', 'breath')} className={`flex-1 py-1 text-[10px] rounded-md border ${item.holdType === 'breath' ? 'bg-slate-800 text-white' : 'bg-white text-slate-400'}`}>Breath</button>
-                                                <button onClick={() => updateItemHold(item.instanceId, 'holdType', 'time')} className={`flex-1 py-1 text-[10px] rounded-md border ${item.holdType === 'time' ? 'bg-slate-800 text-white' : 'bg-white text-slate-400'}`}>Time</button>
-                                            </div>
-                                        </div>
-                                        <div className="bg-slate-50 p-4 rounded-2xl border border-slate-100">
-                                            <div className="flex justify-between items-center mb-2">
-                                                <p className="text-[9px] font-bold text-slate-400 uppercase tracking-widest">Duration</p>
-                                                <span className="text-emerald-700 font-bold text-xs">{item.holdVal} {item.holdType === 'breath' ? 'Breaths' : 'Sec'}</span>
-                                            </div>
-                                            <input type="range" className="no-print" min="1" max="120" value={item.holdVal} onChange={e => updateItemHold(item.instanceId, 'holdVal', e.target.value)} />
-                                            <div className="hidden print:block text-xs text-slate-500">
-                                                {item.holdVal} {item.holdType === 'breath' ? 'Breaths' : 'Seconds'}
-                                            </div>
-                                        </div>
-                                    </div>
-                                </div>
-                            ))}
-                        </div>
-                    </main>
-                </div>
-            </div>
-        );
-    }
-
-    const root = ReactDOM.createRoot(document.getElementById('root'));
-    root.render(<AlignmentLab />);
-</script>
+        const root = ReactDOM.createRoot(document.getElementById('root'));
+        root.render(<App />);
+    </script>
+</body>
+</html>
