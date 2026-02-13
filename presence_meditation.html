@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>presence • breathwork & meditation</title>
+    <title>presence • breathwork</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@300;400;600&display=swap" rel="stylesheet">
     <style>
@@ -18,179 +18,149 @@
         }
         .font-serif { font-family: 'Cormorant Garamond', serif; }
         .stat-label { font-size: 0.7rem; letter-spacing: 0.3em; text-transform: uppercase; color: var(--text-whisper); }
-        
-        /* Card Styling */
         .technique-card {
             background: rgba(255,255,255,0.4); border: 1px solid rgba(0,0,0,0.05);
-            backdrop-filter: blur(10px); transition: all 0.4s cubic-bezier(0.165, 0.84, 0.44, 1); cursor: pointer;
+            backdrop-filter: blur(10px); transition: all 0.3s ease; cursor: pointer;
         }
-        .technique-card:hover { background: rgba(255,255,255,0.8); transform: translateY(-4px); box-shadow: 0 10px 30px rgba(0,0,0,0.05); }
-        
-        /* The Breathing Circle Visuals */
+        .technique-card:hover { background: rgba(255,255,255,0.7); transform: translateY(-2px); }
         .breath-circle {
-            width: 280px; height: 280px; border-radius: 50%;
+            width: 300px; height: 300px; border-radius: 50%;
             background: radial-gradient(circle, rgba(139, 152, 165, 0.2), rgba(139, 152, 165, 0.05));
-            border: 1px solid rgba(139, 152, 165, 0.2);
-            transition: all 1.5s cubic-bezier(0.4, 0, 0.2, 1);
+            border: 2px solid rgba(139, 152, 165, 0.3);
+            transition: all 1s cubic-bezier(0.4, 0, 0.2, 1);
             display: flex; align-items: center; justify-content: center;
-            position: relative;
         }
-        /* States for the Circle */
-        .breath-circle.inhale { transform: scale(1.4); background: radial-gradient(circle, rgba(165, 180, 252, 0.3), rgba(165, 180, 252, 0.1)); }
-        .breath-circle.hold { transform: scale(1.4); border-color: rgba(165, 180, 252, 0.6); }
-        .breath-circle.exhale { transform: scale(0.85); background: radial-gradient(circle, rgba(200, 200, 200, 0.2), rgba(200, 200, 200, 0.05)); }
-        .breath-circle.hold2 { transform: scale(0.85); opacity: 0.7; }
-
-        .fade-in { animation: fadeIn 1s ease-in; }
-        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+        .breath-circle.inhale { transform: scale(1.3); background: radial-gradient(circle, rgba(139, 152, 165, 0.4), rgba(139, 152, 165, 0.1)); }
+        .breath-circle.hold { transform: scale(1.3); background: radial-gradient(circle, rgba(139, 152, 165, 0.5), rgba(139, 152, 165, 0.15)); }
+        .breath-circle.exhale { transform: scale(0.7); background: radial-gradient(circle, rgba(139, 152, 165, 0.15), rgba(139, 152, 165, 0.03)); }
     </style>
 </head>
 <body>
-
-    <div id="selectionView" class="p-8 md:p-16 max-w-5xl mx-auto fade-in">
+    <div id="selectionView" class="p-8 md:p-16 max-w-4xl mx-auto">
         <header class="mb-16">
-            <span class="stat-label text-indigo-500 mb-4 block">Mindfulness Tool</span>
+            <a href="#" class="stat-label text-indigo-400 mb-4 block">← Hub</a>
             <h1 class="font-serif text-7xl tracking-tighter text-gray-900 mb-4">Breathwork</h1>
-            <p class="text-lg text-gray-500 font-light">Select a rhythm to begin your meditation.</p>
+            <p class="text-lg text-gray-500 font-light">Techniques for regulation</p>
         </header>
 
-        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6" id="cardGrid">
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div class="technique-card p-8 rounded-[2rem]" onclick="start('box')">
+                <div class="stat-label mb-3">Box Breathing</div>
+                <div class="text-2xl font-light text-gray-900 mb-2">4-4-4-4</div>
+                <p class="text-sm text-gray-600">Navy SEAL technique for calm focus</p>
             </div>
+
+            <div class="technique-card p-8 rounded-[2rem]" onclick="start('478')">
+                <div class="stat-label mb-3">4-7-8 Technique</div>
+                <div class="text-2xl font-light text-gray-900 mb-2">4-7-8</div>
+                <p class="text-sm text-gray-600">Natural tranquilizer for sleep</p>
+            </div>
+
+            <div class="technique-card p-8 rounded-[2rem]" onclick="start('coherent')">
+                <div class="stat-label mb-3">Coherent Breathing</div>
+                <div class="text-2xl font-light text-gray-900 mb-2">5-5</div>
+                <p class="text-sm text-gray-600">Heart-brain coherence</p>
+            </div>
+
+            <div class="technique-card p-8 rounded-[2rem]" onclick="start('energizing')">
+                <div class="stat-label mb-3">Energizing Breath</div>
+                <div class="text-2xl font-light text-gray-900 mb-2">2-1-2</div>
+                <p class="text-sm text-gray-600">Quick energy boost</p>
+            </div>
+
+            <div class="technique-card p-8 rounded-[2rem]" onclick="start('extended')">
+                <div class="stat-label mb-3">Extended Exhale</div>
+                <div class="text-2xl font-light text-gray-900 mb-2">4-0-8</div>
+                <p class="text-sm text-gray-600">Activate parasympathetic nervous system</p>
+            </div>
+
+            <div class="technique-card p-8 rounded-[2rem]" onclick="start('custom')">
+                <div class="stat-label mb-3">Custom Ratio</div>
+                <div class="text-2xl font-light text-gray-900 mb-2">Your Choice</div>
+                <p class="text-sm text-gray-600">Create your own pattern</p>
+            </div>
+        </div>
     </div>
 
-    <div id="practiceView" class="hidden flex flex-col items-center justify-center min-h-screen p-8 fade-in">
-        <button onclick="endPractice()" class="stat-label text-indigo-400 mb-12 hover:text-indigo-600 transition-colors">← Exit Session</button>
+    <div id="practiceView" class="hidden flex flex-col items-center justify-center min-h-screen p-8">
+        <button onclick="location.reload()" class="stat-label text-indigo-400 mb-12 cursor-pointer">← End Session</button>
         
-        <div id="explanationBox" class="max-w-md text-center mb-10">
-            <h2 id="techniqueTitle" class="font-serif text-4xl text-gray-900 mb-3"></h2>
-            <p id="techniqueDescription" class="text-sm text-gray-500 leading-relaxed italic"></p>
+        <div id="meditationGuide" class="text-center mb-10 max-w-md">
+            <h2 id="activeTitle" class="font-serif text-4xl text-gray-900 mb-2"></h2>
+            <p id="activeDesc" class="text-sm text-gray-500 italic"></p>
         </div>
 
         <div class="breath-circle mb-12" id="breathCircle">
             <div class="text-center">
-                <div class="stat-label mb-2" id="phaseLabel">Get Ready</div>
+                <div class="stat-label mb-2" id="phaseLabel">Ready</div>
                 <div class="text-6xl font-light text-gray-900" id="countDisplay">•</div>
             </div>
         </div>
 
         <div class="text-center">
-            <div class="stat-label mb-2" id="roundCounter">Round 1</div>
-            <p id="meditationTip" class="text-xs tracking-[0.2em] text-gray-400 uppercase mt-4">Soften your shoulders. Just be.</p>
+            <div class="stat-label" id="roundCounter">Round 1</div>
         </div>
     </div>
 
     <script>
-        // Full Dataset: Ratios and Educational Explanations
         const techniques = {
-            box: { 
-                name: 'Box Breathing', inhale: 4, hold1: 4, exhale: 4, hold2: 4,
-                desc: 'A Navy SEAL favorite for mental clarity. Equal parts inhale, hold, and exhale creates a "box" of stability in the nervous system.',
-                sub: '4-4-4-4'
-            },
-            '478': { 
-                name: '4-7-8 Relax', inhale: 4, hold1: 7, exhale: 8, hold2: 0,
-                desc: 'Known as the "Natural Tranquilizer." The long exhale forces the heart rate to slow down, making it perfect for anxiety or sleep.',
-                sub: '4-7-8'
-            },
-            coherent: { 
-                name: 'Coherence', inhale: 5, hold1: 0, exhale: 5, hold2: 0,
-                desc: 'Syncs the heart and brain. This 5-second rhythm is the biological "sweet spot" for emotional balance and stress reduction.',
-                sub: '5-5'
-            },
-            energizing: { 
-                name: 'Energize', inhale: 2, hold1: 1, exhale: 2, hold2: 0,
-                desc: 'A rapid rhythm to clear mental fog. Use this when you feel sluggish to increase oxygen flow and alertness.',
-                sub: '2-1-2'
-            },
-            extended: { 
-                name: 'Panic Reset', inhale: 4, hold1: 0, exhale: 8, hold2: 0,
-                desc: 'The fastest way to stop a "fight or flight" response. By doubling the exhale, you signal to your brain that you are safe.',
-                sub: '4-8'
-            }
+            box: { name: 'Box Breathing', inhale: 4, hold1: 4, exhale: 4, hold2: 4, desc: 'Reset your focus and stabilize your mind.' },
+            '478': { name: '4-7-8 Technique', inhale: 4, hold1: 7, exhale: 8, hold2: 0, desc: 'Stimulate the vagus nerve for deep relaxation.' },
+            coherent: { name: 'Coherent Breathing', inhale: 5, hold1: 0, exhale: 5, hold2: 0, desc: 'Balance the heart and brain for emotional resilience.' },
+            energizing: { name: 'Energizing Breath', inhale: 2, hold1: 1, exhale: 2, hold2: 0, desc: 'Quickly increase alertness and oxygen flow.' },
+            extended: { name: 'Extended Exhale', inhale: 4, hold1: 0, exhale: 8, hold2: 0, desc: 'Soothe the nervous system and release panic.' }
         };
 
-        let intervalId = null;
-        let currentRound = 1;
+        let interval;
+        let round = 1;
 
-        // Initialize the Grid
-        const grid = document.getElementById('cardGrid');
-        for (const [key, data] of Object.entries(techniques)) {
-            grid.innerHTML += `
-                <div class="technique-card p-8 rounded-[2rem]" onclick="startTechnique('${key}')">
-                    <div class="stat-label mb-3">${data.sub}</div>
-                    <div class="text-2xl font-light text-gray-900 mb-2">${data.name}</div>
-                    <p class="text-sm text-gray-500 leading-snug">${data.desc.substring(0, 65)}...</p>
-                </div>
-            `;
-        }
+        function start(key) {
+            let t;
+            if (key === 'custom') {
+                const inh = parseInt(prompt("Inhale seconds:", "4"));
+                const h1 = parseInt(prompt("Hold seconds:", "4"));
+                const exh = parseInt(prompt("Exhale seconds:", "4"));
+                const h2 = parseInt(prompt("Hold after exhale:", "0"));
+                t = { name: 'Custom Flow', inhale: inh, hold1: h1, exhale: exh, hold2: h2, desc: 'Your personalized meditation rhythm.' };
+            } else {
+                t = techniques[key];
+            }
 
-        function startTechnique(type) {
-            const tech = techniques[type];
             document.getElementById('selectionView').classList.add('hidden');
             document.getElementById('practiceView').classList.remove('hidden');
-            
-            document.getElementById('techniqueTitle').textContent = tech.name;
-            document.getElementById('techniqueDescription').textContent = tech.desc;
-            
-            // Short delay to let the user settle
-            setTimeout(() => runCycle(tech), 1000);
-        }
+            document.getElementById('activeTitle').textContent = t.name;
+            document.getElementById('activeDesc').textContent = t.desc;
 
-        function runCycle(tech) {
-            const sequence = [
-                { name: 'inhale', dur: tech.inhale, label: 'Breathe In' },
-                { name: 'hold', dur: tech.hold1, label: 'Hold' },
-                { name: 'exhale', dur: tech.exhale, label: 'Breathe Out' },
-                { name: 'hold2', dur: tech.hold2, label: 'Hold' }
+            let sequence = [
+                { p: 'inhale', d: t.inhale, l: 'Inhale' },
+                { p: 'hold', d: t.hold1, l: 'Hold' },
+                { p: 'exhale', d: t.exhale, l: 'Exhale' },
+                { p: 'hold2', d: t.hold2, l: 'Hold' }
             ];
 
-            let step = 0;
+            let i = 0;
+            function run() {
+                const step = sequence[i];
+                if (step.d === 0) { skip(); return; }
 
-            function executeStep() {
-                const current = sequence[step];
-                
-                // Skip if duration is 0
-                if (current.dur === 0) {
-                    step = (step + 1) % sequence.length;
-                    if (step === 0) updateRound();
-                    executeStep();
-                    return;
-                }
+                document.getElementById('breathCircle').className = 'breath-circle ' + step.p;
+                document.getElementById('phaseLabel').textContent = step.l;
+                let count = step.d;
+                document.getElementById('countDisplay').textContent = count;
 
-                updateUI(current.name, current.label, current.dur);
-
-                let timeLeft = current.dur;
-                intervalId = setInterval(() => {
-                    timeLeft--;
-                    document.getElementById('countDisplay').textContent = timeLeft;
-
-                    if (timeLeft <= 0) {
-                        clearInterval(intervalId);
-                        step = (step + 1) % sequence.length;
-                        if (step === 0) updateRound();
-                        executeStep();
-                    }
+                interval = setInterval(() => {
+                    count--;
+                    document.getElementById('countDisplay').textContent = count;
+                    if (count <= 0) { clearInterval(interval); skip(); }
                 }, 1000);
             }
 
-            executeStep();
-        }
-
-        function updateUI(phase, label, count) {
-            const circle = document.getElementById('breathCircle');
-            circle.className = 'breath-circle ' + phase;
-            document.getElementById('phaseLabel').textContent = label;
-            document.getElementById('countDisplay').textContent = count;
-        }
-
-        function updateRound() {
-            currentRound++;
-            document.getElementById('roundCounter').textContent = `Round ${currentRound}`;
-        }
-
-        function endPractice() {
-            clearInterval(intervalId);
-            location.reload(); // Simplest way to reset the entire state
+            function skip() {
+                i = (i + 1) % 4;
+                if (i === 0) { round++; document.getElementById('roundCounter').textContent = 'Round ' + round; }
+                run();
+            }
+            run();
         }
     </script>
 </body>
