@@ -1,4 +1,3 @@
-<script>
     // ===== STATE MANAGEMENT =====
     // This pulls from the window.ALL_POSES we just set up in pose-database.js
     const DATA = window.ALL_POSES || [];
@@ -106,4 +105,4 @@
         }
         renderGrid();
     });
-</script>
+
