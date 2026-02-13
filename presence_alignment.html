@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Presence • Alignment Lab v3.7</title>
+    <title>Presence • Alignment Lab v3.8</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script crossorigin src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
     <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
@@ -17,9 +17,9 @@
         .font-serif { font-family: 'Cormorant Garamond', serif; }
         .filter-btn { transition: all 0.3s ease; border-bottom: 2px solid transparent; }
         .filter-btn.active { border-bottom-color: #4f46e5; color: #4f46e5; font-weight: 600; }
-        .bio-card { background: white; border: 1px solid #eef2ff; border-radius: 1.5rem; transition: all 0.3s ease; cursor: pointer; }
+        .bio-card { background: white; border: 1px solid #eef2ff; border-radius: 1.5rem; transition: all 0.2s ease; cursor: pointer; }
         .bio-card:hover { border-color: #4f46e5; transform: translateY(-2px); box-shadow: 0 12px 24px rgba(0,0,0,0.04); }
-        .modal-overlay { background: rgba(15, 23, 42, 0.4); backdrop-filter: blur(12px); z-index: 100; position: fixed; inset: 0; display: flex; align-items: center; justify-content: center; padding: 1.5rem; }
+        .modal-overlay { background: rgba(15, 23, 42, 0.4); backdrop-filter: blur(12px); z-index: 100; position: fixed; inset: 0; display: flex; align-items: center; justify-content: center; padding: 1rem; }
     </style>
 </head>
 <body>
@@ -38,51 +38,86 @@
             const categories = ['All', 'Standing', 'Floor', 'Core', 'Backbends'];
 
             useEffect(() => {
+                let attempts = 0;
                 const timer = setInterval(() => {
-                    const vault = window.POSE_LIBRARY || window.yogaData;
+                    // This checks every possible name you might have used in your JS file
+                    const vault = window.POSE_LIBRARY || window.yogaData || window.ALL_POSES || window.allPoses;
+                    
                     if (vault && vault.length > 0) {
                         setMasterData(vault);
                         setStatus('ready');
+                        clearInterval(timer);
+                    }
+                    
+                    attempts++;
+                    if (attempts > 10) { // If it fails for 5 seconds
+                        if (!vault) setStatus('error');
                         clearInterval(timer);
                     }
                 }, 500);
                 return () => clearInterval(timer);
             }, []);
 
-            // FILTER LOGIC
             const filteredData = masterData.filter(p => {
-                const matchesSearch = p.name.toLowerCase().includes(search.toLowerCase()) || 
-                                    p.sanskrit.toLowerCase().includes(search.toLowerCase());
-                const matchesCategory = activeCategory === 'All' || p.category === activeCategory;
-                return matchesSearch && matchesCategory;
+                const nameMatch = p.name?.toLowerCase().includes(search.toLowerCase()) || 
+                                 p.sanskrit?.toLowerCase().includes(search.toLowerCase());
+                const categoryMatch = activeCategory === 'All' || p.category === activeCategory;
+                return nameMatch && categoryMatch;
             });
 
-            if (status === 'loading') return <div className="h-screen flex items-center justify-center font-serif italic text-indigo-900">Synchronizing Vault...</div>;
+            if (status === 'loading') {
+                return (
+                    <div className="h-screen flex items-center justify-center bg-indigo-50/30">
+                        <div className="text-center">
+                            <div className="w-12 h-12 border-4 border-indigo-600 border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
+                            <p className="text-indigo-900 font-serif italic text-xl">Synchronizing Vault...</p>
+                        </div>
+                    </div>
+                );
+            }
+
+            if (status === 'error') {
+                return (
+                    <div className="h-screen flex items-center justify-center bg-red-50 p-6">
+                        <div className="max-w-md bg-white p-10 rounded-[2.5rem] shadow-xl border border-red-100 text-center">
+                            <h2 className="text-2xl font-bold text-red-600 mb-2">Vault Not Found</h2>
+                            <p className="text-gray-500 text-sm mb-6 leading-relaxed">
+                                The Lab is looking for a file named <b>yoga-v3.js</b> in your folder, but it's not responding. 
+                                <br/><br/>
+                                1. Ensure the file is in the same folder.<br/>
+                                2. Ensure your data starts with: <br/>
+                                <code className="bg-gray-100 p-1 rounded text-xs">window.POSE_LIBRARY = [...];</code>
+                            </p>
+                            <button onClick={() => window.location.reload()} className="bg-indigo-600 text-white px-8 py-3 rounded-xl font-bold">Retry Connection</button>
+                        </div>
+                    </div>
+                );
+            }
 
             return (
                 <div className="p-8 max-w-6xl mx-auto min-h-screen">
-                    {/* Header */}
                     <header className="mb-12">
                         <div className="flex flex-col md:flex-row justify-between items-start md:items-end gap-6 mb-8">
                             <div>
                                 <h1 className="text-5xl font-serif text-slate-900">presence • lab</h1>
-                                <p className="text-indigo-400 uppercase tracking-[0.3em] text-[9px] mt-2 font-black">Biometric Database • {masterData.length} Poses</p>
+                                <p className="text-indigo-400 uppercase tracking-[0.3em] text-[9px] mt-2 font-black">
+                                    {activeCategory} Matrix • {filteredData.length} Poses Found
+                                </p>
                             </div>
                             <input 
                                 type="text" 
-                                placeholder="Search by name..." 
-                                className="bg-transparent border-b border-slate-200 py-2 outline-none focus:border-indigo-500 w-full md:w-64 italic transition-all"
+                                placeholder="Search vault..." 
+                                className="bg-transparent border-b border-slate-200 py-2 outline-none focus:border-indigo-500 w-full md:w-64 italic"
                                 onChange={(e) => setSearch(e.target.value)}
                             />
                         </div>
 
-                        {/* Category Navigation */}
                         <div className="flex gap-8 border-b border-slate-100 pb-2 overflow-x-auto">
                             {categories.map(cat => (
                                 <button 
                                     key={cat}
                                     onClick={() => setActiveCategory(cat)}
-                                    className={`filter-btn pb-2 text-sm tracking-wide uppercase ${activeCategory === cat ? 'active' : 'text-slate-400'}`}
+                                    className={`filter-btn pb-2 text-sm tracking-wide uppercase whitespace-nowrap ${activeCategory === cat ? 'active' : 'text-slate-400'}`}
                                 >
                                     {cat}
                                 </button>
@@ -90,31 +125,24 @@
                         </div>
                     </header>
 
-                    {/* Grid */}
                     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                         {filteredData.map(pose => (
                             <div key={pose.id} onClick={() => setSelectedPose(pose)} className="bio-card p-8 group">
-                                <div className="flex justify-between items-start mb-4">
-                                    <span className="text-[9px] font-bold text-indigo-500 bg-indigo-50 px-2 py-0.5 rounded uppercase">{pose.category}</span>
-                                    <span className="text-[9px] text-slate-300 font-mono">{pose.id}</span>
+                                <div className="flex justify-between items-center mb-4">
+                                    <span className="text-[9px] font-bold text-indigo-500 bg-indigo-50 px-2 py-0.5 rounded uppercase">{pose.category || 'General'}</span>
+                                    <div className="w-1.5 h-1.5 rounded-full bg-green-400"></div>
                                 </div>
                                 <h3 className="text-2xl font-serif text-slate-800 group-hover:text-indigo-600 transition-colors">{pose.name}</h3>
                                 <p className="text-sm italic text-slate-400 font-serif mb-6">{pose.sanskrit}</p>
-                                <div className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Level: {pose.level}</div>
+                                <div className="text-[10px] font-bold text-slate-300 uppercase tracking-widest">Biometric ID: {pose.id}</div>
                             </div>
                         ))}
                     </div>
 
-                    {/* Empty State */}
-                    {filteredData.length === 0 && (
-                        <div className="text-center py-20 text-slate-400 italic">No poses found in this category.</div>
-                    )}
-
-                    {/* Modal */}
                     {selectedPose && (
                         <div className="modal-overlay" onClick={() => setSelectedPose(null)}>
                             <div className="bg-white rounded-[3rem] max-w-2xl w-full max-h-[85vh] overflow-y-auto p-12 relative shadow-2xl" onClick={e => e.stopPropagation()}>
-                                <button onClick={() => setSelectedPose(null)} className="absolute top-10 right-10 text-slate-300 hover:text-slate-900 transition-colors">✕</button>
+                                <button onClick={() => setSelectedPose(null)} className="absolute top-10 right-10 text-slate-300 hover:text-slate-900 text-xl">✕</button>
                                 
                                 <h2 className="text-4xl font-serif text-slate-900 mb-2">{selectedPose.name}</h2>
                                 <p className="text-xl text-indigo-500 font-serif italic mb-10 border-b pb-6">{selectedPose.sanskrit}</p>
@@ -125,7 +153,7 @@
                                             <span className="w-1.5 h-1.5 rounded-full bg-slate-900"></span> Anatomical Foundation
                                         </h4>
                                         <ul className="space-y-4 text-[13px] text-slate-600 leading-relaxed">
-                                            {selectedPose.anatomy?.map((cue, i) => <li key={i} className="flex gap-2"><span>•</span> {cue}</li>)}
+                                            {selectedPose.anatomy?.length > 0 ? selectedPose.anatomy.map((cue, i) => <li key={i} className="flex gap-2"><span>•</span> {cue}</li>) : <li className="italic text-slate-300">No anatomical data indexed</li>}
                                         </ul>
                                     </section>
                                     <section>
@@ -133,7 +161,7 @@
                                             <span className="w-1.5 h-1.5 rounded-full bg-indigo-500"></span> Subtle Body & Soul
                                         </h4>
                                         <ul className="space-y-4 text-[13px] text-slate-600 italic leading-relaxed">
-                                            {selectedPose.mindfulness?.map((cue, i) => <li key={i} className="flex gap-2"><span>✧</span> {cue}</li>)}
+                                            {selectedPose.mindfulness?.length > 0 ? selectedPose.mindfulness.map((cue, i) => <li key={i} className="flex gap-2"><span>✧</span> {cue}</li>) : <li className="italic text-slate-300">No mindfulness data indexed</li>}
                                         </ul>
                                     </section>
                                 </div>
