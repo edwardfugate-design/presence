@@ -15,24 +15,16 @@
     <link href="https://fonts.googleapis.com/css2?family=Instrument+Serif:italic&family=Inter:wght@400;600;900&display=swap" rel="stylesheet">
 
     <script src="pose-database.js"></script>
-    <script src="pose-logic.js"></script>
 
     <style>
-        body { font-family: 'Inter', sans-serif; background-color: #fafafa; margin: 0; overflow-x: hidden; }
+        body { font-family: 'Inter', sans-serif; background-color: #fafafa; margin: 0; }
         .font-serif { font-family: 'Instrument Serif', serif; }
         .no-scrollbar::-webkit-scrollbar { display: none; }
         
-        /* Styled for Accessibility */
         input[type="range"] { -webkit-appearance: none; width: 100%; background: transparent; }
         input[type="range"]::-webkit-slider-thumb {
-            appearance: none;
-            width: 18px;
-            height: 18px;
-            background: #4f46e5;
-            border-radius: 50%;
-            cursor: pointer;
-            border: 3px solid white;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            appearance: none; width: 18px; height: 18px; background: #4f46e5;
+            border-radius: 50%; border: 3px solid white; box-shadow: 0 2px 4px rgba(0,0,0,0.1);
         }
     </style>
 </head>
@@ -42,193 +34,133 @@
     <script type="text/babel">
         const { useState, useEffect, useMemo } = React;
 
-        const BIOMECHANIC_THEME = {
-            colors: {
-                Core: '#f43f5e', Legs: '#10b981', Shoulders: '#6366f1',
-                Back: '#8b5cf6', Glutes: '#f59e0b', Hips: '#f59e0b',
-                Arms: '#3b82f6', 'Full Body': '#64748b' 
-            },
-            defaultCheckpoints: [
-                { joint: 'spine', label: 'Spinal Alignment', ideal: 180, range: [170, 180] },
-                { joint: 'hip', label: 'Hip Hinge', ideal: 90, range: [80, 110] },
-                { joint: 'knee', label: 'Knee Flexion', ideal: 180, range: [160, 185] }
+        const THEME = {
+            colors: { Core: '#f43f5e', Legs: '#10b981', Shoulders: '#6366f1', Back: '#8b5cf6', Arms: '#3b82f6' },
+            defaults: [
+                { joint: 'spine', label: 'Spinal Stack', ideal: 180, range: [170, 190] },
+                { joint: 'hip', label: 'Pelvic Tilt', ideal: 90, range: [80, 100] }
             ]
         };
 
         function AlignmentLab() {
-            const [search, setSearch] = useState('');
-            const [activeCategory, setActiveCategory] = useState('All');
-            const [selectedPose, setSelectedPose] = useState(null);
-            const [angles, setAngles] = useState({});
             const [masterData, setMasterData] = useState([]);
             const [status, setStatus] = useState('loading');
-
-            const categories = ['All', 'Standing', 'Forward Fold', 'Backbend', 'Twist', 'Hip Opener', 'Inversion', 'Restorative'];
+            const [search, setSearch] = useState('');
+            const [activeCat, setActiveCat] = useState('all');
+            const [selectedPose, setSelectedPose] = useState(null);
+            const [angles, setAngles] = useState({});
 
             useEffect(() => {
-                const syncDatabase = () => {
-                    const library = window.yogaLibraryVariations || window.ALL_POSES || window.POSE_DATABASE;
-                    
-                    if (library && library.length > 0) {
-                        const normalized = library.map((pose, index) => ({
-                            id: pose.id || `pose-${index}`,
-                            name: pose.name || 'Unnamed Pose',
-                            sanskrit: pose.sanskrit || '',
-                            family: pose.family || 'Standing',
-                            intensity: pose.intensity || 1,
-                            instructions: pose.instructions || 'Focus on mindful alignment.',
-                            muscles: pose.muscles || ['Full Body'],
-                            checkpoints: pose.checkpoints || BIOMECHANIC_THEME.defaultCheckpoints
+                const loadData = () => {
+                    // This pulls from your pose-database.js
+                    const raw = window.ALL_POSES || window.yogaLibraryVariations || [];
+                    if (raw.length > 0) {
+                        const clean = raw.map((p, i) => ({
+                            id: p.id || i,
+                            name: p.name || "Unnamed Pose",
+                            sanskrit: p.sanskrit || "Asana",
+                            // This ensures 'category' from logic.js works with 'family' from alignment
+                            family: p.family || p.category || "Standing",
+                            muscles: p.muscles || ["Full Body"],
+                            intensity: p.level || p.intensity || 1,
+                            instructions: p.instructions || "Focus on breath.",
+                            checkpoints: p.checkpoints || THEME.defaults
                         }));
-                        setMasterData(normalized);
+                        setMasterData(clean);
                         setStatus('ready');
                         return true;
                     }
                     return false;
                 };
 
-                const interval = setInterval(() => {
-                    if (syncDatabase()) clearInterval(interval);
-                }, 200);
-
-                const timeout = setTimeout(() => {
-                    clearInterval(interval);
-                    if (status === 'loading' && masterData.length === 0) setStatus('error');
-                }, 5000);
-
-                return () => { clearInterval(interval); clearTimeout(timeout); };
+                const timer = setInterval(() => { if(loadData()) clearInterval(timer); }, 300);
+                setTimeout(() => { clearInterval(timer); if(masterData.length === 0) setStatus('error'); }, 5000);
+                return () => clearInterval(timer);
             }, []);
 
-            useEffect(() => {
-                if (selectedPose) {
-                    const initialAngles = {};
-                    selectedPose.checkpoints.forEach(cp => {
-                        initialAngles[cp.joint] = cp.ideal;
-                    });
-                    setAngles(initialAngles);
-                }
-            }, [selectedPose]);
-
-            const filteredPoses = useMemo(() => {
+            const filtered = useMemo(() => {
                 return masterData.filter(p => {
-                    const query = search.toLowerCase();
-                    return (p.name.toLowerCase().includes(query) || p.sanskrit.toLowerCase().includes(query)) && 
-                           (activeCategory === 'All' || p.family === activeCategory);
+                    const matchSearch = p.name.toLowerCase().includes(search.toLowerCase()) || 
+                                      p.muscles.some(m => m.toLowerCase().includes(search.toLowerCase()));
+                    const matchCat = activeCat === 'all' || p.family.toLowerCase() === activeCat.toLowerCase();
+                    return matchSearch && matchCat;
                 });
-            }, [search, activeCategory, masterData]);
+            }, [search, activeCat, masterData]);
 
-            const calculateStatus = (joint, value) => {
-                const cp = selectedPose.checkpoints.find(c => c.joint === joint);
-                if (!cp) return 'Unknown';
-                if (value >= cp.range[0] && value <= cp.range[1]) return 'Optimal';
-                return Math.abs(value - cp.ideal) <= 15 ? 'Acceptable' : 'Misaligned';
-            };
-
-            if (status === 'loading') {
-                return (
-                    <div className="h-screen flex flex-col items-center justify-center bg-[#fafafa]">
-                        <div className="w-10 h-10 border-2 border-indigo-100 border-t-indigo-600 rounded-full animate-spin mb-4"></div>
-                        <h2 className="font-serif italic text-xl text-slate-400">Loading Matrix</h2>
-                    </div>
-                );
-            }
-
-            if (status === 'error') {
-                return (
-                    <div className="h-screen flex flex-col items-center justify-center bg-[#fafafa] p-10 text-center">
-                        <h2 className="font-serif text-2xl text-slate-800">Connection Error</h2>
-                        <p className="text-sm text-slate-400 mt-2">Ensure pose-database.js is in your folder.</p>
-                    </div>
-                );
-            }
+            if (status === 'loading') return <div className="h-screen flex items-center justify-center font-serif italic text-2xl">Syncing Database...</div>;
+            if (status === 'error') return <div className="h-screen flex flex-col items-center justify-center">
+                <p className="font-serif text-xl">Database Connection Failed</p>
+                <p className="text-xs text-slate-400 mt-2">Check if pose-database.js is in your root folder.</p>
+            </div>;
 
             return (
-                <div className="max-w-7xl mx-auto px-6 py-12 min-h-screen text-slate-900 animate-in fade-in duration-1000">
-                    <header className="mb-16">
-                        <div className="flex flex-col md:flex-row justify-between items-baseline gap-8">
-                            <div>
-                                <h1 className="text-6xl font-serif tracking-tighter">presence<span className="text-indigo-600">•</span>lab</h1>
-                                <p className="text-[10px] uppercase tracking-[0.4em] font-bold text-slate-300 mt-3">
-                                    {masterData.length} Biomechanical Units Online
-                                </p>
-                            </div>
-                            {/* Input with ID and Name to fix accessibility errors */}
-                            <input 
-                                id="lab-pose-search"
-                                name="poseSearch"
-                                type="text" 
-                                placeholder="Search poses..."
-                                className="w-full md:w-96 bg-white border border-slate-200 rounded-2xl py-4 px-6 text-sm focus:ring-2 focus:ring-indigo-500/20 outline-none italic"
-                                onChange={(e) => setSearch(e.target.value)}
-                            />
+                <div className="max-w-7xl mx-auto px-6 py-12 min-h-screen">
+                    <header className="flex flex-col md:flex-row justify-between items-end gap-6 mb-12">
+                        <div>
+                            <h1 className="text-6xl font-serif italic tracking-tighter text-indigo-950">presence<span className="text-indigo-500">•</span>lab</h1>
+                            <p className="text-[10px] font-bold uppercase tracking-[0.3em] text-slate-300 mt-4">{masterData.length} Units Online</p>
                         </div>
-
-                        <nav className="flex gap-8 mt-12 border-b border-slate-100 overflow-x-auto no-scrollbar pb-1">
-                            {categories.map(cat => (
-                                <button key={cat} onClick={() => setActiveCategory(cat)}
-                                    className={`pb-4 text-[10px] uppercase tracking-[0.2em] font-bold transition-all ${
-                                        activeCategory === cat ? 'text-indigo-600 border-b-2 border-indigo-600' : 'text-slate-400'
-                                    }`}
-                                >
-                                    {cat}
-                                </button>
-                            ))}
-                        </nav>
+                        <input 
+                            id="search-input" name="search"
+                            type="text" placeholder="Search name or muscle..." 
+                            className="w-full md:w-80 p-4 rounded-2xl border border-slate-100 outline-none focus:ring-2 focus:ring-indigo-500/10 transition-all font-serif italic"
+                            onChange={(e) => setSearch(e.target.value)}
+                        />
                     </header>
 
                     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-                        {filteredPoses.map(pose => (
-                            <div key={pose.id} onClick={() => setSelectedPose(pose)}
-                                className="group bg-white p-8 rounded-[2rem] border border-slate-100 hover:border-indigo-100 hover:shadow-2xl transition-all cursor-pointer"
-                            >
-                                <span className="text-[9px] font-black text-indigo-500 uppercase tracking-widest bg-indigo-50 px-2 py-1 rounded-md">{pose.family}</span>
-                                <h3 className="text-2xl font-serif mt-4 mb-1">{pose.name}</h3>
-                                <p className="text-xs italic text-slate-400 mb-8">{pose.sanskrit}</p>
-                                <div className="pt-4 border-t border-slate-50 text-[10px] font-bold text-slate-300 uppercase tracking-widest">Intensity {pose.intensity}/5</div>
+                        {filtered.map(pose => (
+                            <div key={pose.id} onClick={() => { setSelectedPose(pose); setAngles(pose.checkpoints.reduce((acc, c) => ({...acc, [c.joint]: c.ideal}), {})); }}
+                                 className="group bg-white p-6 rounded-[2rem] border border-slate-100 hover:border-indigo-200 transition-all cursor-pointer hover:shadow-xl hover:shadow-indigo-500/5">
+                                <span className="text-[9px] font-black text-indigo-400 uppercase tracking-widest">{pose.family}</span>
+                                <h3 className="text-xl font-serif text-slate-800 mt-2">{pose.name}</h3>
+                                <p className="text-xs italic text-slate-400 mb-6">{pose.sanskrit}</p>
+                                <div className="flex flex-wrap gap-1">
+                                    {pose.muscles.slice(0, 3).map(m => <span key={m} className="text-[8px] font-bold px-2 py-0.5 bg-slate-50 rounded-md text-slate-400 uppercase">{m}</span>)}
+                                </div>
                             </div>
                         ))}
                     </div>
 
                     {selectedPose && (
-                        <div className="fixed inset-0 z-[200] flex items-center justify-center p-4 bg-white/90 backdrop-blur-xl" onClick={() => setSelectedPose(null)}>
-                            <div className="bg-white rounded-[3rem] w-full max-w-6xl max-h-[90vh] overflow-hidden shadow-2xl relative flex flex-col md:flex-row border border-slate-100" onClick={e => e.stopPropagation()}>
-                                <div className="w-full md:w-1/2 bg-slate-50/50 p-12 flex flex-col overflow-y-auto">
-                                    <h2 className="text-5xl font-serif">{selectedPose.name}</h2>
-                                    <p className="text-xl italic text-slate-400 font-serif mb-8">{selectedPose.sanskrit}</p>
+                        <div className="fixed inset-0 z-[100] bg-white/90 backdrop-blur-xl p-4 md:p-12 flex items-center justify-center" onClick={() => setSelectedPose(null)}>
+                            <div className="bg-white rounded-[3rem] shadow-2xl border border-slate-100 w-full max-w-6xl overflow-hidden flex flex-col md:flex-row" onClick={e => e.stopPropagation()}>
+                                <div className="w-full md:w-1/2 p-12 bg-slate-50/50">
+                                    <h2 className="text-5xl font-serif italic mb-2 text-indigo-950">{selectedPose.name}</h2>
+                                    <p className="text-xl font-serif italic text-slate-400 mb-12">{selectedPose.sanskrit}</p>
                                     
-                                    <div className="flex-1 flex items-center justify-center opacity-20 py-12">
-                                        <svg viewBox="0 0 400 500" className="w-full h-64"><circle cx="200" cy="80" r="30" fill="currentColor"/><path d="M200 110 L200 280 M200 130 L100 220 M200 130 L300 220 M200 280 L140 450 M200 280 L260 450" stroke="currentColor" strokeWidth="12" strokeLinecap="round"/></svg>
-                                    </div>
-
-                                    <div className="flex flex-wrap gap-2">
-                                        {selectedPose.muscles?.map(m => (
-                                            <span key={m} className="bg-white px-4 py-2 rounded-full border border-slate-100 text-[10px] font-black uppercase text-slate-400">{m}</span>
-                                        ))}
-                                    </div>
-                                </div>
-
-                                <div className="w-full md:w-1/2 p-12 overflow-y-auto">
-                                    <button onClick={() => setSelectedPose(null)} className="absolute top-8 right-8 text-xl text-slate-300 hover:text-indigo-600 transition-colors">✕</button>
-                                    <h4 className="text-[10px] font-black uppercase tracking-[0.3em] text-slate-300 mb-10">Biomechanics</h4>
-                                    
-                                    <div className="space-y-10 mb-12">
+                                    <div className="space-y-8">
                                         {selectedPose.checkpoints.map(cp => {
                                             const val = angles[cp.joint] || cp.ideal;
-                                            const stat = calculateStatus(cp.joint, val);
-                                            const clr = stat === 'Optimal' ? '#10b981' : stat === 'Acceptable' ? '#6366f1' : '#f43f5e';
+                                            const isOpt = val >= cp.range[0] && val <= cp.range[1];
                                             return (
                                                 <div key={cp.joint}>
-                                                    <div className="flex justify-between mb-4"><span className="text-[10px] font-bold text-slate-700 uppercase">{cp.label}</span><span className="text-2xl font-serif" style={{color: clr}}>{val}°</span></div>
-                                                    {/* Added ID and Name to range inputs */}
-                                                    <input id={`range-${cp.joint}`} name={cp.joint} type="range" min="0" max="180" value={val} onChange={(e) => setAngles({...angles, [cp.joint]: parseInt(e.target.value)})} />
-                                                    <div className="flex justify-between mt-2 text-[9px] font-bold uppercase text-slate-300"><span>Target: {cp.range[0]}°- {cp.range[1]}°</span><span style={{color: clr}}>{stat}</span></div>
+                                                    <div className="flex justify-between mb-2 text-[10px] font-black uppercase tracking-widest">
+                                                        <span>{cp.label}</span>
+                                                        <span className={isOpt ? 'text-emerald-500' : 'text-rose-400'}>{val}°</span>
+                                                    </div>
+                                                    <input id={`range-${cp.joint}`} type="range" min="0" max="180" value={val} 
+                                                           onChange={(e) => setAngles({...angles, [cp.joint]: parseInt(e.target.value)})} />
                                                 </div>
                                             );
                                         })}
                                     </div>
-
-                                    <div className="bg-slate-900 rounded-[2rem] p-8 text-white">
-                                        <p className="font-serif italic text-lg opacity-80 leading-relaxed">"{selectedPose.instructions}"</p>
+                                </div>
+                                <div className="w-full md:w-1/2 p-12 relative">
+                                    <button className="absolute top-8 right-8 text-2xl text-slate-300" onClick={() => setSelectedPose(null)}>✕</button>
+                                    <div className="h-full flex flex-col justify-between">
+                                        <div className="bg-indigo-950 text-white p-8 rounded-[2rem] shadow-lg">
+                                            <h4 className="text-[10px] font-black uppercase tracking-[0.4em] text-indigo-400 mb-4">Alignment Logic</h4>
+                                            <p className="font-serif italic text-lg leading-relaxed opacity-90">"{selectedPose.instructions}"</p>
+                                        </div>
+                                        <div className="mt-8">
+                                            <p className="text-[10px] font-black uppercase text-slate-300 mb-4 tracking-widest">Target Muscles</p>
+                                            <div className="flex flex-wrap gap-2">
+                                                {selectedPose.muscles.map(m => (
+                                                    <span key={m} className="px-4 py-2 bg-slate-50 border border-slate-100 rounded-full text-[10px] font-bold uppercase text-slate-500">{m}</span>
+                                                ))}
+                                            </div>
+                                        </div>
                                     </div>
                                 </div>
                             </div>
