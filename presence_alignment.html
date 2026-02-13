@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Presence • Alignment Lab</title>
+    <title>Presence • Alignment Lab v4.0</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script crossorigin src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
     <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
@@ -15,11 +15,12 @@
         @import url('https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@400;600&family=Inter:wght@300;400;600&display=swap');
         body { font-family: 'Inter', sans-serif; background-color: #fcfcfd; color: #1e293b; }
         .font-serif { font-family: 'Cormorant Garamond', serif; }
-        .filter-btn { transition: all 0.3s ease; border-bottom: 2px solid transparent; padding-bottom: 8px; font-size: 0.875rem; text-transform: uppercase; letter-spacing: 0.05em; color: #94a3b8; }
-        .filter-btn.active { border-bottom-color: #4f46e5; color: #4f46e5; font-weight: 600; }
-        .bio-card { background: white; border: 1px solid #eef2ff; border-radius: 1.5rem; transition: all 0.2s ease; cursor: pointer; padding: 2rem; }
-        .bio-card:hover { border-color: #4f46e5; transform: translateY(-2px); shadow: 0 10px 15px -3px rgb(0 0 0 / 0.1); }
-        .modal-overlay { background: rgba(15, 23, 42, 0.4); backdrop-filter: blur(12px); z-index: 100; position: fixed; inset: 0; display: flex; align-items: center; justify-content: center; padding: 1.5rem; }
+        .filter-btn { transition: all 0.3s ease; border-bottom: 2px solid transparent; padding-bottom: 6px; font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.1em; color: #94a3b8; }
+        .filter-btn.active { border-bottom-color: #4f46e5; color: #4f46e5; font-weight: 700; }
+        .bio-card { background: white; border: 1px solid #eef2ff; border-radius: 1.25rem; transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1); cursor: pointer; position: relative; overflow: hidden; }
+        .bio-card:hover { border-color: #4f46e5; transform: translateY(-4px); box-shadow: 0 20px 25px -5px rgb(0 0 0 / 0.05); }
+        .variation-badge { position: absolute; top: 1rem; right: 1rem; background: #fef3c7; color: #92400e; font-size: 8px; font-weight: 800; padding: 2px 6px; rounded-full; text-transform: uppercase; }
+        .modal-overlay { background: rgba(15, 23, 42, 0.6); backdrop-filter: blur(8px); z-index: 100; position: fixed; inset: 0; display: flex; align-items: center; justify-content: center; padding: 1rem; }
     </style>
 </head>
 <body>
@@ -35,56 +36,59 @@
             const [masterData, setMasterData] = useState([]);
             const [status, setStatus] = useState('loading');
 
-            const categories = ['All', 'Standing', 'Floor', 'Core', 'Backbends'];
+            // Categories based on your JS 'family' property
+            const categories = ['All', 'Standing', 'Backbend', 'Forward Fold', 'Twist', 'Hip Opener', 'Inversion', 'Restorative'];
 
             useEffect(() => {
                 const timer = setInterval(() => {
-                    // Checks common variable names in your yoga-v3.js
-                    const vault = window.POSE_LIBRARY || window.yogaData || window.ALL_POSES;
+                    // This matches the window.ALL_POSES you created at the bottom of your JS
+                    const vault = window.ALL_POSES;
                     if (vault && vault.length > 0) {
                         setMasterData(vault);
                         setStatus('ready');
                         clearInterval(timer);
                     }
-                }, 500);
+                }, 300);
                 return () => clearInterval(timer);
             }, []);
 
             const filteredData = masterData.filter(p => {
                 const matchesSearch = p.name?.toLowerCase().includes(search.toLowerCase()) || 
                                      p.sanskrit?.toLowerCase().includes(search.toLowerCase());
-                const matchesCategory = activeCategory === 'All' || p.category === activeCategory;
+                const matchesCategory = activeCategory === 'All' || p.family === activeCategory;
                 return matchesSearch && matchesCategory;
             });
 
             if (status === 'loading') {
-                return <div className="h-screen flex items-center justify-center font-serif italic text-indigo-900 text-2xl animate-pulse">Synchronizing Vault...</div>;
+                return <div className="h-screen flex items-center justify-center font-serif italic text-indigo-900 text-2xl animate-pulse">Synchronizing Biometric Vault...</div>;
             }
 
             return (
-                <div className="p-8 max-w-6xl mx-auto min-h-screen">
+                <div className="p-8 max-w-7xl mx-auto min-h-screen">
                     <header className="mb-12">
                         <div className="flex flex-col md:flex-row justify-between items-start md:items-end gap-6 mb-8">
                             <div>
-                                <h1 className="text-5xl font-serif text-slate-900">presence • lab</h1>
-                                <p className="text-indigo-400 uppercase tracking-[0.3em] text-[9px] mt-2 font-black">
-                                    Biometric Database • {masterData.length} Poses Indexed
+                                <h1 className="text-5xl font-serif text-slate-900 tracking-tight">presence • lab</h1>
+                                <p className="text-indigo-500 uppercase tracking-[0.4em] text-[10px] mt-3 font-bold">
+                                    Total Library Capacity: {masterData.length} Poses / Variations
                                 </p>
                             </div>
-                            <input 
-                                type="text" 
-                                placeholder="Search the vault..." 
-                                className="bg-transparent border-b border-slate-200 py-2 outline-none focus:border-indigo-500 w-full md:w-64 italic transition-all"
-                                onChange={(e) => setSearch(e.target.value)}
-                            />
+                            <div className="relative w-full md:w-80">
+                                <input 
+                                    type="text" 
+                                    placeholder="Search by name or Sanskrit..." 
+                                    className="bg-white border border-slate-100 rounded-full px-6 py-3 outline-none focus:border-indigo-400 w-full shadow-sm text-sm italic transition-all"
+                                    onChange={(e) => setSearch(e.target.value)}
+                                />
+                            </div>
                         </div>
 
-                        <div className="flex gap-8 border-b border-slate-100 overflow-x-auto">
+                        <div className="flex gap-6 border-b border-slate-100 overflow-x-auto pb-1 no-scrollbar">
                             {categories.map(cat => (
                                 <button 
                                     key={cat}
                                     onClick={() => setActiveCategory(cat)}
-                                    className={`filter-btn ${activeCategory === cat ? 'active' : ''}`}
+                                    className={`filter-btn whitespace-nowrap ${activeCategory === cat ? 'active' : ''}`}
                                 >
                                     {cat}
                                 </button>
@@ -92,49 +96,72 @@
                         </div>
                     </header>
 
-                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
                         {filteredData.map(pose => (
-                            <div key={pose.id} onClick={() => setSelectedPose(pose)} className="bio-card group">
-                                <div className="flex justify-between items-start mb-4">
-                                    <span className="text-[9px] font-bold text-indigo-500 bg-indigo-50 px-2 py-0.5 rounded uppercase">{pose.category}</span>
-                                    <span className="text-[9px] text-slate-300 font-mono tracking-tighter">ID: {pose.id}</span>
+                            <div key={pose.id} onClick={() => setSelectedPose(pose)} className="bio-card p-6 group">
+                                {pose.isVariation && <span className="variation-badge">Variation</span>}
+                                <div className="mb-4">
+                                    <span className="text-[9px] font-black text-indigo-500 bg-indigo-50 px-2 py-1 rounded uppercase tracking-tighter">
+                                        {pose.family}
+                                    </span>
                                 </div>
-                                <h3 className="text-2xl font-serif text-slate-800 group-hover:text-indigo-600 transition-colors">{pose.name}</h3>
-                                <p className="text-sm italic text-slate-400 font-serif mb-6">{pose.sanskrit}</p>
-                                <div className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Level: {pose.level}</div>
+                                <h3 className="text-xl font-serif text-slate-800 group-hover:text-indigo-600 transition-colors leading-tight mb-1">{pose.name}</h3>
+                                <p className="text-xs italic text-slate-400 font-serif mb-6">{pose.sanskrit}</p>
+                                
+                                <div className="flex justify-between items-center">
+                                    <div className="flex gap-1">
+                                        {[...Array(5)].map((_, i) => (
+                                            <div key={i} className={`w-1 h-1 rounded-full ${i < (pose.intensity || 1) ? 'bg-indigo-400' : 'bg-slate-100'}`}></div>
+                                        ))}
+                                    </div>
+                                    <span className="text-[9px] font-mono text-slate-300">#{pose.id}</span>
+                                </div>
                             </div>
                         ))}
                     </div>
 
-                    {filteredData.length === 0 && (
-                        <div className="text-center py-20 text-slate-400 italic">No biometric matches found in this category.</div>
-                    )}
-
                     {selectedPose && (
                         <div className="modal-overlay" onClick={() => setSelectedPose(null)}>
-                            <div className="bg-white rounded-[3rem] max-w-2xl w-full max-h-[85vh] overflow-y-auto p-12 relative shadow-2xl" onClick={e => e.stopPropagation()}>
-                                <button onClick={() => setSelectedPose(null)} className="absolute top-10 right-10 text-slate-300 hover:text-slate-900 transition-colors">✕</button>
+                            <div className="bg-white rounded-[2.5rem] max-w-2xl w-full max-h-[90vh] overflow-y-auto p-10 relative shadow-2xl" onClick={e => e.stopPropagation()}>
+                                <button onClick={() => setSelectedPose(null)} className="absolute top-8 right-8 text-slate-300 hover:text-slate-900 text-2xl transition-colors">✕</button>
                                 
-                                <h2 className="text-4xl font-serif text-slate-900 mb-2">{selectedPose.name}</h2>
-                                <p className="text-xl text-indigo-500 font-serif italic mb-10 border-b pb-6">{selectedPose.sanskrit}</p>
+                                <span className="text-indigo-500 text-[10px] font-bold uppercase tracking-widest">{selectedPose.family} Matrix</span>
+                                <h2 className="text-4xl font-serif text-slate-900 mt-2 mb-1">{selectedPose.name}</h2>
+                                <p className="text-xl text-slate-400 font-serif italic mb-8 border-b border-slate-50 pb-6">{selectedPose.sanskrit}</p>
                                 
-                                <div className="grid md:grid-cols-2 gap-12">
+                                <div className="space-y-8">
                                     <section>
-                                        <h4 className="text-[10px] font-black uppercase tracking-widest text-slate-900 mb-6 flex items-center gap-2">
-                                            <span className="w-1.5 h-1.5 rounded-full bg-slate-900"></span> Anatomical Foundation
+                                        <h4 className="text-[10px] font-black uppercase tracking-widest text-slate-900 mb-4 flex items-center gap-2">
+                                            <span className="w-1.5 h-1.5 rounded-full bg-indigo-500"></span> Biometric Cues
                                         </h4>
-                                        <ul className="space-y-4 text-[13px] text-slate-600 leading-relaxed">
-                                            {selectedPose.anatomy?.map((cue, i) => <li key={i} className="flex gap-2"><span>•</span> {cue}</li>)}
-                                        </ul>
+                                        <p className="text-sm text-slate-600 leading-relaxed bg-slate-50 p-6 rounded-2xl italic">
+                                            {selectedPose.instructions || "Refining alignment data for this variation..."}
+                                        </p>
                                     </section>
-                                    <section>
-                                        <h4 className="text-[10px] font-black uppercase tracking-widest text-indigo-500 mb-6 flex items-center gap-2">
-                                            <span className="w-1.5 h-1.5 rounded-full bg-indigo-500"></span> Subtle Body & Soul
-                                        </h4>
-                                        <ul className="space-y-4 text-[13px] text-slate-600 italic leading-relaxed">
-                                            {selectedPose.mindfulness?.map((cue, i) => <li key={i} className="flex gap-2"><span>✧</span> {cue}</li>)}
-                                        </ul>
-                                    </section>
+
+                                    <div className="grid grid-cols-2 gap-6">
+                                        <section>
+                                            <h4 className="text-[10px] font-black uppercase tracking-widest text-slate-400 mb-3">Target Areas</h4>
+                                            <div className="flex flex-wrap gap-2">
+                                                {selectedPose.muscles?.map(m => (
+                                                    <span key={m} className="text-[10px] bg-slate-100 text-slate-600 px-3 py-1 rounded-full font-medium">{m}</span>
+                                                ))}
+                                            </div>
+                                        </section>
+                                        <section>
+                                            <h4 className="text-[10px] font-black uppercase tracking-widest text-slate-400 mb-3">Key Benefits</h4>
+                                            <div className="flex flex-wrap gap-2">
+                                                {selectedPose.benefits?.map(b => (
+                                                    <span key={b} className="text-[10px] bg-indigo-50 text-indigo-600 px-3 py-1 rounded-full font-medium">{b}</span>
+                                                ))}
+                                            </div>
+                                        </section>
+                                    </div>
+
+                                    <div className="pt-6 border-t border-slate-50 flex justify-between items-center text-[10px] font-mono text-slate-300">
+                                        <span>INTENSITY: {selectedPose.intensity}/5</span>
+                                        <span>EST. DURATION: {selectedPose.duration}s</span>
+                                    </div>
                                 </div>
                             </div>
                         </div>
