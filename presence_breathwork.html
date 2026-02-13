@@ -7,10 +7,7 @@
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@300;400;600&display=swap" rel="stylesheet">
     <style>
-        :root {
-            --dawn-start: #fdfcfb; --dawn-end: #e2d1c3;
-            --accent: #6366f1;
-        }
+        :root { --accent: #6366f1; }
         body {
             font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
             background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
@@ -19,55 +16,57 @@
         .font-serif { font-family: 'Cormorant Garamond', serif; }
         .stat-label { font-size: 0.65rem; letter-spacing: 0.4em; text-transform: uppercase; color: #94a3b8; }
         
-        /* Updated Card Design to match your image */
         .technique-card {
             background: rgba(255,255,255,0.4); border: 1px solid rgba(255,255,255,0.2);
-            backdrop-filter: blur(12px); transition: all 0.4s ease;
-            cursor: pointer; display: flex; flex-direction: column;
+            backdrop-filter: blur(12px); transition: all 0.4s ease; cursor: pointer;
         }
-        .technique-card:hover { 
-            background: rgba(255,255,255,0.7); 
-            transform: translateY(-2px); 
-            border-color: var(--accent);
-        }
+        .technique-card:hover { background: rgba(255,255,255,0.7); transform: translateY(-2px); border-color: var(--accent); }
 
-        .time-pill {
+        .time-pill, .sound-pill {
             padding: 10px 20px; border-radius: 999px; border: 1px solid rgba(0,0,0,0.05);
             font-size: 0.75rem; transition: all 0.4s; background: rgba(255,255,255,0.4);
         }
-        .time-pill.active { background: #1e293b; color: white; border-color: #1e293b; }
+        .time-pill.active, .sound-pill.active { background: #1e293b; color: white; border-color: #1e293b; }
 
         .breath-circle {
-            width: 260px; height: 260px; border-radius: 50%;
-            background: white;
-            box-shadow: 0 0 50px rgba(255,255,255,0.5);
-            transition: all 2s cubic-bezier(0.4, 0, 0.2, 1);
+            width: 260px; height: 260px; border-radius: 50%; background: white;
+            box-shadow: 0 0 50px rgba(255,255,255,0.5); transition: all 2s cubic-bezier(0.4, 0, 0.2, 1);
             display: flex; align-items: center; justify-content: center;
         }
-
         .breath-circle.inhale { transform: scale(1.35); box-shadow: 0 0 100px rgba(99, 102, 241, 0.2); }
         .breath-circle.exhale { transform: scale(0.85); box-shadow: 0 0 30px rgba(0,0,0,0.05); }
         .breath-circle.hold { border: 1px solid rgba(99, 102, 241, 0.3); }
-
-        .fade-out { opacity: 0.2; }
+        
+        @keyframes softPulse {
+            0% { opacity: 0.2; }
+            50% { opacity: 0.5; }
+            100% { opacity: 0.2; }
+        }
+        .tap-prompt { animation: softPulse 3s infinite ease-in-out; position: absolute; bottom: 10%; }
     </style>
 </head>
 <body>
 
     <div id="selectionView" class="p-8 md:p-20 max-w-7xl mx-auto">
         <header class="mb-16 text-center">
-            <h1 class="font-serif text-8xl tracking-tighter text-slate-900 mb-4">Presence</h1>
-            <div class="stat-label mb-8">Duration (Minutes)</div>
+            <h1 class="font-serif text-8xl tracking-tighter text-slate-900 mb-6">Presence</h1>
+            
+            <div class="stat-label mb-4">Atmosphere</div>
+            <div class="flex justify-center gap-3 mb-8" id="soundSelector">
+                <button class="sound-pill active" onclick="setSound('none', this)">Silence</button>
+                <button class="sound-pill" onclick="setSound('rain', this)">Rain</button>
+                <button class="sound-pill" onclick="setSound('white', this)">Mist</button>
+            </div>
+
+            <div class="stat-label mb-4">Duration</div>
             <div class="flex flex-wrap justify-center gap-3 mb-12">
-                <button class="time-pill" onclick="setTime(5, this)">5</button>
-                <button class="time-pill active" onclick="setTime(10, this)">10</button>
-                <button class="time-pill" onclick="setTime(20, this)">20</button>
-                <button class="time-pill" onclick="setTime(30, this)">30</button>
+                <button class="time-pill" onclick="setTime(5, this)">5m</button>
+                <button class="time-pill active" onclick="setTime(10, this)">10m</button>
+                <button class="time-pill" onclick="setTime(20, this)">20m</button>
                 <button class="time-pill" onclick="setRandomTime(this)">Random</button>
                 <button class="time-pill" onclick="setTime(null, this)">Infinite</button>
             </div>
         </header>
-
         <div id="libraryContainer" class="space-y-16"></div>
     </div>
 
@@ -86,59 +85,79 @@
         </div>
     </div>
 
+    <div id="reflectionView" class="hidden fixed inset-0 bg-slate-50 flex flex-col items-center justify-center p-12 text-center cursor-pointer" onclick="closeReflection()">
+        <div class="max-w-lg">
+            <div class="stat-label mb-8">Session Complete</div>
+            <p id="quoteDisplay" class="font-serif text-3xl text-slate-800 italic mb-4"></p>
+        </div>
+        <div class="stat-label tap-prompt">Tap anywhere to return</div>
+    </div>
+
     <script>
+        const QUOTES = [
+            "Breath is the bridge which connects life to consciousness.",
+            "The present moment is the only time over which we have dominion.",
+            "Nowhere can man find a quieter retreat than in his own soul.",
+            "Peace is the result of retraining your mind to process life as it is.",
+            "Feelings come and go like clouds in a windy sky. Conscious breathing is my anchor."
+        ];
+
         const MEDITATION_LIBRARY = {
-            relaxation: {
-                title: "Relaxation",
-                items: [
-                    { name: '4-7-8 Sleep', timing: {inhale: 4, hold1: 7, exhale: 8, hold2: 0}, desc: 'Natural nervous system tranquilizer.' },
-                    { name: 'Physiological Sigh', timing: {inhale: 3, hold1: 1, exhale: 6, hold2: 0}, desc: 'Fastest way to lower heart rate.' },
-                    { name: 'Belly Breathing', timing: {inhale: 5, hold1: 0, exhale: 5, hold2: 0}, desc: 'Diaphragmatic rest and digest.' },
-                    { name: 'Moon Piercing', timing: {inhale: 5, hold1: 2, exhale: 5, hold2: 0}, desc: 'Left-nostril visualization for calm.' }
-                ]
-            },
-            focus: {
-                title: "Focus",
-                items: [
-                    { name: 'Box Breathing', timing: {inhale: 4, hold1: 4, exhale: 4, hold2: 4}, desc: 'Navy SEAL method for steady focus.' },
-                    { name: 'Coherent Breath', timing: {inhale: 6, hold1: 0, exhale: 6, hold2: 0}, desc: 'Aligns heart rate and brain waves.' },
-                    { name: 'Triangle Breath', timing: {inhale: 4, hold1: 4, exhale: 4, hold2: 0}, desc: 'Stable rhythm for mental clarity.' },
-                    { name: 'The Anchor', timing: {inhale: 3, hold1: 0, exhale: 3, hold2: 0}, desc: 'Quick grounding during the day.' }
-                ]
-            },
-            energy: {
-                title: "Energy",
-                items: [
-                    { name: 'Power Flow', timing: {inhale: 2, hold1: 0, exhale: 1, hold2: 0}, desc: 'Quick boosts to oxygenate the brain.' },
-                    { name: 'Morning Wake', timing: {inhale: 4, hold1: 0, exhale: 2, hold2: 0}, desc: 'Natural caffeine-free stimulant.' },
-                    { name: 'Bellows Breath', timing: {inhale: 1, hold1: 0, exhale: 1, hold2: 0}, desc: 'Rapid rhythm to fire up senses.' }
-                ]
-            },
-            mindfulness: {
-                title: "Mindfulness",
-                items: [
-                    { name: 'Zen Zazen', timing: {inhale: 5, hold1: 0, exhale: 7, hold2: 0}, desc: 'Classic seated meditation rhythm.' },
-                    { name: 'Body Scan', timing: {inhale: 6, hold1: 1, exhale: 6, hold2: 0}, desc: 'Mindful physical awareness.' },
-                    { name: 'Metta Flow', timing: {inhale: 4, hold1: 2, exhale: 4, hold2: 0}, desc: 'Compassion-based rhythm.' },
-                    { name: 'Gratitude', timing: {inhale: 5, hold1: 2, exhale: 5, hold2: 0}, desc: 'Cultivate deep appreciation.' }
-                ]
-            }
+            relax: { title: "Relaxation", items: [
+                { name: '4-7-8 Sleep', timing: {inhale: 4, hold1: 7, exhale: 8, hold2: 0}, desc: 'Natural nervous system tranquilizer.' },
+                { name: 'Physiological Sigh', timing: {inhale: 3, hold1: 1, exhale: 6, hold2: 0}, desc: 'Fastest way to lower heart rate.' },
+                { name: 'Belly Breathing', timing: {inhale: 5, hold1: 0, exhale: 5, hold2: 0}, desc: 'Deep rest and digest rhythm.' }
+            ]},
+            focus: { title: "Focus", items: [
+                { name: 'Box Breathing', timing: {inhale: 4, hold1: 4, exhale: 4, hold2: 4}, desc: 'Navy SEAL method for steady focus.' },
+                { name: 'Coherent Breath', timing: {inhale: 6, hold1: 0, exhale: 6, hold2: 0}, desc: 'Balance the heart and brain.' },
+                { name: 'Triangle Breath', timing: {inhale: 4, hold1: 4, exhale: 4, hold2: 0}, desc: 'Stable rhythm for mental clarity.' }
+            ]}
         };
 
         let sessionMinutes = 10;
         let timeRemaining = 0;
-        let timerInterval = null;
-        let breathInterval = null;
-        let currentTech = null;
+        let timerInterval = null, breathInterval = null, backgroundSource = null;
+        let currentTech = null, selectedSound = 'none';
 
         const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+
+        function setSound(type, btn) {
+            selectedSound = type;
+            document.querySelectorAll('.sound-pill').forEach(p => p.classList.remove('active'));
+            btn.classList.add('active');
+        }
+
+        function createNoise() {
+            if (selectedSound === 'none') return;
+            const bufferSize = 2 * audioCtx.sampleRate,
+                  buffer = audioCtx.createBuffer(1, bufferSize, audioCtx.sampleRate),
+                  output = buffer.getChannelData(0);
+            for (let i = 0; i < bufferSize; i++) { output[i] = Math.random() * 2 - 1; }
+            
+            backgroundSource = audioCtx.createBufferSource();
+            backgroundSource.buffer = buffer;
+            backgroundSource.loop = true;
+            
+            const filter = audioCtx.createBiquadFilter();
+            filter.type = selectedSound === 'rain' ? 'lowpass' : 'bandpass';
+            filter.frequency.value = selectedSound === 'rain' ? 400 : 1000;
+            
+            const gain = audioCtx.createGain();
+            gain.gain.value = 0.04;
+
+            backgroundSource.connect(filter);
+            filter.connect(gain);
+            gain.connect(audioCtx.destination);
+            backgroundSource.start();
+        }
+
         function playBell() {
             const osc = audioCtx.createOscillator();
             const gain = audioCtx.createGain();
-            osc.type = 'sine';
             osc.frequency.setValueAtTime(440, audioCtx.currentTime);
             osc.frequency.exponentialRampToValueAtTime(110, audioCtx.currentTime + 3);
-            gain.gain.setValueAtTime(0.4, audioCtx.currentTime);
+            gain.gain.setValueAtTime(0.3, audioCtx.currentTime);
             gain.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 3);
             osc.connect(gain); gain.connect(audioCtx.destination);
             osc.start(); osc.stop(audioCtx.currentTime + 3);
@@ -150,38 +169,23 @@
             btn.classList.add('active');
         }
 
-        function setRandomTime(btn) {
-            const options = [5, 10, 15, 20, 30];
-            const rand = options[Math.floor(Math.random() * options.length)];
-            setTime(rand, btn);
-            btn.textContent = `Random (${rand}m)`;
-        }
-
         function renderLibrary() {
             const container = document.getElementById('libraryContainer');
             container.innerHTML = '';
-            for (const [key, category] of Object.entries(MEDITATION_LIBRARY)) {
-                const html = `
-                    <div>
-                        <div class="stat-label mb-8 text-indigo-500 text-center">${category.title}</div>
-                        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                            ${category.items.map(item => {
-                                const pattern = `${item.timing.inhale}-${item.timing.hold1}-${item.timing.exhale}-${item.timing.hold2}`;
-                                return `
-                                <div class="technique-card p-8 rounded-[2rem]" onclick='startPractice(${JSON.stringify(item)})'>
-                                    <div class="stat-label mb-3 opacity-60">${category.title}</div>
-                                    <div class="flex items-baseline gap-3 mb-2">
-                                        <span class="text-2xl font-light text-slate-800 tracking-tight">${pattern}</span>
-                                        <span class="text-xs uppercase tracking-widest text-slate-500 font-medium">${item.name}</span>
-                                    </div>
-                                    <p class="text-sm text-slate-400 leading-relaxed">${item.desc}</p>
+            for (const [key, cat] of Object.entries(MEDITATION_LIBRARY)) {
+                container.innerHTML += `<div class="stat-label mb-8 text-indigo-500 text-center">${cat.title}</div>
+                    <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-12">
+                        ${cat.items.map(item => `
+                            <div class="technique-card p-8 rounded-[2rem]" onclick='startPractice(${JSON.stringify(item)})'>
+                                <div class="stat-label mb-3 opacity-60">${cat.title}</div>
+                                <div class="flex items-baseline gap-3 mb-2">
+                                    <span class="text-2xl font-light tracking-tight">${item.timing.inhale}-${item.timing.hold1}-${item.timing.exhale}</span>
+                                    <span class="text-xs uppercase tracking-widest font-medium">${item.name}</span>
                                 </div>
-                                `;
-                            }).join('')}
-                        </div>
-                    </div>
-                `;
-                container.innerHTML += html;
+                                <p class="text-sm text-slate-400">${item.desc}</p>
+                            </div>
+                        `).join('')}
+                    </div>`;
             }
         }
 
@@ -189,6 +193,7 @@
             currentTech = tech;
             if (audioCtx.state === 'suspended') audioCtx.resume();
             playBell();
+            createNoise();
             document.getElementById('selectionView').classList.add('hidden');
             document.getElementById('practiceView').classList.remove('hidden');
             document.getElementById('activeName').textContent = tech.name;
@@ -196,35 +201,29 @@
             
             if (sessionMinutes) {
                 timeRemaining = sessionMinutes * 60;
-                startTimer();
-            } else {
-                document.getElementById('timerDisplay').textContent = "∞";
-            }
+                timerInterval = setInterval(() => {
+                    timeRemaining--;
+                    let m = Math.floor(timeRemaining / 60), s = timeRemaining % 60;
+                    document.getElementById('timerDisplay').textContent = `${m}:${s < 10 ? '0' + s : s}`;
+                    if (timeRemaining <= 0) finishSession();
+                }, 1000);
+            } else { document.getElementById('timerDisplay').textContent = "∞"; }
             runPhase('inhale', tech.timing.inhale);
-        }
-
-        function startTimer() {
-            timerInterval = setInterval(() => {
-                timeRemaining--;
-                let m = Math.floor(timeRemaining / 60);
-                let s = timeRemaining % 60;
-                document.getElementById('timerDisplay').textContent = `${m}:${s < 10 ? '0' + s : s}`;
-                if (timeRemaining <= 0) { playBell(); setTimeout(endPractice, 3000); }
-            }, 1000);
         }
 
         function runPhase(phase, duration) {
             if (duration === 0) return nextPhase(phase);
+            if ("vibrate" in navigator) navigator.vibrate(25);
+            
             const circle = document.getElementById('breathCircle');
-            const label = document.getElementById('phaseLabel');
-            const display = document.getElementById('countDisplay');
             circle.className = 'breath-circle ' + phase;
-            label.textContent = phase.includes('hold') ? 'Hold' : (phase === 'inhale' ? 'In' : 'Out');
+            document.getElementById('phaseLabel').textContent = phase.includes('hold') ? 'Hold' : (phase === 'inhale' ? 'In' : 'Out');
+            
             let count = duration;
-            display.textContent = count;
+            document.getElementById('countDisplay').textContent = count;
             breathInterval = setInterval(() => {
                 count--;
-                display.textContent = count > 0 ? count : '•';
+                document.getElementById('countDisplay').textContent = count > 0 ? count : '•';
                 if (count <= 0) { clearInterval(breathInterval); nextPhase(phase); }
             }, 1000);
         }
@@ -232,14 +231,28 @@
         function nextPhase(current) {
             const sequence = ['inhale', 'hold1', 'exhale', 'hold2'];
             const nextIdx = (sequence.indexOf(current) + 1) % 4;
-            const durations = [currentTech.timing.inhale, currentTech.timing.hold1, currentTech.timing.exhale, currentTech.timing.hold2];
-            runPhase(sequence[nextIdx], durations[nextIdx]);
+            runPhase(sequence[nextIdx], [currentTech.timing.inhale, currentTech.timing.hold1, currentTech.timing.exhale, currentTech.timing.hold2][nextIdx]);
+        }
+
+        function finishSession() {
+            clearInterval(timerInterval); clearInterval(breathInterval);
+            if (backgroundSource) { backgroundSource.stop(); backgroundSource = null; }
+            playBell();
+            document.getElementById('practiceView').classList.add('hidden');
+            document.getElementById('reflectionView').classList.remove('hidden');
+            document.getElementById('quoteDisplay').textContent = QUOTES[Math.floor(Math.random() * QUOTES.length)];
+        }
+
+        function closeReflection() {
+            document.getElementById('reflectionView').classList.add('hidden');
+            document.getElementById('selectionView').classList.remove('hidden');
         }
 
         function endPractice() {
             clearInterval(timerInterval); clearInterval(breathInterval);
-            document.getElementById('selectionView').classList.remove('hidden');
+            if (backgroundSource) { backgroundSource.stop(); backgroundSource = null; }
             document.getElementById('practiceView').classList.add('hidden');
+            document.getElementById('selectionView').classList.remove('hidden');
         }
 
         renderLibrary();
