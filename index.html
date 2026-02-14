@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>presence • symphony hub</title>
+    <title>presence • symphony</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script crossorigin src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
     <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
@@ -14,24 +14,23 @@
         body { font-family: 'Inter', sans-serif; background: var(--dawn); margin: 0; overflow: hidden; height: 100vh; }
         .font-serif { font-family: 'Cormorant Garamond', serif; }
         
-        .stage-container { height: calc(100vh - 160px); overflow-y: auto; -webkit-overflow-scrolling: touch; }
-        iframe { width: 100%; height: 100%; border: none; transition: opacity 0.5s ease; }
+        .stage-container { height: calc(100vh - 160px); overflow-y: auto; }
+        iframe { width: 100%; height: 100%; border: none; }
 
-        .nav-item { transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1); opacity: 0.4; }
-        .nav-item.active { opacity: 1; color: var(--indigo); transform: translateY(-2px); }
+        .nav-item { transition: all 0.3s ease; opacity: 0.4; }
+        .nav-item.active { opacity: 1; color: var(--indigo); }
         
-        /* Ambient Glow Background */
         .ambient-bg {
             position: fixed; top: 0; left: 0; width: 100%; height: 100%;
-            background: radial-gradient(circle at 50% 50%, rgba(99, 102, 241, 0.02) 0%, transparent 70%);
+            background: radial-gradient(circle at 50% 50%, rgba(99, 102, 241, 0.03) 0%, transparent 70%);
             z-index: -1; pointer-events: none;
         }
         
         .card-glass {
-            background: white; border: 1px solid rgba(0,0,0,0.03);
-            border-radius: 2.5rem; transition: all 0.4s ease;
+            background: white; border: 1px solid rgba(0,0,0,0.04);
+            border-radius: 2.5rem; transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
         }
-        .card-glass:hover { transform: translateY(-5px); box-shadow: 0 20px 40px rgba(0,0,0,0.02); border-color: var(--indigo); }
+        .card-glass:hover { transform: translateY(-8px); box-shadow: 0 20px 40px rgba(99, 102, 241, 0.05); border-color: var(--indigo); }
     </style>
 </head>
 <body>
@@ -41,7 +40,6 @@
         const { useState, useEffect } = React;
 
         function App() {
-            // VIEW STATE: 'hub', 'flow', 'yoga', 'meditation', 'guided', 'breath', 'scan', 'sleep', 'ambient', 'lab', 'movement', 'ritual', 'journal', 'insights'
             const [view, setView] = useState('hub');
             const [intent, setIntent] = useState(localStorage.getItem('presence_intent') || "Neutrality");
 
@@ -49,25 +47,13 @@
                 localStorage.setItem('presence_intent', intent);
             }, [intent]);
 
-            // This function handles the "Stage" content
             const renderContent = () => {
                 if (view === 'hub') return <HubView setView={setView} intent={intent} setIntent={setIntent} />;
                 
-                // Mapping views to your file names
                 const fileMap = {
-                    yoga: 'presence_yoga_v3.html',
-                    meditation: 'presence_meditation.html',
-                    guided: 'presence_guided.html',
-                    breath: 'presence_breathwork.html',
-                    scan: 'presence_bodyscan.html',
-                    sleep: 'presence_sleep.html',
-                    ambient: 'presence_ambient_v2.html',
-                    lab: 'presence_alignment.html',
-                    movement: 'presence_movement.html',
-                    ritual: 'presence_rituals.html',
-                    flow: 'presence_flow.html',
-                    journal: 'presence_journal.html',
-                    insights: 'presence_insights.html'
+                    temple: 'monastery-best-in-class-1.html',
+                    mudra: 'Mudra Guide.html',
+                    lab: 'presence_alignment.html'
                 };
 
                 return <iframe src={fileMap[view]} className="animate-in fade-in duration-1000" />;
@@ -77,20 +63,18 @@
                 <div className="flex flex-col h-screen relative">
                     <div className="ambient-bg" />
 
-                    {/* PERSISTENT HEADER (The "Conductor") */}
+                    {/* SYMPHONY HEADER */}
                     <header className="h-20 flex justify-between items-center px-8 border-b border-slate-50 bg-white/60 backdrop-blur-xl z-50">
                         <div className="flex flex-col">
                             <span className="text-[7px] font-bold tracking-[0.4em] text-indigo-400 uppercase">Active Intent</span>
                             <span className="font-serif italic text-lg text-slate-700">{intent}</span>
                         </div>
                         
-                        <div className="text-2xl font-serif italic font-bold tracking-tighter cursor-pointer select-none" onClick={() => setView('hub')}>
+                        <div className="text-2xl font-serif italic font-bold tracking-tighter cursor-pointer" onClick={() => setView('hub')}>
                             presence<span className="text-indigo-500">•</span>
                         </div>
 
-                        <div className="w-10 h-10 rounded-full bg-slate-50 border border-slate-100 flex items-center justify-center text-xs">
-                            ✨
-                        </div>
+                        <div className="w-10 h-10 rounded-full bg-slate-50 border border-slate-100 flex items-center justify-center text-xs">✨</div>
                     </header>
 
                     {/* THE STAGE */}
@@ -101,9 +85,9 @@
                     {/* GLOBAL NAVIGATION */}
                     <nav className="h-20 bg-white border-t border-slate-50 flex justify-around items-center px-4 z-50">
                         <NavItem icon="🏛️" label="Hub" active={view === 'hub'} onClick={() => setView('hub')} />
-                        <NavItem icon="🌊" label="Practice" active={['yoga', 'meditation', 'breath', 'scan'].includes(view)} onClick={() => setView('yoga')} />
+                        <NavItem icon="🕯️" label="Temple" active={view === 'temple'} onClick={() => setView('temple')} />
                         <NavItem icon="📐" label="Lab" active={view === 'lab'} onClick={() => setView('lab')} />
-                        <NavItem icon="📖" label="Journal" active={view === 'journal'} onClick={() => setView('journal')} />
+                        <NavItem icon="🤲" label="Mudra" active={view === 'mudra'} onClick={() => setView('mudra')} />
                     </nav>
                 </div>
             );
@@ -120,68 +104,36 @@
 
         function HubView({ setView, intent, setIntent }) {
             return (
-                <div className="p-8 md:p-16 max-w-7xl mx-auto space-y-20 animate-in fade-in slide-in-from-bottom-4 duration-1000">
+                <div className="p-8 md:p-16 max-w-7xl mx-auto space-y-16 animate-in fade-in slide-in-from-bottom-4 duration-1000">
                     
-                    {/* Hero & Intent Setting */}
                     <section className="text-center space-y-6">
-                        <h1 className="text-8xl font-serif tracking-tighter leading-none">presence</h1>
+                        <h1 className="text-7xl md:text-9xl font-serif tracking-tighter leading-none text-slate-900">presence</h1>
                         <div className="flex flex-col items-center">
                              <input 
                                 value={intent} 
                                 onChange={(e) => setIntent(e.target.value)}
-                                className="text-2xl font-serif italic text-indigo-500 bg-transparent text-center focus:outline-none border-b border-transparent focus:border-indigo-100 w-full max-w-xs"
+                                className="text-2xl font-serif italic text-indigo-500 bg-transparent text-center focus:outline-none w-full max-w-xs"
                                 placeholder="Set Intent..."
                             />
                         </div>
                     </section>
 
-                    {/* Main Categories */}
                     <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-                        
-                        {/* CATEGORY: ACTIVE */}
-                        <div className="space-y-6">
-                            <h4 className="text-[10px] font-bold tracking-[0.4em] text-slate-300 uppercase pl-4">Active Practice</h4>
-                            <div className="space-y-3">
-                                <MenuCard icon="🌊" title="Studio" sub="Yoga & Flow" onClick={() => setView('yoga')} />
-                                <MenuCard icon="🧘" title="Meditation" sub="Timed Sessions" onClick={() => setView('meditation')} />
-                                <MenuCard icon="💨" title="Breathwork" sub="Regulation" onClick={() => setView('breath')} />
-                                <MenuCard icon="✨" title="Body Scan" sub="Awareness" onClick={() => setView('scan')} />
-                            </div>
-                        </div>
-
-                        {/* CATEGORY: DEEP WORK */}
-                        <div className="space-y-6">
-                            <h4 className="text-[10px] font-bold tracking-[0.4em] text-slate-300 uppercase pl-4">Deep Work</h4>
-                            <div className="space-y-3">
-                                <MenuCard icon="📐" title="Alignment Lab" sub="Biomechanics" onClick={() => setView('lab')} />
-                                <MenuCard icon="🎵" title="Ambient" sub="Soundscapes" onClick={() => setView('ambient')} />
-                                <MenuCard icon="🔄" title="Rituals" sub="Custom Flows" onClick={() => setView('ritual')} />
-                                <MenuCard icon="🎯" title="Intents" sub="Set Direction" onClick={() => setView('flow')} />
-                            </div>
-                        </div>
-
-                        {/* CATEGORY: SYSTEM */}
-                        <div className="space-y-6">
-                            <h4 className="text-[10px] font-bold tracking-[0.4em] text-slate-300 uppercase pl-4">System</h4>
-                            <div className="space-y-3">
-                                <MenuCard icon="📖" title="Journal" sub="Reflection" onClick={() => setView('journal')} />
-                                <MenuCard icon="📈" title="Insights" sub="Progress" onClick={() => setView('insights')} />
-                                <MenuCard icon="🌙" title="Sleep" sub="Recovery" onClick={() => setView('sleep')} />
-                            </div>
-                        </div>
-
+                        <MenuCard icon="🏛️" title="The Temple" sub="Digital Monastery" onClick={() => setView('temple')} dark />
+                        <MenuCard icon="📐" title="Alignment Lab" sub="Sequence Builder" onClick={() => setView('lab')} />
+                        <MenuCard icon="🤲" title="Mudra Guide" sub="100+ Sacred Seals" onClick={() => setView('mudra')} />
                     </div>
                 </div>
             );
         }
 
-        function MenuCard({ icon, title, sub, onClick }) {
+        function MenuCard({ icon, title, sub, onClick, dark }) {
             return (
-                <div onClick={onClick} className="card-glass p-6 flex items-center gap-5 cursor-pointer group">
-                    <div className="text-3xl group-hover:scale-110 transition-transform">{icon}</div>
+                <div onClick={onClick} className={`card-glass p-10 flex flex-col items-start gap-6 cursor-pointer group ${dark ? 'bg-slate-900 border-none' : 'bg-white'}`}>
+                    <div className="text-4xl group-hover:scale-110 transition-transform">{icon}</div>
                     <div>
-                        <div className="text-xl font-serif italic text-slate-700">{title}</div>
-                        <div className="text-[9px] font-bold text-slate-300 uppercase tracking-widest">{sub}</div>
+                        <div className={`text-2xl font-serif italic ${dark ? 'text-white' : 'text-slate-700'}`}>{title}</div>
+                        <div className={`text-[9px] font-bold uppercase tracking-[0.3em] ${dark ? 'text-slate-400' : 'text-slate-300'}`}>{sub}</div>
                     </div>
                 </div>
             );
@@ -192,3 +144,4 @@
     </script>
 </body>
 </html>
+
