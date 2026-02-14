@@ -2,39 +2,44 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>presence</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script crossorigin src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
     <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
     <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
-    <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,600;1,400&family=Inter:wght@200;300;400&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,600;1,400&family=Inter:wght@200;300;400;500&display=swap" rel="stylesheet">
     <style>
-        :root { --ink: #1a1a1a; --mist: #fcfcfc; --slate: #64748b; }
+        :root { --ink: #1a1a1a; --mist: #fcfcfc; --slate: #94a3b8; }
         body { font-family: 'Inter', sans-serif; background: var(--mist); color: var(--ink); margin: 0; overflow: hidden; height: 100vh; font-weight: 300; }
         .font-serif { font-family: 'Cormorant Garamond', serif; }
         
-        /* Smooth fade for content changes */
-        .stage-container { height: calc(100vh - 140px); overflow-y: auto; -webkit-overflow-scrolling: touch; }
+        .stage-container { height: calc(100vh - 140px); overflow-y: auto; -webkit-overflow-scrolling: touch; background: var(--mist); }
         iframe { width: 100%; height: 100%; border: none; transition: opacity 0.8s ease; }
 
-        /* Minimal Navigation */
-        .nav-item { transition: all 0.5s ease; opacity: 0.3; letter-spacing: 0.2em; font-size: 9px; text-transform: uppercase; font-weight: 400; }
+        /* Minimal Navigation Scrollable */
+        .nav-scroll { display: flex; gap: 2.2rem; overflow-x: auto; padding: 0 40px; scrollbar-width: none; -ms-overflow-style: none; width: 100%; justify-content: flex-start; }
+        .nav-scroll::-webkit-scrollbar { display: none; }
+
+        .nav-item { transition: all 0.5s ease; opacity: 0.25; letter-spacing: 0.25em; font-size: 8px; text-transform: uppercase; font-weight: 500; white-space: nowrap; flex-shrink: 0; position: relative; padding-bottom: 4px; }
         .nav-item.active { opacity: 1; transform: translateY(-1px); }
-        .nav-item:after { content: ''; display: block; width: 0; height: 1px; background: var(--ink); transition: width 0.5s; margin-top: 4px; }
+        .nav-item:after { content: ''; display: block; width: 0; height: 1px; background: var(--ink); transition: width 0.5s; position: absolute; bottom: 0; left: 0; }
         .nav-item.active:after { width: 100%; }
         
         .card-zen {
-            background: transparent; border-bottom: 1px solid rgba(0,0,0,0.05);
-            padding: 2rem 1rem; transition: all 0.4s ease;
+            background: transparent; border-bottom: 1px solid rgba(0,0,0,0.04);
+            padding: 1.25rem 0.5rem; transition: all 0.4s ease;
         }
-        .card-zen:hover { background: rgba(0,0,0,0.01); border-bottom-color: var(--ink); }
+        .card-zen:hover { border-bottom-color: var(--ink); padding-left: 0.75rem; background: rgba(0,0,0,0.005); }
         
-        /* Subtle input for intent */
         .intent-input {
             border: none; background: transparent; text-align: center;
             font-family: 'Cormorant Garamond', serif; font-style: italic;
-            color: var(--slate); outline: none; width: 100%;
+            color: var(--slate); outline: none; width: 100%; font-weight: 300;
+        }
+
+        @media (min-width: 1024px) {
+            .nav-scroll { justify-content: center; }
         }
     </style>
 </head>
@@ -55,48 +60,62 @@
             const renderContent = () => {
                 if (view === 'hub') return <HubView setView={setView} intent={intent} setIntent={setIntent} />;
                 
+                // FULL 14-TAB MAPPING
                 const fileMap = {
                     temple: 'monastery-best-in-class-1.html',
                     yoga: 'presence_yoga_v3.html',
                     lab: 'presence_alignment.html',
                     mudra: 'Mudra Guide.html',
-                    journal: 'presence_journal.html'
+                    breath: 'presence_breathwork.html',
+                    scan: 'presence_bodyscan.html',
+                    guided: 'presence_guided.html',
+                    ambient: 'presence_ambient_v2.html',
+                    ritual: 'presence_rituals.html',
+                    journal: 'presence_journal.html',
+                    sleep: 'presence_sleep.html',
+                    movement: 'presence_movement.html',
+                    flow: 'presence_flow.html',
+                    insights: 'presence_insights.html'
                 };
 
-                return <iframe src={fileMap[view]} />;
+                return <iframe src={fileMap[view]} key={view} />;
             };
 
             return (
                 <div className="flex flex-col h-screen relative">
-                    {/* MINIMAL HEADER */}
-                    <header className="h-20 flex justify-between items-center px-10 z-50">
-                        <div className="w-24">
-                            <span className="text-[7px] tracking-[0.4em] text-slate-400 uppercase block mb-1">Intent</span>
+                    <header className="h-20 flex justify-between items-center px-6 md:px-12 z-50">
+                        <div className="w-32 hidden md:block">
+                            <span className="text-[6px] tracking-[0.4em] text-slate-400 uppercase block mb-1">Point of Focus</span>
                             <span className="font-serif italic text-sm text-slate-500">{intent}</span>
                         </div>
-                        
-                        <div className="text-xl font-serif tracking-[0.3em] cursor-pointer" onClick={() => setView('hub')}>
-                            presence
-                        </div>
-
-                        <div className="w-24 text-right">
-                             <span className="text-[7px] tracking-[0.4em] text-slate-300 uppercase">Est. 2026</span>
+                        <div className="text-xl font-serif tracking-[0.4em] cursor-pointer" onClick={() => setView('hub')}>presence</div>
+                        <div className="w-32 text-right hidden md:block">
+                             <span className="text-[6px] tracking-[0.4em] text-slate-300 uppercase">Symphony v.01</span>
                         </div>
                     </header>
 
-                    {/* THE STAGE */}
                     <main className="stage-container flex-grow">
                         {renderContent()}
                     </main>
 
-                    {/* CLEAN NAVIGATION (ALL TABS, NO ICONS) */}
-                    <nav className="h-16 flex justify-center items-center gap-12 px-4 z-50">
-                        <NavItem label="Hub" active={view === 'hub'} onClick={() => setView('hub')} />
-                        <NavItem label="Temple" active={view === 'temple'} onClick={() => setView('temple')} />
-                        <NavItem label="Yoga" active={view === 'yoga'} onClick={() => setView('yoga')} />
-                        <NavItem label="Lab" active={view === 'lab'} onClick={() => setView('lab')} />
-                        <NavItem label="Mudra" active={view === 'mudra'} onClick={() => setView('mudra')} />
-                        <NavItem label="Journal" active={view === 'journal'} onClick={() => setView('journal')} />
+                    {/* FULL SYMPHONY NAVIGATION - ZERO ICONS */}
+                    <nav className="h-16 flex items-center border-t border-slate-50 bg-white/50 backdrop-blur-sm z-50">
+                        <div className="nav-scroll">
+                            <NavItem label="Hub" active={view === 'hub'} onClick={() => setView('hub')} />
+                            <NavItem label="Temple" active={view === 'temple'} onClick={() => setView('temple')} />
+                            <NavItem label="Yoga" active={view === 'yoga'} onClick={() => setView('yoga')} />
+                            <NavItem label="Flow" active={view === 'flow'} onClick={() => setView('flow')} />
+                            <NavItem label="Lab" active={view === 'lab'} onClick={() => setView('lab')} />
+                            <NavItem label="Mudra" active={view === 'mudra'} onClick={() => setView('mudra')} />
+                            <NavItem label="Breath" active={view === 'breath'} onClick={() => setView('breath')} />
+                            <NavItem label="Scan" active={view === 'scan'} onClick={() => setView('scan')} />
+                            <NavItem label="Guided" active={view === 'guided'} onClick={() => setView('guided')} />
+                            <NavItem label="Ambient" active={view === 'ambient'} onClick={() => setView('ambient')} />
+                            <NavItem label="Ritual" active={view === 'ritual'} onClick={() => setView('ritual')} />
+                            <NavItem label="Journal" active={view === 'journal'} onClick={() => setView('journal')} />
+                            <NavItem label="Sleep" active={view === 'sleep'} onClick={() => setView('sleep')} />
+                            <NavItem label="Insights" active={view === 'insights'} onClick={() => setView('insights')} />
+                        </div>
                     </nav>
                 </div>
             );
@@ -104,33 +123,41 @@
 
         function NavItem({ label, active, onClick }) {
             return (
-                <button onClick={onClick} className={`nav-item ${active ? 'active' : ''}`}>
-                    {label}
-                </button>
+                <button onClick={onClick} className={`nav-item ${active ? 'active' : ''}`}>{label}</button>
             );
         }
 
         function HubView({ setView, intent, setIntent }) {
             return (
-                <div className="max-w-4xl mx-auto py-20 px-8 space-y-24 animate-in fade-in duration-1000">
-                    
+                <div className="max-w-6xl mx-auto py-12 px-6 md:px-12 space-y-16 animate-in fade-in duration-1000">
                     <section className="text-center space-y-4">
-                        <h1 className="text-8xl font-serif font-light tracking-tighter leading-none">presence</h1>
-                        <input 
-                            value={intent} 
-                            onChange={(e) => setIntent(e.target.value)}
-                            className="intent-input text-xl"
-                            placeholder="Set Intent..."
-                        />
+                        <h1 className="text-7xl md:text-9xl font-serif font-light tracking-tighter leading-none">presence</h1>
+                        <input value={intent} onChange={(e) => setIntent(e.target.value)} className="intent-input text-lg md:text-2xl" placeholder="neutrality" />
                     </section>
 
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-x-20 gap-y-2">
-                        <ZenCard title="Temple" sub="Monastery Space" onClick={() => setView('temple')} />
-                        <ZenCard title="Studio" sub="Yoga & Flow" onClick={() => setView('yoga')} />
-                        <ZenCard title="Alignment" sub="The Lab" onClick={() => setView('lab')} />
-                        <ZenCard title="Mudra" sub="Encyclopedia" onClick={() => setView('mudra')} />
-                        <ZenCard title="Breathing" sub="Pranayama" onClick={() => setView('hub')} />
-                        <ZenCard title="Journal" sub="Reflection" onClick={() => setView('journal')} />
+                    <div className="grid grid-cols-1 md:grid-cols-3 gap-x-16 gap-y-12">
+                        <div className="space-y-2">
+                            <h4 className="text-[7px] tracking-[0.5em] text-slate-300 uppercase mb-6 font-medium">Practice</h4>
+                            <ZenCard title="Temple" sub="Monastery" onClick={() => setView('temple')} />
+                            <ZenCard title="Studio" sub="Yoga v3" onClick={() => setView('yoga')} />
+                            <ZenCard title="Movement" sub="Flow" onClick={() => setView('flow')} />
+                            <ZenCard title="Breathing" sub="Pranayama" onClick={() => setView('breath')} />
+                            <ZenCard title="Guided" sub="Sessions" onClick={() => setView('guided')} />
+                        </div>
+                        <div className="space-y-2">
+                            <h4 className="text-[7px] tracking-[0.5em] text-slate-300 uppercase mb-6 font-medium">Deep Work</h4>
+                            <ZenCard title="Alignment" sub="The Lab" onClick={() => setView('lab')} />
+                            <ZenCard title="Mudra" sub="Encyclopedia" onClick={() => setView('mudra')} />
+                            <ZenCard title="Body Scan" sub="Awareness" onClick={() => setView('scan')} />
+                            <ZenCard title="Rituals" sub="Custom" onClick={() => setView('ritual')} />
+                            <ZenCard title="Ambient" sub="Soundscapes" onClick={() => setView('ambient')} />
+                        </div>
+                        <div className="space-y-2">
+                            <h4 className="text-[7px] tracking-[0.5em] text-slate-300 uppercase mb-6 font-medium">System</h4>
+                            <ZenCard title="Journal" sub="Reflection" onClick={() => setView('journal')} />
+                            <ZenCard title="Sleep" sub="Recovery" onClick={() => setView('sleep')} />
+                            <ZenCard title="Insights" sub="Analysis" onClick={() => setView('insights')} />
+                        </div>
                     </div>
                 </div>
             );
@@ -139,8 +166,8 @@
         function ZenCard({ title, sub, onClick }) {
             return (
                 <div onClick={onClick} className="card-zen cursor-pointer group flex justify-between items-baseline">
-                    <div className="text-2xl font-serif font-light italic text-slate-800">{title}</div>
-                    <div className="text-[8px] font-normal text-slate-300 uppercase tracking-[0.2em]">{sub}</div>
+                    <div className="text-xl font-serif font-light italic text-slate-700">{title}</div>
+                    <div className="text-[7px] font-normal text-slate-400 uppercase tracking-[0.2em]">{sub}</div>
                 </div>
             );
         }
