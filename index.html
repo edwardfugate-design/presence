@@ -11,14 +11,12 @@
     <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,600;1,400&family=Inter:wght@200;300;400;500&display=swap" rel="stylesheet">
     <style>
         :root { --ink: #1a1a1a; --mist: #fcfcfc; --slate: #94a3b8; }
-        body { font-family: 'Inter', sans-serif; background: var(--mist); color: var(--ink); margin: 0; overflow: hidden; height: 100vh; font-weight: 300; }
+        body { font-family: 'Inter', sans-serif; background: var(--mist); color: var(--ink); margin: 0; overflow: hidden; height: 100vh; }
         .font-serif { font-family: 'Cormorant Garamond', serif; }
-        
-        .stage-container { height: calc(100vh - 140px); overflow-y: auto; -webkit-overflow-scrolling: touch; background: var(--mist); }
-        iframe { width: 100%; height: 100%; border: none; transition: opacity 0.5s ease; background: var(--mist); }
+        .stage-container { height: calc(100vh - 140px); overflow-y: auto; -webkit-overflow-scrolling: touch; }
+        iframe { width: 100%; height: 100%; border: none; background: var(--mist); }
 
-        /* Minimal Navigation Scrollable */
-        .nav-scroll { display: flex; gap: 2.2rem; overflow-x: auto; padding: 0 40px; scrollbar-width: none; -ms-overflow-style: none; width: 100%; }
+        .nav-scroll { display: flex; gap: 2.2rem; overflow-x: auto; padding: 0 40px; scrollbar-width: none; width: 100%; }
         .nav-scroll::-webkit-scrollbar { display: none; }
 
         .nav-item { transition: all 0.5s ease; opacity: 0.25; letter-spacing: 0.25em; font-size: 8px; text-transform: uppercase; font-weight: 500; white-space: nowrap; flex-shrink: 0; position: relative; padding: 10px 0; }
@@ -26,25 +24,15 @@
         .nav-item:after { content: ''; display: block; width: 0; height: 1px; background: var(--ink); transition: width 0.5s; position: absolute; bottom: 5px; left: 0; }
         .nav-item.active:after { width: 100%; }
         
-        .card-zen {
-            background: transparent; border-bottom: 1px solid rgba(0,0,0,0.04);
-            padding: 1.25rem 0.5rem; transition: all 0.4s ease;
-        }
-        
-        .intent-input {
-            border: none; background: transparent; text-align: center;
-            font-family: 'Cormorant Garamond', serif; font-style: italic;
-            color: var(--slate); outline: none; width: 100%; font-weight: 300;
-        }
+        .card-zen { border-bottom: 1px solid rgba(0,0,0,0.04); padding: 1.25rem 0.5rem; transition: all 0.4s ease; }
+        .card-zen:hover { border-bottom-color: var(--ink); background: rgba(0,0,0,0.005); }
+        .intent-input { border: none; background: transparent; text-align: center; font-family: 'Cormorant Garamond', serif; font-style: italic; color: var(--slate); outline: none; width: 100%; }
 
-        @media (min-width: 1024px) {
-            .nav-scroll { justify-content: center; }
-        }
+        @media (min-width: 1024px) { .nav-scroll { justify-content: center; } }
     </style>
 </head>
 <body>
     <div id="root"></div>
-
     <script type="text/babel">
         const { useState, useEffect } = React;
 
@@ -52,14 +40,12 @@
             const [view, setView] = useState('hub');
             const [intent, setIntent] = useState(localStorage.getItem('presence_intent') || "Neutrality");
 
-            useEffect(() => {
-                localStorage.setItem('presence_intent', intent);
-            }, [intent]);
+            useEffect(() => { localStorage.setItem('presence_intent', intent); }, [intent]);
 
             const renderContent = () => {
                 if (view === 'hub') return <HubView setView={setView} intent={intent} setIntent={setIntent} />;
                 
-                // MAPPING - DOUBLE CHECK THESE FILENAMES
+                // MAPPED EXACTLY TO YOUR GITHUB FILENAMES
                 const fileMap = {
                     temple: 'monastery-best-in-class-1.html',
                     yoga: 'presence_yoga_v3.html',
@@ -77,12 +63,12 @@
                     insights: 'presence_insights.html'
                 };
 
-                return <iframe src={fileMap[view]} key={view} id="stage-frame" />;
+                return <iframe src={fileMap[view]} key={view} />;
             };
 
             return (
                 <div className="flex flex-col h-screen relative">
-                    <header className="h-20 flex justify-between items-center px-6 md:px-12 z-50">
+                    <header className="h-20 flex justify-between items-center px-6 md:px-12">
                         <div className="w-32 hidden md:block">
                             <span className="text-[6px] tracking-[0.4em] text-slate-400 uppercase block mb-1">Focus</span>
                             <span className="font-serif italic text-sm text-slate-500">{intent}</span>
@@ -120,14 +106,7 @@
         }
 
         function NavItem({ label, active, onClick }) {
-            return (
-                <button 
-                    onClick={(e) => { e.preventDefault(); onClick(); }} 
-                    className={`nav-item ${active ? 'active' : ''}`}
-                >
-                    {label}
-                </button>
-            );
+            return <button onClick={onClick} className={`nav-item ${active ? 'active' : ''}`}>{label}</button>;
         }
 
         function HubView({ setView, intent, setIntent }) {
@@ -137,7 +116,6 @@
                         <h1 className="text-7xl md:text-9xl font-serif font-light tracking-tighter leading-none">presence</h1>
                         <input value={intent} onChange={(e) => setIntent(e.target.value)} className="intent-input text-lg md:text-2xl" placeholder="neutrality" />
                     </section>
-
                     <div className="grid grid-cols-1 md:grid-cols-3 gap-x-16 gap-y-12 pb-10">
                         <div className="space-y-2">
                             <h4 className="text-[7px] tracking-[0.5em] text-slate-300 uppercase mb-6 font-medium">Practice</h4>
