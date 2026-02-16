@@ -11,26 +11,25 @@
     <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,600;1,400&family=Inter:wght@200;300;400;500&display=swap" rel="stylesheet">
     <style>
         :root { --ink: #1a1a1a; --mist: #fcfcfc; --slate: #94a3b8; }
-        body { font-family: 'Inter', sans-serif; background: #d1d5db; color: var(--ink); margin: 0; overflow-x: hidden; min-height: 100vh; }
+        body { font-family: 'Inter', sans-serif; background: #d1d5db; color: var(--ink); margin: 0; min-height: 100vh; }
         .font-serif { font-family: 'Cormorant Garamond', serif; }
         
-        /* Dashboard Container */
-        .stage-container { min-height: 100vh; padding-bottom: 40px; }
         iframe { width: 100%; height: 100vh; border: none; background: white; }
 
         .card-zen { 
             background: rgba(255, 255, 255, 0.7);
             backdrop-filter: blur(10px);
             border-radius: 24px;
-            padding: 2.5rem 2rem;
+            padding: 2.2rem 1.8rem;
             transition: all 0.4s ease;
             cursor: pointer;
             display: flex;
             flex-direction: column;
             justify-content: space-between;
-            height: 160px;
+            height: 150px;
+            border: 1px solid rgba(255,255,255,0.3);
         }
-        .card-zen:hover { background: rgba(255, 255, 255, 0.9); transform: translateY(-2px); }
+        .card-zen:hover { background: rgba(255, 255, 255, 0.9); transform: translateY(-3px); box-shadow: 0 10px 30px rgba(0,0,0,0.05); }
         
         .filter-btn {
             background: #1a1a1a;
@@ -40,23 +39,22 @@
             font-size: 10px;
             letter-spacing: 0.2em;
             text-transform: uppercase;
-            transition: 0.3s;
         }
 
-        /* Back Button for iFrames */
         .back-nav {
             position: fixed;
             top: 20px;
             left: 20px;
             z-index: 100;
             background: white;
-            padding: 8px 16px;
+            padding: 10px 20px;
             border-radius: 99px;
             font-size: 10px;
             letter-spacing: 0.1em;
             text-transform: uppercase;
             box-shadow: 0 4px 12px rgba(0,0,0,0.1);
             cursor: pointer;
+            font-weight: 600;
         }
     </style>
 </head>
@@ -68,9 +66,8 @@
         function App() {
             const [view, setView] = useState('hub');
 
-            // MAPPING TO GITHUB FILENAMES
             const fileMap = {
-                temple: 'monastery_best_in_class_1.html', // Fixed: underscore
+                temple: 'monastery_best_in_class_1.html',
                 yoga: 'presence_yoga_v3.html',
                 lab: 'presence_alignment.html',
                 mudra: 'Mudra Guide.html',
@@ -89,48 +86,60 @@
 
             if (view !== 'hub') {
                 return (
-                    <div>
-                        <div className="back-nav" onClick={() => setView('hub')}>← Back to Presence</div>
+                    <div className="animate-in fade-in duration-500">
+                        <div className="back-nav" onClick={() => setView('hub')}>← Back</div>
                         <iframe src={fileMap[view]} title={view} />
                     </div>
                 );
             }
 
             return (
-                <div className="stage-container">
-                    <div className="max-w-5xl mx-auto pt-20 px-6 text-center space-y-12">
-                        <h1 className="text-6xl md:text-8xl font-serif font-light tracking-tight">presence</h1>
+                <div className="min-height-screen pb-20">
+                    <div className="max-w-6xl mx-auto pt-16 px-6 text-center space-y-12">
+                        <h1 className="text-7xl md:text-8xl font-serif font-light tracking-tight">presence</h1>
                         <p className="text-[10px] tracking-[0.4em] text-slate-500 uppercase">0.1 Hours Cultivated</p>
                         
-                        {/* Practice Tracking Toggle */}
-                        <div className="bg-white/80 rounded-2xl p-6 flex justify-between items-center max-w-2xl mx-auto border border-white/20">
+                        <div className="bg-white/80 rounded-3xl p-6 flex justify-between items-center max-w-2xl mx-auto border border-white/40 shadow-sm">
                             <div className="text-left">
-                                <p className="font-semibold text-xs">Practice Tracking</p>
-                                <p className="text-[10px] text-slate-400">Track your practice time and build insights</p>
+                                <p className="font-semibold text-xs text-slate-800">Practice Tracking</p>
+                                <p className="text-[10px] text-slate-400">Sync with local insights</p>
                             </div>
-                            <div className="w-10 h-5 bg-indigo-500 rounded-full relative">
-                                <div className="absolute right-1 top-1 w-3 h-3 bg-white rounded-full"></div>
+                            <div className="w-12 h-6 bg-indigo-500 rounded-full relative shadow-inner">
+                                <div className="absolute right-1 top-1 w-4 h-4 bg-white rounded-full shadow-sm"></div>
                             </div>
                         </div>
 
-                        {/* Filter Pills */}
                         <div className="flex justify-center gap-4 py-4">
                             <button className="filter-btn">Still</button>
-                            <button className="filter-btn opacity-80">Flow</button>
-                            <button className="filter-btn opacity-80">Ritual</button>
+                            <button className="filter-btn opacity-20 hover:opacity-100 transition-opacity">Flow</button>
+                            <button className="filter-btn opacity-20 hover:opacity-100 transition-opacity">Ritual</button>
                         </div>
 
-                        {/* Card Grid */}
-                        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 pb-20">
+                        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                            {/* Row 1 */}
                             <ZenCard category="Temple" title="Monastery" onClick={() => setView('temple')} />
                             <ZenCard category="Studio" title="Create Practice" onClick={() => setView('yoga')} />
                             <ZenCard category="Meditation" title="Timed Session" onClick={() => setView('timer')} />
+                            
+                            {/* Row 2 */}
                             <ZenCard category="Guided" title="Voice Sessions" onClick={() => setView('guided')} />
                             <ZenCard category="Breathwork" title="Regulation" onClick={() => setView('breath')} />
                             <ZenCard category="Body Scan" title="Awareness" onClick={() => setView('scan')} />
+                            
+                            {/* Row 3 */}
+                            <ZenCard category="Movement" title="Physical Reset" onClick={() => setView('movement')} />
+                            <ZenCard category="Flow" title="Visual Drifting" onClick={() => setView('flow')} />
+                            <ZenCard category="Mudra" title="Encyclopedia" onClick={() => setView('mudra')} />
+
+                            {/* Row 4 */}
                             <ZenCard category="Sleep" title="Rest & Recovery" onClick={() => setView('sleep')} />
                             <ZenCard category="The Lab" title="Alignment" onClick={() => setView('lab')} />
+                            <ZenCard category="Ambient" title="Soundscapes" onClick={() => setView('ambient')} />
+
+                            {/* Row 5 */}
+                            <ZenCard category="Rituals" title="Daily Sequence" onClick={() => setView('ritual')} />
                             <ZenCard category="Journal" title="Reflection" onClick={() => setView('journal')} />
+                            <ZenCard category="Insights" title="System Analysis" onClick={() => setView('insights')} />
                         </div>
                     </div>
                 </div>
@@ -139,9 +148,9 @@
 
         function ZenCard({ category, title, onClick }) {
             return (
-                <div onClick={onClick} className="card-zen text-left">
-                    <span className="text-[8px] uppercase tracking-[0.3em] text-slate-400 font-medium">{category}</span>
-                    <span className="text-xl font-serif italic text-slate-700">{title}</span>
+                <div onClick={onClick} className="card-zen text-left animate-in slide-in-from-bottom-4 duration-700">
+                    <span className="text-[9px] uppercase tracking-[0.3em] text-slate-400 font-semibold">{category}</span>
+                    <span className="text-2xl font-serif italic text-slate-800">{title}</span>
                 </div>
             );
         }
