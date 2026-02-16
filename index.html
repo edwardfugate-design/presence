@@ -66,15 +66,16 @@
         function App() {
             const [view, setView] = useState('hub');
 
+            // Corrected mappings based on your GitHub repository
             const fileMap = {
                 temple: 'monastery_best_in_class_1.html',
                 yoga: 'presence_yoga_v3.html',
                 lab: 'presence_alignment.html',
-                mudra: 'Mudra Guide.html',
+                mudra: 'Mudra-Guide.html', // Fixed: Added hyphen instead of space
                 breath: 'presence_breathwork.html',
                 scan: 'presence_bodyscan.html',
                 guided: 'presence_guided.html',
-                ambient: 'presence_ambient_v2.html',
+                ambient: 'presence-ambient-v2.html', // Fixed: Hyphens instead of underscores
                 ritual: 'presence_rituals.html',
                 journal: 'presence_journal.html',
                 sleep: 'presence_sleep.html',
@@ -94,7 +95,7 @@
             }
 
             return (
-                <div className="min-height-screen pb-20">
+                <div className="min-h-screen pb-20"> {/* Fixed: min-height-screen to min-h-screen (Tailwind) */}
                     <div className="max-w-6xl mx-auto pt-16 px-6 text-center space-y-12">
                         <h1 className="text-7xl md:text-8xl font-serif font-light tracking-tight">presence</h1>
                         <p className="text-[10px] tracking-[0.4em] text-slate-500 uppercase">0.1 Hours Cultivated</p>
@@ -116,27 +117,18 @@
                         </div>
 
                         <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                            {/* Row 1 */}
                             <ZenCard category="Temple" title="Monastery" onClick={() => setView('temple')} />
                             <ZenCard category="Studio" title="Create Practice" onClick={() => setView('yoga')} />
                             <ZenCard category="Meditation" title="Timed Session" onClick={() => setView('timer')} />
-                            
-                            {/* Row 2 */}
                             <ZenCard category="Guided" title="Voice Sessions" onClick={() => setView('guided')} />
                             <ZenCard category="Breathwork" title="Regulation" onClick={() => setView('breath')} />
                             <ZenCard category="Body Scan" title="Awareness" onClick={() => setView('scan')} />
-                            
-                            {/* Row 3 */}
                             <ZenCard category="Movement" title="Physical Reset" onClick={() => setView('movement')} />
                             <ZenCard category="Flow" title="Visual Drifting" onClick={() => setView('flow')} />
                             <ZenCard category="Mudra" title="Encyclopedia" onClick={() => setView('mudra')} />
-
-                            {/* Row 4 */}
                             <ZenCard category="Sleep" title="Rest & Recovery" onClick={() => setView('sleep')} />
                             <ZenCard category="The Lab" title="Alignment" onClick={() => setView('lab')} />
                             <ZenCard category="Ambient" title="Soundscapes" onClick={() => setView('ambient')} />
-
-                            {/* Row 5 */}
                             <ZenCard category="Rituals" title="Daily Sequence" onClick={() => setView('ritual')} />
                             <ZenCard category="Journal" title="Reflection" onClick={() => setView('journal')} />
                             <ZenCard category="Insights" title="System Analysis" onClick={() => setView('insights')} />
