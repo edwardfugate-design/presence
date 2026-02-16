@@ -2,207 +2,98 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>presence</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script crossorigin src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
     <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
     <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
-    <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,600;1,400&family=Inter:wght@200;300;400;500&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;1,400&family=Inter:wght@200;300;400&display=swap" rel="stylesheet">
     <style>
-        :root { --ink: #1a1a1a; --mist: #fcfcfc; --slate: #94a3b8; }
-        body { font-family: 'Inter', sans-serif; background: #d1d5db; color: var(--ink); margin: 0; min-height: 100vh; overflow-x: hidden; }
+        body { font-family: 'Inter', sans-serif; background: #d1d5db; color: #1a1a1a; margin: 0; }
         .font-serif { font-family: 'Cormorant Garamond', serif; }
-        
-        /* Layout Transitions */
-        .view-wrapper { animation: fadeIn 0.8s cubic-bezier(0.16, 1, 0.3, 1); }
-        @keyframes fadeIn { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: translateY(0); } }
-
-        /* Symphony Timer Components */
-        .presence-container { padding: 20px; max-width: 600px; margin: 0 auto; text-align: center; }
-        .choice-btn, .preset-btn { 
-            padding: 8px 14px; margin: 4px; border: 1px solid rgba(0,0,0,0.1); 
-            border-radius: 12px; background: rgba(255,255,255,0.6); cursor: pointer; font-size: 10px;
-            letter-spacing: 0.05em; transition: all 0.3s ease; text-transform: uppercase;
-        }
-        .choice-btn.active, .preset-btn.active { background: var(--ink); color: white; transform: scale(1.05); }
-        
-        .breath-circle { 
-            width: 200px; height: 200px; border-radius: 50%; background: white; 
-            margin: 40px auto; display: flex; align-items: center; justify-content: center;
-            cursor: pointer; transition: transform 4s ease-in-out; 
-            box-shadow: 0 20px 40px rgba(0,0,0,0.04), inset 0 0 20px rgba(0,0,0,0.02);
-        }
-        .breathing { transform: scale(1.35); }
-        
-        /* Glossary UI */
-        .glossary-card {
-            background: rgba(255, 255, 255, 0.5); backdrop-filter: blur(10px);
-            border-radius: 28px; padding: 2rem; margin-top: 2rem; text-align: left;
-            border: 1px solid rgba(255, 255, 255, 0.4); box-shadow: 0 10px 30px rgba(0,0,0,0.03);
-        }
-
-        /* Hub Styles */
         .card-zen { 
             background: rgba(255, 255, 255, 0.7); backdrop-filter: blur(12px);
-            border-radius: 24px; padding: 2rem; transition: all 0.4s; cursor: pointer;
-            height: 160px; border: 1px solid rgba(255,255,255,0.3); display: flex;
-            flex-direction: column; justify-content: space-between;
+            border-radius: 24px; padding: 1.5rem; transition: all 0.4s; cursor: pointer;
+            height: 140px; border: 1px solid rgba(255,255,255,0.3);
+            display: flex; flex-direction: column; justify-content: space-between;
         }
-        .card-zen:hover { transform: translateY(-4px); background: white; box-shadow: 0 20px 40px rgba(0,0,0,0.05); }
-        .back-nav { position: fixed; top: 20px; left: 20px; z-index: 100; background: white; padding: 10px 20px; border-radius: 99px; font-size: 10px; cursor: pointer; font-weight: 600; box-shadow: 0 4px 15px rgba(0,0,0,0.05); }
+        .card-zen:hover { transform: translateY(-4px); background: white; }
+        iframe { width: 100%; height: 100vh; border: none; }
+        .back-nav { position: fixed; top: 20px; left: 20px; z-index: 100; background: white; padding: 8px 16px; border-radius: 99px; font-size: 10px; cursor: pointer; font-weight: 600; box-shadow: 0 4px 10px rgba(0,0,0,0.1); }
     </style>
 </head>
 <body>
     <div id="root"></div>
 
     <script type="text/babel">
-        const { useState, useEffect } = React;
+        const { useState } = React;
 
-        // --- THE MASTER LIBRARY INTEGRATION ---
-        window.MASTER_LIBRARY = {
-            // Paths mapping to your Library Tradition/Category
-            mindfulness: ["breath_awareness", "body_scan_meditation", "mindful_listening", "open_awareness"],
-            heart: ["loving_kindness", "compassion_meditation"],
-            zen: ["zazen"],
-            somatic: ["alternate_nostril", "body_scan_meditation"],
-            movement: ["walking_meditation", "tai_chi_meditation"],
-            concentration: ["mantra_meditation", "inner_light"],
-            visualization: ["guided_imagery", "inner_light"],
-            insight: ["vipassana", "non_dual_awareness"],
-            breathwork: ["box_breathing_meditation", "coherent_breathing", "alternate_nostril"]
-        };
-
-        // Your Raw Data Objects
-        window.DATA_MEDITATION = {
-            breath_awareness: { name: 'Breath Awareness', instructions: 'Focus on natural breath. Return when mind wanders.', benefits: 'Calm, Focus', variations: [{id: 'counted', name: 'Counted', instructions: 'Count 1-10 with breaths.'}]},
-            zazen: { name: 'Zazen', instructions: 'Sit in formal posture. Just sit. Let thoughts pass.', benefits: 'Presence, Insight', variations: [{id: 'koan', name: 'Koan', instructions: 'Contemplate a paradox.'}]},
-            loving_kindness: { name: 'Loving-Kindness', instructions: 'Generate phrases: May you be happy...', benefits: 'Connection', variations: [{id: 'self', name: 'Self-Compassion', instructions: 'Direct to yourself.'}]},
-            vipassana: { name: 'Vipassana', instructions: 'Observe physical sensations with equanimity.', benefits: 'Liberation', variations: [] },
-            // Add other keys here matching window.MASTER_LIBRARY lists
+        // Exact filenames from your GitHub main branch
+        const fileMap = {
+            temple: 'monastery_best_in_class_1.html',
+            yoga: 'presence_yoga_v3.html',
+            guided: 'presence_guided.html',
+            breathwork: 'presence_breathwork.html',
+            bodyscan: 'presence_bodyscan.html',
+            movement: 'presence_movement.html',
+            flow: 'presence_flow.html',
+            mudra: 'Mudra-Guide.html',
+            sleep: 'presence_sleep.html',
+            lab: 'presence_alignment.html',
+            ambient: 'presence-ambient-v2.html',
+            rituals: 'presence_rituals.html',
+            journal: 'presence_journal.html',
+            insights: 'presence_insights.html'
         };
 
         function App() {
             const [view, setView] = useState('hub');
 
-            if (view === 'timer') return (
-                <div className="bg-[#f3f4f6] min-h-screen pt-20 view-wrapper">
-                    <div className="back-nav" onClick={() => setView('hub')}>← Back to Hub</div>
-                    <div id="meditation-app"></div>
-                </div>
-            );
+            if (view !== 'hub') {
+                return (
+                    <div>
+                        <div className="back-nav" onClick={() => setView('hub')}>← BACK</div>
+                        <iframe src={view === 'timer' ? 'presence_timer.html' : fileMap[view]} title={view} />
+                    </div>
+                );
+            }
 
             return (
-                <div className="min-h-screen pb-20 px-8 max-w-6xl mx-auto pt-16 text-center">
-                    <h1 className="text-7xl md:text-8xl font-serif font-light tracking-tighter mb-16">presence</h1>
-                    <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                        <ZenCard category="Practice" title="Meditation Timer" onClick={() => setView('timer')} />
-                        <ZenCard category="Temple" title="Monastery" onClick={() => {}} />
-                        <ZenCard category="The Lab" title="Alignment" onClick={() => {}} />
+                <div className="min-h-screen p-8 max-w-6xl mx-auto text-center">
+                    <h1 className="text-6xl font-serif italic mb-12 pt-10">presence</h1>
+                    <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-5 gap-4">
+                        <ZenCard cat="Meditation" title="Timer" onClick={() => setView('timer')} />
+                        <ZenCard cat="Temple" title="Monastery" onClick={() => setView('temple')} />
+                        <ZenCard cat="Studio" title="Yoga" onClick={() => setView('yoga')} />
+                        <ZenCard cat="Guided" title="Voice" onClick={() => setView('guided')} />
+                        <ZenCard cat="Breath" title="Regulation" onClick={() => setView('breathwork')} />
+                        <ZenCard cat="Body" title="Scan" onClick={() => setView('bodyscan')} />
+                        <ZenCard cat="Motion" title="Movement" onClick={() => setView('movement')} />
+                        <ZenCard cat="Visual" title="Flow" onClick={() => setView('flow')} />
+                        <ZenCard cat="Study" title="Mudra" onClick={() => setView('mudra')} />
+                        <ZenCard cat="Rest" title="Sleep" onClick={() => setView('sleep')} />
+                        <ZenCard cat="The Lab" title="Alignment" onClick={() => setView('lab')} />
+                        <ZenCard cat="Sound" title="Ambient" onClick={() => setView('ambient')} />
+                        <ZenCard cat="Daily" title="Rituals" onClick={() => setView('rituals')} />
+                        <ZenCard cat="Mind" title="Journal" onClick={() => setView('journal')} />
+                        <ZenCard cat="Data" title="Insights" onClick={() => setView('insights')} />
                     </div>
                 </div>
             );
         }
 
-        function ZenCard({ category, title, onClick }) {
+        function ZenCard({ cat, title, onClick }) {
             return (
                 <div onClick={onClick} className="card-zen text-left">
-                    <span className="text-[9px] uppercase tracking-[0.2em] text-slate-400 font-bold">{category}</span>
-                    <span className="text-2xl font-serif italic text-slate-800">{title}</span>
+                    <span className="text-[10px] uppercase tracking-widest text-slate-500 font-bold">{cat}</span>
+                    <span className="text-xl font-serif italic">{title}</span>
                 </div>
             );
         }
 
         const root = ReactDOM.createRoot(document.getElementById('root'));
         root.render(<App />);
-    </script>
-
-    <script>
-        // SYMPHONY ENGINE 
-        window.SymphonyPresence = {
-            state: { path: 'mindfulness', tech: null, active: false },
-            paths: ['mindfulness', 'heart', 'zen', 'insight', 'movement', 'visualization', 'breathwork', 'somatic', 'concentration'],
-            
-            init() { 
-                this.render(); 
-                this.selectPath('mindfulness'); 
-            },
-
-            render() {
-                document.getElementById('meditation-app').innerHTML = `
-                    <div class="presence-container">
-                        <div class="font-serif italic text-5xl mb-12">session</div>
-                        
-                        <div class="space-y-6">
-                            <div class="bg-white/40 p-6 rounded-[32px]">
-                                <div class="text-[9px] uppercase tracking-widest mb-4 font-bold text-slate-400">Select Path</div>
-                                <div class="flex flex-wrap justify-center gap-1">
-                                    ${this.paths.map(p => `<button class="choice-btn" id="btn-${p}" onclick="SymphonyPresence.selectPath('${p}')">${p}</button>`).join('')}
-                                </div>
-                            </div>
-
-                            <div class="grid grid-cols-2 gap-4">
-                                <div class="bg-white/40 p-4 rounded-[24px]">
-                                    <div class="text-[9px] uppercase mb-2 font-bold text-slate-400">Technique</div>
-                                    <select id="tSel" class="w-full bg-transparent text-xs text-center border-none focus:ring-0" onchange="SymphonyPresence.update()"></select>
-                                </div>
-                                <div class="bg-white/40 p-4 rounded-[24px]">
-                                    <div class="text-[9px] uppercase mb-2 font-bold text-slate-400">Variation</div>
-                                    <select id="vSel" class="w-full bg-transparent text-xs text-center border-none focus:ring-0" onchange="SymphonyPresence.update()"></select>
-                                </div>
-                            </div>
-                        </div>
-
-                        <div class="breath-circle" id="circle" onclick="SymphonyPresence.toggle()">
-                            <div id="status" class="text-[9px] uppercase tracking-[0.2em] font-bold text-slate-400">Enter</div>
-                        </div>
-
-                        <div class="glossary-card">
-                            <h2 id="gTitle" class="font-serif italic text-2xl mb-2"></h2>
-                            <p id="gBen" class="text-[10px] uppercase tracking-widest text-slate-400 mb-4"></p>
-                            <p id="gText" class="text-sm leading-relaxed text-slate-600"></p>
-                        </div>
-                    </div>
-                `;
-            },
-
-            selectPath(path) {
-                this.state.path = path;
-                document.querySelectorAll('.choice-btn').forEach(b => b.classList.toggle('active', b.id === `btn-${path}`));
-                
-                const techKeys = window.MASTER_LIBRARY[path] || [];
-                const tSel = document.getElementById('tSel');
-                tSel.innerHTML = techKeys.map(k => {
-                    const data = window.DATA_MEDITATION[k];
-                    return data ? `<option value="${k}">${data.name}</option>` : '';
-                }).join('');
-                
-                this.update();
-            },
-
-            update() {
-                const k = document.getElementById('tSel').value;
-                const data = window.DATA_MEDITATION[k];
-                if (!data) return;
-
-                const vSel = document.getElementById('vSel');
-                vSel.innerHTML = `<option value="base">Standard</option>` + 
-                    (data.variations || []).map(v => `<option value="${v.id}">${v.name}</option>`).join('');
-
-                const vId = vSel.value;
-                const variation = (data.variations || []).find(v => v.id === vId);
-
-                document.getElementById('gTitle').innerText = variation ? variation.name : data.name;
-                document.getElementById('gBen').innerText = data.benefits || '';
-                document.getElementById('gText').innerText = variation ? variation.instructions : data.instructions;
-            },
-
-            toggle() {
-                this.state.active = !this.state.active;
-                document.getElementById('circle').classList.toggle('breathing', this.state.active);
-                document.getElementById('status').innerText = this.state.active ? "Breathing" : "Enter";
-            }
-        };
     </script>
 </body>
 </html>
