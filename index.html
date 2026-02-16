@@ -2,25 +2,39 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>presence</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script crossorigin src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
     <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
     <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
-    <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;1,400&family=Inter:wght@200;300;400&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;1,400&family=Inter:wght@200;300;400;500&display=swap" rel="stylesheet">
     <style>
-        body { font-family: 'Inter', sans-serif; background: #d1d5db; color: #1a1a1a; margin: 0; }
+        :root { --ink: #1a1a1a; --slate: #94a3b8; }
+        body { font-family: 'Inter', sans-serif; background: #d1d5db; color: var(--ink); margin: 0; min-height: 100vh; }
         .font-serif { font-family: 'Cormorant Garamond', serif; }
+        
+        /* Navigation & Layout */
+        .view-wrapper { animation: fadeIn 0.6s ease-out; background: white; min-height: 100vh; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+        
+        .back-nav { 
+            position: fixed; top: 20px; left: 20px; z-index: 1000; 
+            background: white; padding: 10px 20px; border-radius: 99px; 
+            font-size: 10px; cursor: pointer; font-weight: 600; 
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1); letter-spacing: 0.1em;
+        }
+
+        /* Hub Cards */
         .card-zen { 
             background: rgba(255, 255, 255, 0.7); backdrop-filter: blur(12px);
-            border-radius: 24px; padding: 1.5rem; transition: all 0.4s; cursor: pointer;
-            height: 140px; border: 1px solid rgba(255,255,255,0.3);
-            display: flex; flex-direction: column; justify-content: space-between;
+            border-radius: 24px; padding: 1.8rem; transition: all 0.4s cubic-bezier(0.165, 0.84, 0.44, 1); 
+            cursor: pointer; display: flex; flex-direction: column; justify-content: space-between; 
+            height: 150px; border: 1px solid rgba(255,255,255,0.3);
         }
-        .card-zen:hover { transform: translateY(-4px); background: white; }
-        iframe { width: 100%; height: 100vh; border: none; }
-        .back-nav { position: fixed; top: 20px; left: 20px; z-index: 100; background: white; padding: 8px 16px; border-radius: 99px; font-size: 10px; cursor: pointer; font-weight: 600; box-shadow: 0 4px 10px rgba(0,0,0,0.1); }
+        .card-zen:hover { transform: translateY(-5px); background: rgba(255, 255, 255, 0.9); box-shadow: 0 20px 40px rgba(0,0,0,0.05); }
+        
+        iframe { width: 100%; height: 100vh; border: none; display: block; }
     </style>
 </head>
 <body>
@@ -29,7 +43,7 @@
     <script type="text/babel">
         const { useState } = React;
 
-        // Exact filenames from your GitHub main branch
+        // VERIFIED FILENAMES FROM GITHUB REPO
         const fileMap = {
             temple: 'monastery_best_in_class_1.html',
             yoga: 'presence_yoga_v3.html',
@@ -50,31 +64,40 @@
         function App() {
             const [view, setView] = useState('hub');
 
+            // Handle Sub-App Views
             if (view !== 'hub') {
                 return (
-                    <div>
-                        <div className="back-nav" onClick={() => setView('hub')}>← BACK</div>
-                        <iframe src={view === 'timer' ? 'presence_timer.html' : fileMap[view]} title={view} />
+                    <div className="view-wrapper">
+                        <div className="back-nav" onClick={() => setView('hub')}>← BACK TO HUB</div>
+                        <iframe src={fileMap[view]} title={view} />
                     </div>
                 );
             }
 
+            // Handle Main Hub View (15 Apps)
             return (
-                <div className="min-h-screen p-8 max-w-6xl mx-auto text-center">
-                    <h1 className="text-6xl font-serif italic mb-12 pt-10">presence</h1>
+                <div className="min-h-screen pb-20 px-6 max-w-6xl mx-auto pt-16 text-center">
+                    <header className="mb-16">
+                        <h1 className="text-7xl font-serif font-light tracking-tight mb-4">presence</h1>
+                        <p className="text-[10px] uppercase tracking-[0.4em] text-slate-500">The Complete Digital Monastery</p>
+                    </header>
+
                     <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-5 gap-4">
-                        <ZenCard cat="Meditation" title="Timer" onClick={() => setView('timer')} />
+                        {/* Meditation & Breathwork are currently mapped to the presence_breathwork.html app */}
+                        <ZenCard cat="Meditation" title="Symphony" onClick={() => setView('breathwork')} />
                         <ZenCard cat="Temple" title="Monastery" onClick={() => setView('temple')} />
-                        <ZenCard cat="Studio" title="Yoga" onClick={() => setView('yoga')} />
+                        <ZenCard cat="Studio" title="Yoga V3" onClick={() => setView('yoga')} />
                         <ZenCard cat="Guided" title="Voice" onClick={() => setView('guided')} />
                         <ZenCard cat="Breath" title="Regulation" onClick={() => setView('breathwork')} />
+                        
                         <ZenCard cat="Body" title="Scan" onClick={() => setView('bodyscan')} />
                         <ZenCard cat="Motion" title="Movement" onClick={() => setView('movement')} />
-                        <ZenCard cat="Visual" title="Flow" onClick={() => setView('flow')} />
-                        <ZenCard cat="Study" title="Mudra" onClick={() => setView('mudra')} />
-                        <ZenCard cat="Rest" title="Sleep" onClick={() => setView('sleep')} />
+                        <ZenCard cat="Visual" title="Flow State" onClick={() => setView('flow')} />
+                        <ZenCard cat="Encyclopedia" title="Mudra Guide" onClick={() => setView('mudra')} />
+                        <ZenCard cat="Recovery" title="Sleep" onClick={() => setView('sleep')} />
+                        
                         <ZenCard cat="The Lab" title="Alignment" onClick={() => setView('lab')} />
-                        <ZenCard cat="Sound" title="Ambient" onClick={() => setView('ambient')} />
+                        <ZenCard cat="Atmosphere" title="Ambient V2" onClick={() => setView('ambient')} />
                         <ZenCard cat="Daily" title="Rituals" onClick={() => setView('rituals')} />
                         <ZenCard cat="Mind" title="Journal" onClick={() => setView('journal')} />
                         <ZenCard cat="Data" title="Insights" onClick={() => setView('insights')} />
@@ -86,8 +109,8 @@
         function ZenCard({ cat, title, onClick }) {
             return (
                 <div onClick={onClick} className="card-zen text-left">
-                    <span className="text-[10px] uppercase tracking-widest text-slate-500 font-bold">{cat}</span>
-                    <span className="text-xl font-serif italic">{title}</span>
+                    <span className="text-[9px] uppercase tracking-[0.2em] text-slate-400 font-bold">{cat}</span>
+                    <span className="text-xl font-serif italic text-slate-800">{title}</span>
                 </div>
             );
         }
