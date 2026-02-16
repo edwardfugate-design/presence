@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Timer</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;1,400&family=Inter:wght@200;300;400&display=swap" rel="stylesheet">
+    <style>
+        :root { --ink: #1a1a1a; --mist: #fcfcfc; }
+        body { font-family: 'Inter', sans-serif; background: transparent; color: var(--ink); margin: 0; display: flex; align-items: center; justify-content: center; height: 100vh; overflow: hidden; }
+        .font-serif { font-family: 'Cormorant Garamond', serif; }
+        .timer-display { font-size: clamp(6rem, 15vw, 10rem); font-weight: 200; letter-spacing: -0.05em; font-style: italic; }
+        .time-option { cursor: pointer; opacity: 0.3; font-size: 0.7rem; letter-spacing: 0.2em; text-transform: uppercase; transition: 0.3s; }
+        .time-option.active { opacity: 1; }
+        .control-btn { border: 1px solid rgba(0,0,0,0.1); padding: 0.75rem 2.5rem; border-radius: 99px; font-size: 0.7rem; text-transform: uppercase; letter-spacing: 0.3em; transition: 0.3s; }
+        .control-btn:hover { background: var(--ink); color: white; }
+    </style>
+</head>
+<body>
+    <div class="text-center space-y-12">
+        <div id="selector" class="flex flex-wrap justify-center gap-6 px-4">
+            <span class="time-option" onclick="setTimer(5)">5m</span>
+            <span class="time-option active" onclick="setTimer(10)">10m</span>
+            <span class="time-option" onclick="setTimer(20)">20m</span>
+            <span class="time-option" onclick="setTimer(30)">30m</span>
+            <span class="time-option" onclick="setTimer(60)">60m</span>
+            <span class="time-option" onclick="setRandom()">Random</span>
+            <span class="time-option" onclick="setOpen()">Open</span>
+        </div>
+        <div id="display" class="timer-display font-serif">10:00</div>
+        <div class="flex flex-col items-center gap-4">
+            <button id="mainBtn" onclick="toggleTimer()" class="control-btn">Begin</button>
+            <button id="resetBtn" onclick="resetTimer()" class="opacity-30 hover:opacity-100 text-[8px] uppercase tracking-widest hidden">Reset</button>
+        </div>
+    </div>
+    <script>
+        let timeLeft = 600, timerId = null, isRunning = false, mode = 'countdown';
+        const display = document.getElementById('display'), mainBtn = document.getElementById('mainBtn'), resetBtn = document.getElementById('resetBtn');
+        function updateDisplay() {
+            const mins = Math.floor(Math.abs(timeLeft) / 60), secs = Math.abs(timeLeft) % 60;
+            display.textContent = `${mins}:${secs.toString().padStart(2, '0')}`;
+        }
+        function setTimer(m) { if(isRunning) return; mode='countdown'; timeLeft=m*60; updateDisplay(); setActive(m+'m'); }
+        function setRandom() { if(isRunning) return; mode='countdown'; timeLeft=[5,15,30,45][Math.floor(Math.random()*4)]*60; updateDisplay(); setActive('Random'); }
+        function setOpen() { if(isRunning) return; mode='open'; timeLeft=0; updateDisplay(); setActive('Open'); }
+        function setActive(txt) { document.querySelectorAll('.time-option').forEach(el => el.classList.toggle('active', el.textContent === txt)); }
+        function toggleTimer() {
+            if (isRunning) { clearInterval(timerId); mainBtn.textContent = "Resume"; }
+            else { 
+                timerId = setInterval(() => { mode === 'countdown' ? timeLeft-- : timeLeft++; updateDisplay(); if(timeLeft <= 0 && mode==='countdown') resetTimer(); }, 1000);
+                mainBtn.textContent = "Pause"; resetBtn.classList.remove('hidden');
+            }
+            isRunning = !isRunning;
+        }
+        function resetTimer() { clearInterval(timerId); isRunning = false; mainBtn.textContent = "Begin"; resetBtn.classList.add('hidden'); }
+    </script>
+</body>
+</html>
