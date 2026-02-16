@@ -14,54 +14,43 @@
         body { font-family: 'Inter', sans-serif; background: #d1d5db; color: var(--ink); margin: 0; min-height: 100vh; overflow-x: hidden; }
         .font-serif { font-family: 'Cormorant Garamond', serif; }
         
-        /* Smooth Iframe Transitions */
-        .view-wrapper { animation: fadeIn 0.6s ease-out; }
-        iframe { width: 100%; height: 100vh; border: none; background: white; transition: opacity 0.3s ease; }
-        
-        @keyframes fadeIn {
-            from { opacity: 0; transform: translateY(10px); }
-            to { opacity: 1; transform: translateY(0); }
-        }
+        /* Layout Transitions */
+        .view-wrapper { animation: fadeIn 0.8s cubic-bezier(0.16, 1, 0.3, 1); }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: translateY(0); } }
 
-        /* Symphony UI Styles */
+        /* Symphony Timer Components */
         .presence-container { padding: 20px; max-width: 600px; margin: 0 auto; text-align: center; }
         .choice-btn, .preset-btn { 
-            padding: 8px 12px; margin: 4px; border: 1px solid var(--slate); 
-            border-radius: 8px; background: white; cursor: pointer; font-size: 11px;
-            transition: all 0.2s;
+            padding: 8px 14px; margin: 4px; border: 1px solid rgba(0,0,0,0.1); 
+            border-radius: 12px; background: rgba(255,255,255,0.6); cursor: pointer; font-size: 10px;
+            letter-spacing: 0.05em; transition: all 0.3s ease; text-transform: uppercase;
         }
-        .choice-btn.active, .preset-btn.active { background: var(--ink); color: white; border-color: var(--ink); }
+        .choice-btn.active, .preset-btn.active { background: var(--ink); color: white; transform: scale(1.05); }
         
         .breath-circle { 
-            width: 180px; height: 180px; border-radius: 50%; background: white; 
+            width: 200px; height: 200px; border-radius: 50%; background: white; 
             margin: 40px auto; display: flex; align-items: center; justify-content: center;
-            cursor: pointer; transition: transform 4s ease-in-out; border: 1px solid rgba(0,0,0,0.05);
-            box-shadow: 0 10px 30px rgba(0,0,0,0.05);
+            cursor: pointer; transition: transform 4s ease-in-out; 
+            box-shadow: 0 20px 40px rgba(0,0,0,0.04), inset 0 0 20px rgba(0,0,0,0.02);
         }
-        .breathing { transform: scale(1.4); }
-        .timer-display { font-size: 2.5rem; margin-top: 20px; font-weight: 200; letter-spacing: -0.05em; }
-
-        .card-zen { 
-            background: rgba(255, 255, 255, 0.7);
-            backdrop-filter: blur(10px);
-            border-radius: 24px;
-            padding: 2.2rem 1.8rem;
-            transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-            cursor: pointer;
-            display: flex;
-            flex-direction: column;
-            justify-content: space-between;
-            height: 150px;
-            border: 1px solid rgba(255,255,255,0.3);
-        }
-        .card-zen:hover { background: rgba(255, 255, 255, 0.9); transform: translateY(-5px); box-shadow: 0 15px 35px rgba(0,0,0,0.06); }
+        .breathing { transform: scale(1.35); }
         
-        .back-nav {
-            position: fixed; top: 20px; left: 20px; z-index: 100;
-            background: white; padding: 10px 22px; border-radius: 99px;
-            font-size: 10px; cursor: pointer; font-weight: 600; text-transform: uppercase;
-            box-shadow: 0 4px 15px rgba(0,0,0,0.08); letter-spacing: 0.1em;
+        /* Glossary UI */
+        .glossary-card {
+            background: rgba(255, 255, 255, 0.5); backdrop-filter: blur(10px);
+            border-radius: 28px; padding: 2rem; margin-top: 2rem; text-align: left;
+            border: 1px solid rgba(255, 255, 255, 0.4); box-shadow: 0 10px 30px rgba(0,0,0,0.03);
         }
+
+        /* Hub Styles */
+        .card-zen { 
+            background: rgba(255, 255, 255, 0.7); backdrop-filter: blur(12px);
+            border-radius: 24px; padding: 2rem; transition: all 0.4s; cursor: pointer;
+            height: 160px; border: 1px solid rgba(255,255,255,0.3); display: flex;
+            flex-direction: column; justify-content: space-between;
+        }
+        .card-zen:hover { transform: translateY(-4px); background: white; box-shadow: 0 20px 40px rgba(0,0,0,0.05); }
+        .back-nav { position: fixed; top: 20px; left: 20px; z-index: 100; background: white; padding: 10px 20px; border-radius: 99px; font-size: 10px; cursor: pointer; font-weight: 600; box-shadow: 0 4px 15px rgba(0,0,0,0.05); }
     </style>
 </head>
 <body>
@@ -70,93 +59,46 @@
     <script type="text/babel">
         const { useState, useEffect } = React;
 
-        // Mock Content Manager for Symphony Logic
-        window.ContentManager = {
-            getTechniquesByPath: (path) => [
-                { id: 't1', name: 'Standard Breath' },
-                { id: 't2', name: 'Box Breathing' },
-                { id: 't3', name: 'Deep Release' }
-            ],
-            getTechniqueById: (id) => ({ id, name: 'Active Technique' })
+        // --- THE MASTER LIBRARY INTEGRATION ---
+        window.MASTER_LIBRARY = {
+            // Paths mapping to your Library Tradition/Category
+            mindfulness: ["breath_awareness", "body_scan_meditation", "mindful_listening", "open_awareness"],
+            heart: ["loving_kindness", "compassion_meditation"],
+            zen: ["zazen"],
+            somatic: ["alternate_nostril", "body_scan_meditation"],
+            movement: ["walking_meditation", "tai_chi_meditation"],
+            concentration: ["mantra_meditation", "inner_light"],
+            visualization: ["guided_imagery", "inner_light"],
+            insight: ["vipassana", "non_dual_awareness"],
+            breathwork: ["box_breathing_meditation", "coherent_breathing", "alternate_nostril"]
         };
 
-        const fileMap = {
-            temple: 'monastery_best_in_class_1.html',
-            yoga: 'presence_yoga_v3.html',
-            lab: 'presence_alignment.html',
-            mudra: 'Mudra-Guide.html',
-            breath: 'presence_breathwork.html',
-            scan: 'presence_bodyscan.html',
-            guided: 'presence_guided.html',
-            ambient: 'presence-ambient-v2.html',
-            ritual: 'presence_rituals.html',
-            journal: 'presence_journal.html',
-            sleep: 'presence_sleep.html',
-            movement: 'presence_movement.html',
-            flow: 'presence_flow.html',
-            insights: 'presence_insights.html'
+        // Your Raw Data Objects
+        window.DATA_MEDITATION = {
+            breath_awareness: { name: 'Breath Awareness', instructions: 'Focus on natural breath. Return when mind wanders.', benefits: 'Calm, Focus', variations: [{id: 'counted', name: 'Counted', instructions: 'Count 1-10 with breaths.'}]},
+            zazen: { name: 'Zazen', instructions: 'Sit in formal posture. Just sit. Let thoughts pass.', benefits: 'Presence, Insight', variations: [{id: 'koan', name: 'Koan', instructions: 'Contemplate a paradox.'}]},
+            loving_kindness: { name: 'Loving-Kindness', instructions: 'Generate phrases: May you be happy...', benefits: 'Connection', variations: [{id: 'self', name: 'Self-Compassion', instructions: 'Direct to yourself.'}]},
+            vipassana: { name: 'Vipassana', instructions: 'Observe physical sensations with equanimity.', benefits: 'Liberation', variations: [] },
+            // Add other keys here matching window.MASTER_LIBRARY lists
         };
 
         function App() {
             const [view, setView] = useState('hub');
 
-            // PRE-FETCHING LOGIC: Runs once when the hub loads
-            useEffect(() => {
-                Object.values(fileMap).forEach(file => {
-                    const link = document.createElement('link');
-                    link.rel = 'prefetch';
-                    link.href = file;
-                    document.head.appendChild(link);
-                });
-            }, []);
-
-            // Initialize Symphony when the "timer" view mounts
-            useEffect(() => {
-                if (view === 'timer' && window.SymphonyPresence) {
-                    window.SymphonyPresence.init();
-                }
-            }, [view]);
-
-            if (view === 'timer') {
-                return (
-                    <div className="bg-slate-50 min-h-screen pt-20 view-wrapper">
-                        <div className="back-nav" onClick={() => setView('hub')}>← Back to Hub</div>
-                        <div id="meditation-app"></div>
-                    </div>
-                );
-            }
-
-            if (view !== 'hub') {
-                return (
-                    <div className="view-wrapper">
-                        <div className="back-nav" onClick={() => setView('hub')}>← Back to Hub</div>
-                        <iframe src={fileMap[view]} title={view} />
-                    </div>
-                );
-            }
+            if (view === 'timer') return (
+                <div className="bg-[#f3f4f6] min-h-screen pt-20 view-wrapper">
+                    <div className="back-nav" onClick={() => setView('hub')}>← Back to Hub</div>
+                    <div id="meditation-app"></div>
+                </div>
+            );
 
             return (
-                <div className="min-h-screen pb-20 animate-in fade-in duration-700">
-                    <div className="max-w-6xl mx-auto pt-16 px-6 text-center space-y-12">
-                        <h1 className="text-7xl md:text-8xl font-serif font-light tracking-tight">presence</h1>
-                        
-                        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                            <ZenCard category="Temple" title="Monastery" onClick={() => setView('temple')} />
-                            <ZenCard category="Studio" title="Create Practice" onClick={() => setView('yoga')} />
-                            <ZenCard category="Meditation" title="Timer Session" onClick={() => setView('timer')} />
-                            <ZenCard category="Guided" title="Voice Sessions" onClick={() => setView('guided')} />
-                            <ZenCard category="Breathwork" title="Regulation" onClick={() => setView('breath')} />
-                            <ZenCard category="Body Scan" title="Awareness" onClick={() => setView('scan')} />
-                            <ZenCard category="Movement" title="Physical Reset" onClick={() => setView('movement')} />
-                            <ZenCard category="Flow" title="Visual Drifting" onClick={() => setView('flow')} />
-                            <ZenCard category="Mudra" title="Encyclopedia" onClick={() => setView('mudra')} />
-                            <ZenCard category="Sleep" title="Rest & Recovery" onClick={() => setView('sleep')} />
-                            <ZenCard category="The Lab" title="Alignment" onClick={() => setView('lab')} />
-                            <ZenCard category="Ambient" title="Soundscapes" onClick={() => setView('ambient')} />
-                            <ZenCard category="Rituals" title="Daily Sequence" onClick={() => setView('ritual')} />
-                            <ZenCard category="Journal" title="Reflection" onClick={() => setView('journal')} />
-                            <ZenCard category="Insights" title="System Analysis" onClick={() => setView('insights')} />
-                        </div>
+                <div className="min-h-screen pb-20 px-8 max-w-6xl mx-auto pt-16 text-center">
+                    <h1 className="text-7xl md:text-8xl font-serif font-light tracking-tighter mb-16">presence</h1>
+                    <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                        <ZenCard category="Practice" title="Meditation Timer" onClick={() => setView('timer')} />
+                        <ZenCard category="Temple" title="Monastery" onClick={() => {}} />
+                        <ZenCard category="The Lab" title="Alignment" onClick={() => {}} />
                     </div>
                 </div>
             );
@@ -165,7 +107,7 @@
         function ZenCard({ category, title, onClick }) {
             return (
                 <div onClick={onClick} className="card-zen text-left">
-                    <span className="text-[9px] uppercase tracking-[0.3em] text-slate-400 font-semibold">{category}</span>
+                    <span className="text-[9px] uppercase tracking-[0.2em] text-slate-400 font-bold">{category}</span>
                     <span className="text-2xl font-serif italic text-slate-800">{title}</span>
                 </div>
             );
@@ -176,144 +118,89 @@
     </script>
 
     <script>
-        // SYMPHONY RESTORATION LOGIC
+        // SYMPHONY ENGINE 
         window.SymphonyPresence = {
-            state: {
-                totalPracticeMinutes: parseFloat(localStorage.getItem('totalPracticeMinutes') || '0'),
-                breathingActive: false,
-                currentPath: 'mindfulness',
-                currentTechnique: null,
-                sessionLength: 0,
-                timerRemaining: 0,
+            state: { path: 'mindfulness', tech: null, active: false },
+            paths: ['mindfulness', 'heart', 'zen', 'insight', 'movement', 'visualization', 'breathwork', 'somatic', 'concentration'],
+            
+            init() { 
+                this.render(); 
+                this.selectPath('mindfulness'); 
             },
-            paths: ['mindfulness', 'heart', 'foundational', 'energizing', 'cooling', 'balancing', 'advanced', 'somatic', 'concentration', 'visualization', 'devotional', 'zen', 'nondual', 'movement', 'insight'],
-            init() {
-                this.render();
-                this.updateTotalHours();
-                this.selectPath('mindfulness');
-            },
+
             render() {
-                const container = document.getElementById('meditation-app');
-                if (!container) return;
-                container.innerHTML = `
+                document.getElementById('meditation-app').innerHTML = `
                     <div class="presence-container">
-                        <div class="font-serif italic text-5xl mb-2 text-slate-800">presence</div>
-                        <div class="text-[10px] uppercase tracking-[0.3em] text-slate-400 mb-8">you have arrived at this moment.</div>
-                        <div class="text-sm font-medium text-slate-500 mb-8 tracking-widest"><span id="totalHours" class="text-slate-800">0.0</span> HOURS CULTIVATED</div>
+                        <div class="font-serif italic text-5xl mb-12">session</div>
                         
-                        <div class="space-y-8">
-                            <div class="bg-white/50 p-6 rounded-3xl border border-white/40">
-                                <div class="text-[9px] uppercase tracking-widest mb-4 font-bold text-slate-400">1. choose your path</div>
-                                <div class="flex flex-wrap justify-center gap-1" id="path-buttons">
+                        <div class="space-y-6">
+                            <div class="bg-white/40 p-6 rounded-[32px]">
+                                <div class="text-[9px] uppercase tracking-widest mb-4 font-bold text-slate-400">Select Path</div>
+                                <div class="flex flex-wrap justify-center gap-1">
                                     ${this.paths.map(p => `<button class="choice-btn" id="btn-${p}" onclick="SymphonyPresence.selectPath('${p}')">${p}</button>`).join('')}
                                 </div>
                             </div>
-                            
-                            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                                <div class="bg-white/50 p-4 rounded-3xl border border-white/40">
-                                    <div class="text-[9px] uppercase tracking-widest mb-3 font-bold text-slate-400">2. technique</div>
-                                    <select id="techniqueSelect" class="w-full p-2 rounded-xl bg-white border-none text-xs text-center appearance-none cursor-pointer" onchange="SymphonyPresence.handleTechniqueChange()"></select>
+
+                            <div class="grid grid-cols-2 gap-4">
+                                <div class="bg-white/40 p-4 rounded-[24px]">
+                                    <div class="text-[9px] uppercase mb-2 font-bold text-slate-400">Technique</div>
+                                    <select id="tSel" class="w-full bg-transparent text-xs text-center border-none focus:ring-0" onchange="SymphonyPresence.update()"></select>
                                 </div>
-                                <div class="bg-white/50 p-4 rounded-3xl border border-white/40">
-                                    <div class="text-[9px] uppercase tracking-widest mb-3 font-bold text-slate-400">3. duration</div>
-                                    <div class="flex flex-wrap justify-center gap-1">
-                                        ${[5, 10, 15, 30, 'random', 0].map(m => `<button class="preset-btn" onclick="SymphonyPresence.setTimer('${m}')">${m === 0 ? 'open' : m}</button>`).join('')}
-                                    </div>
+                                <div class="bg-white/40 p-4 rounded-[24px]">
+                                    <div class="text-[9px] uppercase mb-2 font-bold text-slate-400">Variation</div>
+                                    <select id="vSel" class="w-full bg-transparent text-xs text-center border-none focus:ring-0" onchange="SymphonyPresence.update()"></select>
                                 </div>
                             </div>
                         </div>
 
-                        <div class="breath-circle" id="breathCircle" onclick="SymphonyPresence.toggleBreathing()">
-                            <div id="breathLabel" class="text-slate-400 uppercase text-[9px] tracking-[0.2em] font-bold">tap to begin</div>
+                        <div class="breath-circle" id="circle" onclick="SymphonyPresence.toggle()">
+                            <div id="status" class="text-[9px] uppercase tracking-[0.2em] font-bold text-slate-400">Enter</div>
                         </div>
-                        <div class="timer-display" id="timerDisplay">—</div>
+
+                        <div class="glossary-card">
+                            <h2 id="gTitle" class="font-serif italic text-2xl mb-2"></h2>
+                            <p id="gBen" class="text-[10px] uppercase tracking-widest text-slate-400 mb-4"></p>
+                            <p id="gText" class="text-sm leading-relaxed text-slate-600"></p>
+                        </div>
                     </div>
                 `;
             },
-            setTimer(minutes) {
-                if (minutes === 'random') {
-                    const options = [5, 10, 15, 30, 60];
-                    this.state.sessionLength = options[Math.floor(Math.random() * options.length)];
-                } else {
-                    this.state.sessionLength = parseInt(minutes);
-                }
-                this.state.timerRemaining = this.state.sessionLength * 60;
-                this.updateTimerUI();
-                document.querySelectorAll('.preset-btn').forEach(btn => {
-                    btn.classList.toggle('active', btn.innerText.toLowerCase() === (minutes == 0 ? 'open' : minutes.toString()));
-                });
-            },
-            updateTimerUI() {
-                const el = document.getElementById('timerDisplay');
-                if (!el) return;
-                if (this.state.sessionLength === 0) {
-                    el.innerText = "open session";
-                } else {
-                    const mins = Math.floor(this.state.timerRemaining / 60);
-                    const secs = this.state.timerRemaining % 60;
-                    el.innerText = `${mins}:${secs.toString().padStart(2, '0')}`;
-                }
-            },
+
             selectPath(path) {
-                this.state.currentPath = path;
-                document.querySelectorAll('.choice-btn').forEach(btn => btn.classList.remove('active'));
-                const activeBtn = document.getElementById(`btn-${path}`);
-                if (activeBtn) activeBtn.classList.add('active');
-                if (window.ContentManager) {
-                    const techniques = window.ContentManager.getTechniquesByPath(path);
-                    const select = document.getElementById('techniqueSelect');
-                    if(select) {
-                        select.innerHTML = techniques.map(t => `<option value="${t.id}">${t.name}</option>`).join('');
-                        this.handleTechniqueChange();
-                    }
-                }
+                this.state.path = path;
+                document.querySelectorAll('.choice-btn').forEach(b => b.classList.toggle('active', b.id === `btn-${path}`));
+                
+                const techKeys = window.MASTER_LIBRARY[path] || [];
+                const tSel = document.getElementById('tSel');
+                tSel.innerHTML = techKeys.map(k => {
+                    const data = window.DATA_MEDITATION[k];
+                    return data ? `<option value="${k}">${data.name}</option>` : '';
+                }).join('');
+                
+                this.update();
             },
-            handleTechniqueChange() {
-                const select = document.getElementById('techniqueSelect');
-                if (select && window.ContentManager) {
-                    this.state.currentTechnique = window.ContentManager.getTechniqueById(select.value);
-                    this.resetBreathing();
-                }
+
+            update() {
+                const k = document.getElementById('tSel').value;
+                const data = window.DATA_MEDITATION[k];
+                if (!data) return;
+
+                const vSel = document.getElementById('vSel');
+                vSel.innerHTML = `<option value="base">Standard</option>` + 
+                    (data.variations || []).map(v => `<option value="${v.id}">${v.name}</option>`).join('');
+
+                const vId = vSel.value;
+                const variation = (data.variations || []).find(v => v.id === vId);
+
+                document.getElementById('gTitle').innerText = variation ? variation.name : data.name;
+                document.getElementById('gBen').innerText = data.benefits || '';
+                document.getElementById('gText').innerText = variation ? variation.instructions : data.instructions;
             },
-            toggleBreathing() {
-                this.state.breathingActive = !this.state.breathingActive;
-                const circle = document.getElementById('breathCircle');
-                const label = document.getElementById('breathLabel');
-                if (this.state.breathingActive) {
-                    circle.classList.add('breathing');
-                    label.innerText = "inhale";
-                    this.startTimerInterval();
-                } else {
-                    circle.classList.remove('breathing');
-                    label.innerText = "tap to resume";
-                    clearInterval(this.timerInterval);
-                }
-            },
-            startTimerInterval() {
-                clearInterval(this.timerInterval);
-                this.timerInterval = setInterval(() => {
-                    if (this.state.sessionLength > 0 && this.state.timerRemaining > 0) {
-                        this.state.timerRemaining--;
-                        this.updateTimerUI();
-                        if (this.state.timerRemaining <= 0) {
-                            this.toggleBreathing();
-                            alert("Session complete.");
-                        }
-                    }
-                }, 1000);
-            },
-            resetBreathing() {
-                this.state.breathingActive = false;
-                const circle = document.getElementById('breathCircle');
-                if (circle) circle.classList.remove('breathing');
-                const label = document.getElementById('breathLabel');
-                if (label) label.innerText = "tap to begin";
-                clearInterval(this.timerInterval);
-            },
-            updateTotalHours() {
-                const hours = (this.state.totalPracticeMinutes / 60).toFixed(1);
-                const el = document.getElementById('totalHours');
-                if (el) el.textContent = hours;
+
+            toggle() {
+                this.state.active = !this.state.active;
+                document.getElementById('circle').classList.toggle('breathing', this.state.active);
+                document.getElementById('status').innerText = this.state.active ? "Breathing" : "Enter";
             }
         };
     </script>
