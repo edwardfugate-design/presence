@@ -16,6 +16,21 @@
         
         iframe { width: 100%; height: 100vh; border: none; background: white; }
 
+        /* Symphony UI Styles */
+        .presence-container { padding: 20px; max-width: 600px; margin: 0 auto; text-align: center; }
+        .choice-btn, .preset-btn { 
+            padding: 8px 12px; margin: 4px; border: 1px solid var(--slate); 
+            border-radius: 8px; background: white; cursor: pointer; font-size: 12px;
+        }
+        .choice-btn.active, .preset-btn.active { background: var(--ink); color: white; }
+        .breath-circle { 
+            width: 200px; height: 200px; border-radius: 50%; background: white; 
+            margin: 40px auto; display: flex; align-items: center; justify-content: center;
+            cursor: pointer; transition: transform 4s ease-in-out; border: 1px solid rgba(0,0,0,0.1);
+        }
+        .breathing { transform: scale(1.3); }
+        .timer-display { font-size: 2rem; margin-top: 20px; font-weight: 200; }
+
         .card-zen { 
             background: rgba(255, 255, 255, 0.7);
             backdrop-filter: blur(10px);
@@ -29,65 +44,69 @@
             height: 150px;
             border: 1px solid rgba(255,255,255,0.3);
         }
-        .card-zen:hover { background: rgba(255, 255, 255, 0.9); transform: translateY(-3px); box-shadow: 0 10px 30px rgba(0,0,0,0.05); }
-        
-        .filter-btn {
-            background: #1a1a1a;
-            color: white;
-            padding: 8px 24px;
-            border-radius: 99px;
-            font-size: 10px;
-            letter-spacing: 0.2em;
-            text-transform: uppercase;
-        }
-
+        .card-zen:hover { background: rgba(255, 255, 255, 0.9); transform: translateY(-3px); }
         .back-nav {
-            position: fixed;
-            top: 20px;
-            left: 20px;
-            z-index: 100;
-            background: white;
-            padding: 10px 20px;
-            border-radius: 99px;
-            font-size: 10px;
-            letter-spacing: 0.1em;
-            text-transform: uppercase;
+            position: fixed; top: 20px; left: 20px; z-index: 100;
+            background: white; padding: 10px 20px; border-radius: 99px;
+            font-size: 10px; cursor: pointer; font-weight: 600;
             box-shadow: 0 4px 12px rgba(0,0,0,0.1);
-            cursor: pointer;
-            font-weight: 600;
         }
     </style>
 </head>
 <body>
     <div id="root"></div>
+
     <script type="text/babel">
-        const { useState } = React;
+        const { useState, useEffect } = React;
+
+        // --- MOCK CONTENT MANAGER (Required for Symphony Logic) ---
+        window.ContentManager = {
+            getTechniquesByPath: (path) => [
+                { id: 't1', name: 'Basic Awareness' },
+                { id: 't2', name: 'Deep Release' }
+            ],
+            getTechniqueById: (id) => ({ id, name: 'Selected Technique' })
+        };
 
         function App() {
             const [view, setView] = useState('hub');
 
-            // Corrected mappings based on your GitHub repository
             const fileMap = {
                 temple: 'monastery_best_in_class_1.html',
                 yoga: 'presence_yoga_v3.html',
                 lab: 'presence_alignment.html',
-                mudra: 'Mudra-Guide.html', // Fixed: Added hyphen instead of space
+                mudra: 'Mudra-Guide.html',
                 breath: 'presence_breathwork.html',
                 scan: 'presence_bodyscan.html',
                 guided: 'presence_guided.html',
-                ambient: 'presence-ambient-v2.html', // Fixed: Hyphens instead of underscores
+                ambient: 'presence-ambient-v2.html',
                 ritual: 'presence_rituals.html',
                 journal: 'presence_journal.html',
                 sleep: 'presence_sleep.html',
                 movement: 'presence_movement.html',
                 flow: 'presence_flow.html',
-                insights: 'presence_insights.html',
-                timer: 'presence_timer.html'
+                insights: 'presence_insights.html'
             };
+
+            // Initialize Symphony when the "timer" view mounts
+            useEffect(() => {
+                if (view === 'timer' && window.SymphonyPresence) {
+                    window.SymphonyPresence.init();
+                }
+            }, [view]);
+
+            if (view === 'timer') {
+                return (
+                    <div className="bg-slate-100 min-h-screen pt-20">
+                        <div className="back-nav" onClick={() => setView('hub')}>← Back</div>
+                        <div id="meditation-app"></div>
+                    </div>
+                );
+            }
 
             if (view !== 'hub') {
                 return (
-                    <div className="animate-in fade-in duration-500">
+                    <div>
                         <div className="back-nav" onClick={() => setView('hub')}>← Back</div>
                         <iframe src={fileMap[view]} title={view} />
                     </div>
@@ -95,31 +114,14 @@
             }
 
             return (
-                <div className="min-h-screen pb-20"> {/* Fixed: min-height-screen to min-h-screen (Tailwind) */}
+                <div className="min-h-screen pb-20">
                     <div className="max-w-6xl mx-auto pt-16 px-6 text-center space-y-12">
-                        <h1 className="text-7xl md:text-8xl font-serif font-light tracking-tight">presence</h1>
-                        <p className="text-[10px] tracking-[0.4em] text-slate-500 uppercase">0.1 Hours Cultivated</p>
+                        <h1 className="text-7xl md:text-8xl font-serif font-light">presence</h1>
                         
-                        <div className="bg-white/80 rounded-3xl p-6 flex justify-between items-center max-w-2xl mx-auto border border-white/40 shadow-sm">
-                            <div className="text-left">
-                                <p className="font-semibold text-xs text-slate-800">Practice Tracking</p>
-                                <p className="text-[10px] text-slate-400">Sync with local insights</p>
-                            </div>
-                            <div className="w-12 h-6 bg-indigo-500 rounded-full relative shadow-inner">
-                                <div className="absolute right-1 top-1 w-4 h-4 bg-white rounded-full shadow-sm"></div>
-                            </div>
-                        </div>
-
-                        <div className="flex justify-center gap-4 py-4">
-                            <button className="filter-btn">Still</button>
-                            <button className="filter-btn opacity-20 hover:opacity-100 transition-opacity">Flow</button>
-                            <button className="filter-btn opacity-20 hover:opacity-100 transition-opacity">Ritual</button>
-                        </div>
-
                         <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
                             <ZenCard category="Temple" title="Monastery" onClick={() => setView('temple')} />
                             <ZenCard category="Studio" title="Create Practice" onClick={() => setView('yoga')} />
-                            <ZenCard category="Meditation" title="Timed Session" onClick={() => setView('timer')} />
+                            <ZenCard category="Meditation" title="Timer (Symphony)" onClick={() => setView('timer')} />
                             <ZenCard category="Guided" title="Voice Sessions" onClick={() => setView('guided')} />
                             <ZenCard category="Breathwork" title="Regulation" onClick={() => setView('breath')} />
                             <ZenCard category="Body Scan" title="Awareness" onClick={() => setView('scan')} />
@@ -140,7 +142,7 @@
 
         function ZenCard({ category, title, onClick }) {
             return (
-                <div onClick={onClick} className="card-zen text-left animate-in slide-in-from-bottom-4 duration-700">
+                <div onClick={onClick} className="card-zen text-left">
                     <span className="text-[9px] uppercase tracking-[0.3em] text-slate-400 font-semibold">{category}</span>
                     <span className="text-2xl font-serif italic text-slate-800">{title}</span>
                 </div>
@@ -150,5 +152,39 @@
         const root = ReactDOM.createRoot(document.getElementById('root'));
         root.render(<App />);
     </script>
-</body>
-</html>
+
+    <script>
+        // --- SYMPHONY RESTORATION LOGIC ---
+        window.SymphonyPresence = {
+            state: {
+                totalPracticeMinutes: parseFloat(localStorage.getItem('totalPracticeMinutes') || '0'),
+                breathingActive: false,
+                currentPath: 'mindfulness',
+                currentTechnique: null,
+                sessionLength: 0,
+                timerRemaining: 0,
+            },
+            paths: ['mindfulness', 'heart', 'foundational', 'energizing', 'cooling', 'balancing', 'advanced', 'somatic', 'concentration', 'visualization', 'devotional', 'zen', 'nondual', 'movement', 'insight'],
+            init() {
+                this.render();
+                this.updateTotalHours();
+                this.selectPath('mindfulness');
+            },
+            render() {
+                const container = document.getElementById('meditation-app');
+                if (!container) return;
+                container.innerHTML = `
+                    <div class="presence-container">
+                        <div class="font-serif italic text-4xl mb-2">presence</div>
+                        <div class="text-xs uppercase tracking-widest text-slate-400 mb-8">you have arrived at this moment.</div>
+                        <div class="stats-bar mb-8"><span id="totalHours">0.0</span> hours present</div>
+                        <div class="space-y-6">
+                            <div>
+                                <div class="text-[10px] uppercase mb-2">1. choose your path</div>
+                                <div class="flex flex-wrap justify-center" id="path-buttons">
+                                    ${this.paths.map(p => `<button class="choice-btn" id="btn-${p}" onclick="SymphonyPresence.selectPath('${p}')">${p}</button>`).join('')}
+                                </div>
+                            </div>
+                            <div>
+                                <div class="text-[10px] uppercase mb-2">2. choose technique</div>
+                                <select id="techniqueSelect" class="p
