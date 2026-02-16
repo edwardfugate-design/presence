@@ -1,9 +1,16 @@
 /**
- * SYMPHONY SUITE: PRESENCE MEDITATION
- * 100% Focused on Breathing & Mindfulness Paths
+ * PRESENCE MEDITATION - FULL RESTORATION
+ * Logic for 15 paths and dynamic breathing techniques.
  */
 
-const SymphonyPresence = {
+const PresenceApp = {
+    // Every path exactly as defined in your original template
+    paths: [
+        'mindfulness', 'heart', 'foundational', 'energizing', 'cooling', 
+        'balancing', 'advanced', 'somatic', 'concentration', 'visualization', 
+        'devotional', 'zen', 'nondual', 'movement', 'insight'
+    ],
+
     state: {
         totalPracticeMinutes: parseFloat(localStorage.getItem('totalPracticeMinutes') || '0'),
         breathingActive: false,
@@ -12,16 +19,10 @@ const SymphonyPresence = {
         audioContext: null
     },
 
-    // Every path preserved from your original template
-    paths: ['mindfulness', 'heart', 'foundational', 'energizing', 'cooling', 
-            'balancing', 'advanced', 'somatic', 'concentration', 'visualization', 
-            'devotional', 'zen', 'nondual', 'movement', 'insight'],
-
     init() {
         this.render();
         this.updateTotalHours();
         this.selectPath('mindfulness'); // Default startup path
-        console.log("Presence: Breathing techniques and paths restored.");
     },
 
     render() {
@@ -42,44 +43,36 @@ const SymphonyPresence = {
                         <div class="button-group-label">1. choose your path</div>
                         <div class="button-row" id="path-buttons">
                             ${this.paths.map(p => `
-                                <button class="choice-btn" id="btn-${p}" onclick="SymphonyPresence.selectPath('${p}')">${p}</button>
+                                <button class="choice-btn" id="btn-${p}" onclick="PresenceApp.selectPath('${p}')">${p}</button>
                             `).join('')}
                         </div>
                     </div>
 
                     <div class="button-group">
                         <div class="button-group-label">2. choose breathing technique</div>
-                        <select id="techniqueSelect" onchange="SymphonyPresence.handleTechniqueChange()"></select>
+                        <select id="techniqueSelect" onchange="PresenceApp.handleTechniqueChange()"></select>
                     </div>
                 </div>
 
-                <div class="breath-circle" id="breathCircle" onclick="SymphonyPresence.toggleBreathing()">
-                    <div class="breath-count" id="breathCount"></div>
+                <div class="breath-circle" id="breathCircle" onclick="PresenceApp.toggleBreathing()">
                     <div id="breathLabel" class="breath-label">tap to begin</div>
                 </div>
 
-                <div class="timer-display" id="timerDisplay">—</div>
-
-                <div class="presence-footer">
-                    <button class="nav-btn" onclick="SymphonyPresence.shareApp()">share</button>
-                </div>
-
                 <div id="bellNotification" class="bell-notification">
-                    <div class="bell-icon">🔔</div>
-                    <div class="bell-text">mindfulness bell</div>
+                    <div class="bell-text">stop. breathe. notice. this moment is enough.</div>
                 </div>
             </div>
         `;
     },
 
-    // Preserved: Filtering techniques by the selected path
+    // RESTORED: Filters techniques by the selected path
     selectPath(path) {
         this.state.currentPath = path;
         document.querySelectorAll('.choice-btn').forEach(btn => btn.classList.remove('active'));
         const activeBtn = document.getElementById(`btn-${path}`);
         if (activeBtn) activeBtn.classList.add('active');
 
-        // This links directly to your presence-content-manager.js
+        // This links to your presence-content-manager.js logic
         if (window.ContentManager) {
             const techniques = window.ContentManager.getTechniquesByPath(path);
             const select = document.getElementById('techniqueSelect');
@@ -102,11 +95,11 @@ const SymphonyPresence = {
         this.state.breathingActive = !this.state.breathingActive;
 
         if (this.state.breathingActive) {
-            circle.classList.add('breathing');
+            circle.classList.add('breathing', 'inhale');
             label.innerText = "inhale";
-            this.playBell(440); // The Zen Sine-Wave Bell
+            this.playBell(440); // Original sine-wave frequency
         } else {
-            circle.classList.remove('breathing');
+            circle.classList.remove('breathing', 'inhale');
             label.innerText = "tap to resume";
         }
     },
@@ -114,11 +107,11 @@ const SymphonyPresence = {
     resetBreathing() {
         const circle = document.getElementById('breathCircle');
         this.state.breathingActive = false;
-        circle.classList.remove('breathing');
+        circle.classList.remove('breathing', 'inhale');
         document.getElementById('breathLabel').innerText = "tap to begin";
     },
 
-    playBell(freq = 440) {
+    playBell(freq) {
         if (!this.state.audioContext) this.state.audioContext = new (window.AudioContext || window.webkitAudioContext)();
         const ctx = this.state.audioContext;
         const osc = ctx.createOscillator();
@@ -141,13 +134,7 @@ const SymphonyPresence = {
         const hours = (this.state.totalPracticeMinutes / 60).toFixed(1);
         const el = document.getElementById('totalHours');
         if (el) el.textContent = hours;
-    },
-
-    shareApp() {
-        if (navigator.share) {
-            navigator.share({ title: 'presence', url: window.location.href });
-        }
     }
 };
 
-SymphonyPresence.init();
+PresenceApp.init();
