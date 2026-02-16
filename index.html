@@ -11,28 +11,66 @@
     <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,600;1,400&family=Inter:wght@200;300;400;500&display=swap" rel="stylesheet">
     <style>
         :root { --ink: #1a1a1a; --mist: #fcfcfc; --slate: #94a3b8; }
-        body { font-family: 'Inter', sans-serif; background: var(--mist); color: var(--ink); margin: 0; overflow: hidden; height: 100vh; }
+        body { font-family: 'Inter', sans-serif; background: #d1d5db; color: var(--ink); margin: 0; overflow-x: hidden; min-height: 100vh; }
         .font-serif { font-family: 'Cormorant Garamond', serif; }
-        .stage-container { height: calc(100vh - 140px); overflow: hidden; background: var(--mist); }
-        iframe { width: 100%; height: 100%; border: none; background: transparent; }
-        .nav-scroll { display: flex; gap: 2.2rem; overflow-x: auto; padding: 0 40px; scrollbar-width: none; -ms-overflow-style: none; width: 100%; }
-        .nav-scroll::-webkit-scrollbar { display: none; }
-        .nav-item { transition: all 0.4s ease; opacity: 0.25; letter-spacing: 0.25em; font-size: 8px; text-transform: uppercase; font-weight: 500; white-space: nowrap; flex-shrink: 0; position: absolute; padding: 10px 0; border: none; background: none; cursor: pointer; position: relative; }
-        .nav-item.active { opacity: 1; }
-        .nav-item.active:after { content: ''; display: block; width: 100%; height: 1px; background: var(--ink); position: absolute; bottom: 5px; left: 0; }
-        .card-zen { border-bottom: 1px solid rgba(0,0,0,0.04); padding: 1.25rem 0.5rem; transition: all 0.4s ease; cursor: pointer; display: flex; justify-content: space-between; align-items: baseline; }
-        @media (min-width: 1024px) { .nav-scroll { justify-content: center; } }
+        
+        /* Dashboard Container */
+        .stage-container { min-height: 100vh; padding-bottom: 40px; }
+        iframe { width: 100%; height: 100vh; border: none; background: white; }
+
+        .card-zen { 
+            background: rgba(255, 255, 255, 0.7);
+            backdrop-filter: blur(10px);
+            border-radius: 24px;
+            padding: 2.5rem 2rem;
+            transition: all 0.4s ease;
+            cursor: pointer;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            height: 160px;
+        }
+        .card-zen:hover { background: rgba(255, 255, 255, 0.9); transform: translateY(-2px); }
+        
+        .filter-btn {
+            background: #1a1a1a;
+            color: white;
+            padding: 8px 24px;
+            border-radius: 99px;
+            font-size: 10px;
+            letter-spacing: 0.2em;
+            text-transform: uppercase;
+            transition: 0.3s;
+        }
+
+        /* Back Button for iFrames */
+        .back-nav {
+            position: fixed;
+            top: 20px;
+            left: 20px;
+            z-index: 100;
+            background: white;
+            padding: 8px 16px;
+            border-radius: 99px;
+            font-size: 10px;
+            letter-spacing: 0.1em;
+            text-transform: uppercase;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+            cursor: pointer;
+        }
     </style>
 </head>
 <body>
     <div id="root"></div>
     <script type="text/babel">
-        const { useState, useEffect } = React;
+        const { useState } = React;
+
         function App() {
             const [view, setView] = useState('hub');
-            const [intent, setIntent] = useState(localStorage.getItem('presence_intent') || "Neutrality");
+
+            // MAPPING TO GITHUB FILENAMES
             const fileMap = {
-                temple: 'monastery_best_in_class_1.html',
+                temple: 'monastery_best_in_class_1.html', // Fixed: underscore
                 yoga: 'presence_yoga_v3.html',
                 lab: 'presence_alignment.html',
                 mudra: 'Mudra Guide.html',
@@ -48,78 +86,66 @@
                 insights: 'presence_insights.html',
                 timer: 'presence_timer.html'
             };
-            const navigate = (to) => setView(to);
+
+            if (view !== 'hub') {
+                return (
+                    <div>
+                        <div className="back-nav" onClick={() => setView('hub')}>← Back to Presence</div>
+                        <iframe src={fileMap[view]} title={view} />
+                    </div>
+                );
+            }
+
             return (
-                <div className="flex flex-col h-screen relative">
-                    <header className="h-20 flex justify-between items-center px-6 md:px-12">
-                        <div className="w-32 hidden md:block">
-                            <p className="text-[6px] tracking-[0.4em] text-slate-400 uppercase mb-1">Point of Focus</p>
-                            <p className="font-serif italic text-sm text-slate-500">{intent}</p>
-                        </div>
-                        <div className="text-xl font-serif tracking-[0.4em] cursor-pointer" onClick={() => navigate('hub')}>presence</div>
-                        <div className="w-32 text-right hidden md:block"><p className="text-[6px] tracking-[0.4em] text-slate-300 uppercase">Symphony v.01</p></div>
-                    </header>
-                    <main className="stage-container flex-grow">
-                        {view === 'hub' ? (
-                            <div className="max-w-6xl mx-auto py-12 px-6 md:px-12 space-y-16 animate-in fade-in duration-700">
-                                <section className="text-center space-y-4">
-                                    <h1 className="text-7xl md:text-9xl font-serif font-light tracking-tighter leading-none">presence</h1>
-                                    <input value={intent} onChange={(e) => setIntent(e.target.value)} className="border-none bg-transparent text-center font-serif italic text-lg md:text-2xl text-slate-400 outline-none w-full" placeholder="Set Intent" />
-                                </section>
-                                <div className="grid grid-cols-1 md:grid-cols-3 gap-x-16 gap-y-12 pb-10">
-                                    <div className="space-y-2">
-                                        <p className="text-[7px] tracking-[0.5em] text-slate-300 uppercase mb-6 font-medium">Practice</p>
-                                        <ZenCard title="Temple" sub="Monastery" onClick={() => navigate('temple')} />
-                                        <ZenCard title="Studio" sub="Yoga v3" onClick={() => navigate('yoga')} />
-                                        <ZenCard title="Movement" sub="Flow" onClick={() => navigate('movement')} />
-                                        <ZenCard title="Breathing" sub="Pranayama" onClick={() => navigate('breath')} />
-                                        <ZenCard title="Timer" sub="Presence" onClick={() => navigate('timer')} />
-                                    </div>
-                                    <div className="space-y-2">
-                                        <p className="text-[7px] tracking-[0.5em] text-slate-300 uppercase mb-6 font-medium">Deep Work</p>
-                                        <ZenCard title="Alignment" sub="The Lab" onClick={() => navigate('lab')} />
-                                        <ZenCard title="Mudra" sub="Encyclopedia" onClick={() => navigate('mudra')} />
-                                        <ZenCard title="Body Scan" sub="Awareness" onClick={() => navigate('scan')} />
-                                        <ZenCard title="Rituals" sub="Custom" onClick={() => navigate('ritual')} />
-                                        <ZenCard title="Ambient" sub="Soundscapes" onClick={() => navigate('ambient')} />
-                                    </div>
-                                    <div className="space-y-2">
-                                        <p className="text-[7px] tracking-[0.5em] text-slate-300 uppercase mb-6 font-medium">System</p>
-                                        <ZenCard title="Journal" sub="Reflection" onClick={() => navigate('journal')} />
-                                        <ZenCard title="Sleep" sub="Recovery" onClick={() => navigate('sleep')} />
-                                        <ZenCard title="Insights" sub="Analysis" onClick={() => navigate('insights')} />
-                                    </div>
-                                </div>
+                <div className="stage-container">
+                    <div className="max-w-5xl mx-auto pt-20 px-6 text-center space-y-12">
+                        <h1 className="text-6xl md:text-8xl font-serif font-light tracking-tight">presence</h1>
+                        <p className="text-[10px] tracking-[0.4em] text-slate-500 uppercase">0.1 Hours Cultivated</p>
+                        
+                        {/* Practice Tracking Toggle */}
+                        <div className="bg-white/80 rounded-2xl p-6 flex justify-between items-center max-w-2xl mx-auto border border-white/20">
+                            <div className="text-left">
+                                <p className="font-semibold text-xs">Practice Tracking</p>
+                                <p className="text-[10px] text-slate-400">Track your practice time and build insights</p>
                             </div>
-                        ) : (
-                            <iframe src={fileMap[view]} key={view} title={view} />
-                        )}
-                    </main>
-                    <nav className="h-16 flex items-center border-t border-slate-50 bg-white/90 backdrop-blur-md z-50">
-                        <div className="nav-scroll">
-                            <NavItem label="Hub" active={view === 'hub'} onClick={() => navigate('hub')} />
-                            <NavItem label="Temple" active={view === 'temple'} onClick={() => navigate('temple')} />
-                            <NavItem label="Yoga" active={view === 'yoga'} onClick={() => navigate('yoga')} />
-                            <NavItem label="Timer" active={view === 'timer'} onClick={() => navigate('timer')} />
-                            <NavItem label="Movement" active={view === 'movement'} onClick={() => navigate('movement')} />
-                            <NavItem label="Flow" active={view === 'flow'} onClick={() => navigate('flow')} />
-                            <NavItem label="Lab" active={view === 'lab'} onClick={() => navigate('lab')} />
-                            <NavItem label="Mudra" active={view === 'mudra'} onClick={() => navigate('mudra')} />
-                            <NavItem label="Breath" active={view === 'breath'} onClick={() => navigate('breath')} />
-                            <NavItem label="Scan" active={view === 'scan'} onClick={() => navigate('scan')} />
-                            <NavItem label="Guided" active={view === 'guided'} onClick={() => navigate('guided')} />
-                            <NavItem label="Ambient" active={view === 'ambient'} onClick={() => navigate('ambient')} />
-                            <NavItem label="Ritual" active={view === 'ritual'} onClick={() => navigate('ritual')} />
-                            <NavItem label="Journal" active={view === 'journal'} onClick={() => navigate('journal')} />
-                            <NavItem label="Sleep" active={view === 'sleep'} onClick={() => navigate('sleep')} />
-                            <NavItem label="Insights" active={view === 'insights'} onClick={() => navigate('insights')} />
+                            <div className="w-10 h-5 bg-indigo-500 rounded-full relative">
+                                <div className="absolute right-1 top-1 w-3 h-3 bg-white rounded-full"></div>
+                            </div>
                         </div>
-                    </nav>
+
+                        {/* Filter Pills */}
+                        <div className="flex justify-center gap-4 py-4">
+                            <button className="filter-btn">Still</button>
+                            <button className="filter-btn opacity-80">Flow</button>
+                            <button className="filter-btn opacity-80">Ritual</button>
+                        </div>
+
+                        {/* Card Grid */}
+                        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 pb-20">
+                            <ZenCard category="Temple" title="Monastery" onClick={() => setView('temple')} />
+                            <ZenCard category="Studio" title="Create Practice" onClick={() => setView('yoga')} />
+                            <ZenCard category="Meditation" title="Timed Session" onClick={() => setView('timer')} />
+                            <ZenCard category="Guided" title="Voice Sessions" onClick={() => setView('guided')} />
+                            <ZenCard category="Breathwork" title="Regulation" onClick={() => setView('breath')} />
+                            <ZenCard category="Body Scan" title="Awareness" onClick={() => setView('scan')} />
+                            <ZenCard category="Sleep" title="Rest & Recovery" onClick={() => setView('sleep')} />
+                            <ZenCard category="The Lab" title="Alignment" onClick={() => setView('lab')} />
+                            <ZenCard category="Journal" title="Reflection" onClick={() => setView('journal')} />
+                        </div>
+                    </div>
                 </div>
             );
         }
-        function NavItem({ label, active, onClick }) { return <button onClick={onClick} className={`nav-item ${active ? 'active' : ''}`}>{label}</button>; }
-        function ZenCard({ title, sub, onClick }) { return <div onClick={onClick} className="card-zen"><span className="text-xl font-serif italic text-slate-700">{title}</span><span className="text-[7px] text-slate-400 uppercase tracking-[0.2em]">{sub}</span></div>; }
+
+        function ZenCard({ category, title, onClick }) {
+            return (
+                <div onClick={onClick} className="card-zen text-left">
+                    <span className="text-[8px] uppercase tracking-[0.3em] text-slate-400 font-medium">{category}</span>
+                    <span className="text-xl font-serif italic text-slate-700">{title}</span>
+                </div>
+            );
+        }
+
         const root = ReactDOM.createRoot(document.getElementById('root'));
         root.render(<App />);
     </script>
