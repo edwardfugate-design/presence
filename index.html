@@ -13,23 +13,14 @@
         :root { --ink: #1a1a1a; --mist: #fcfcfc; --slate: #94a3b8; }
         body { font-family: 'Inter', sans-serif; background: var(--mist); color: var(--ink); margin: 0; overflow: hidden; height: 100vh; }
         .font-serif { font-family: 'Cormorant Garamond', serif; }
-        
-        /* Fixed stage height to prevent layout shift */
         .stage-container { height: calc(100vh - 140px); overflow: hidden; background: var(--mist); }
         iframe { width: 100%; height: 100%; border: none; background: transparent; }
-
-        /* Scrollable Navigation */
         .nav-scroll { display: flex; gap: 2.2rem; overflow-x: auto; padding: 0 40px; scrollbar-width: none; -ms-overflow-style: none; width: 100%; }
         .nav-scroll::-webkit-scrollbar { display: none; }
-
-        .nav-item { transition: all 0.4s ease; opacity: 0.25; letter-spacing: 0.25em; font-size: 8px; text-transform: uppercase; font-weight: 500; white-space: nowrap; flex-shrink: 0; position: relative; padding: 10px 0; border: none; background: none; cursor: pointer; }
+        .nav-item { transition: all 0.4s ease; opacity: 0.25; letter-spacing: 0.25em; font-size: 8px; text-transform: uppercase; font-weight: 500; white-space: nowrap; flex-shrink: 0; position: absolute; padding: 10px 0; border: none; background: none; cursor: pointer; position: relative; }
         .nav-item.active { opacity: 1; }
-        .nav-item:after { content: ''; display: block; width: 0; height: 1px; background: var(--ink); transition: width 0.4s; position: absolute; bottom: 5px; left: 0; }
-        .nav-item.active:after { width: 100%; }
-        
+        .nav-item.active:after { content: ''; display: block; width: 100%; height: 1px; background: var(--ink); position: absolute; bottom: 5px; left: 0; }
         .card-zen { border-bottom: 1px solid rgba(0,0,0,0.04); padding: 1.25rem 0.5rem; transition: all 0.4s ease; cursor: pointer; display: flex; justify-content: space-between; align-items: baseline; }
-        .card-zen:active { background: rgba(0,0,0,0.02); }
-        
         @media (min-width: 1024px) { .nav-scroll { justify-content: center; } }
     </style>
 </head>
@@ -37,18 +28,11 @@
     <div id="root"></div>
     <script type="text/babel">
         const { useState, useEffect } = React;
-
         function App() {
             const [view, setView] = useState('hub');
             const [intent, setIntent] = useState(localStorage.getItem('presence_intent') || "Neutrality");
-
-            useEffect(() => {
-                localStorage.setItem('presence_intent', intent);
-            }, [intent]);
-
-            // EXACT GITHUB FILENAME MAPPING
             const fileMap = {
-                temple: 'monastery-best-in-class-1.html',
+                temple: 'monastery_best_in_class_1.html',
                 yoga: 'presence_yoga_v3.html',
                 lab: 'presence_alignment.html',
                 mudra: 'Mudra Guide.html',
@@ -61,14 +45,10 @@
                 sleep: 'presence_sleep.html',
                 movement: 'presence_movement.html',
                 flow: 'presence_flow.html',
-                insights: 'presence_insights.html'
+                insights: 'presence_insights.html',
+                timer: 'presence_timer.html'
             };
-
-            const navigate = (to) => {
-                console.log("Navigating to:", fileMap[to] || "Hub");
-                setView(to);
-            };
-
+            const navigate = (to) => setView(to);
             return (
                 <div className="flex flex-col h-screen relative">
                     <header className="h-20 flex justify-between items-center px-6 md:px-12">
@@ -77,32 +57,23 @@
                             <p className="font-serif italic text-sm text-slate-500">{intent}</p>
                         </div>
                         <div className="text-xl font-serif tracking-[0.4em] cursor-pointer" onClick={() => navigate('hub')}>presence</div>
-                        <div className="w-32 text-right hidden md:block">
-                             <p className="text-[6px] tracking-[0.4em] text-slate-300 uppercase">Symphony v.01</p>
-                        </div>
+                        <div className="w-32 text-right hidden md:block"><p className="text-[6px] tracking-[0.4em] text-slate-300 uppercase">Symphony v.01</p></div>
                     </header>
-
                     <main className="stage-container flex-grow">
                         {view === 'hub' ? (
                             <div className="max-w-6xl mx-auto py-12 px-6 md:px-12 space-y-16 animate-in fade-in duration-700">
                                 <section className="text-center space-y-4">
                                     <h1 className="text-7xl md:text-9xl font-serif font-light tracking-tighter leading-none">presence</h1>
-                                    <input 
-                                        value={intent} 
-                                        onChange={(e) => setIntent(e.target.value)}
-                                        className="border-none bg-transparent text-center font-serif italic text-lg md:text-2xl text-slate-400 outline-none w-full" 
-                                        placeholder="Set Intent" 
-                                    />
+                                    <input value={intent} onChange={(e) => setIntent(e.target.value)} className="border-none bg-transparent text-center font-serif italic text-lg md:text-2xl text-slate-400 outline-none w-full" placeholder="Set Intent" />
                                 </section>
-
                                 <div className="grid grid-cols-1 md:grid-cols-3 gap-x-16 gap-y-12 pb-10">
                                     <div className="space-y-2">
                                         <p className="text-[7px] tracking-[0.5em] text-slate-300 uppercase mb-6 font-medium">Practice</p>
                                         <ZenCard title="Temple" sub="Monastery" onClick={() => navigate('temple')} />
                                         <ZenCard title="Studio" sub="Yoga v3" onClick={() => navigate('yoga')} />
-                                        <ZenCard title="Movement" sub="Flow" onClick={() => navigate('flow')} />
+                                        <ZenCard title="Movement" sub="Flow" onClick={() => navigate('movement')} />
                                         <ZenCard title="Breathing" sub="Pranayama" onClick={() => navigate('breath')} />
-                                        <ZenCard title="Guided" sub="Sessions" onClick={() => navigate('guided')} />
+                                        <ZenCard title="Timer" sub="Presence" onClick={() => navigate('timer')} />
                                     </div>
                                     <div className="space-y-2">
                                         <p className="text-[7px] tracking-[0.5em] text-slate-300 uppercase mb-6 font-medium">Deep Work</p>
@@ -124,12 +95,13 @@
                             <iframe src={fileMap[view]} key={view} title={view} />
                         )}
                     </main>
-
                     <nav className="h-16 flex items-center border-t border-slate-50 bg-white/90 backdrop-blur-md z-50">
                         <div className="nav-scroll">
                             <NavItem label="Hub" active={view === 'hub'} onClick={() => navigate('hub')} />
                             <NavItem label="Temple" active={view === 'temple'} onClick={() => navigate('temple')} />
                             <NavItem label="Yoga" active={view === 'yoga'} onClick={() => navigate('yoga')} />
+                            <NavItem label="Timer" active={view === 'timer'} onClick={() => navigate('timer')} />
+                            <NavItem label="Movement" active={view === 'movement'} onClick={() => navigate('movement')} />
                             <NavItem label="Flow" active={view === 'flow'} onClick={() => navigate('flow')} />
                             <NavItem label="Lab" active={view === 'lab'} onClick={() => navigate('lab')} />
                             <NavItem label="Mudra" active={view === 'mudra'} onClick={() => navigate('mudra')} />
@@ -146,20 +118,8 @@
                 </div>
             );
         }
-
-        function NavItem({ label, active, onClick }) {
-            return <button onClick={onClick} className={`nav-item ${active ? 'active' : ''}`}>{label}</button>;
-        }
-
-        function ZenCard({ title, sub, onClick }) {
-            return (
-                <div onClick={onClick} className="card-zen">
-                    <span className="text-xl font-serif italic text-slate-700">{title}</span>
-                    <span className="text-[7px] text-slate-400 uppercase tracking-[0.2em]">{sub}</span>
-                </div>
-            );
-        }
-
+        function NavItem({ label, active, onClick }) { return <button onClick={onClick} className={`nav-item ${active ? 'active' : ''}`}>{label}</button>; }
+        function ZenCard({ title, sub, onClick }) { return <div onClick={onClick} className="card-zen"><span className="text-xl font-serif italic text-slate-700">{title}</span><span className="text-[7px] text-slate-400 uppercase tracking-[0.2em]">{sub}</span></div>; }
         const root = ReactDOM.createRoot(document.getElementById('root'));
         root.render(<App />);
     </script>
