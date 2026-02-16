@@ -1,23 +1,25 @@
 /**
- * PRESENCE MEDITATION - FULL RESTORATION
- * Logic for 15 paths and dynamic breathing techniques.
+ * SYMPHONY RESTORATION: PRESENCE MEDITATION
+ * Features: 15 Mindfulness Paths + Restored Breathing + New Timer Logic
  */
 
-const PresenceApp = {
-    // Every path exactly as defined in your original template
-    paths: [
-        'mindfulness', 'heart', 'foundational', 'energizing', 'cooling', 
-        'balancing', 'advanced', 'somatic', 'concentration', 'visualization', 
-        'devotional', 'zen', 'nondual', 'movement', 'insight'
-    ],
-
+const SymphonyPresence = {
     state: {
         totalPracticeMinutes: parseFloat(localStorage.getItem('totalPracticeMinutes') || '0'),
         breathingActive: false,
         currentPath: 'mindfulness',
         currentTechnique: null,
+        sessionLength: 0, // 0 = Open
+        timerRemaining: 0,
         audioContext: null
     },
+
+    // All 15 original paths preserved
+    paths: [
+        'mindfulness', 'heart', 'foundational', 'energizing', 'cooling', 
+        'balancing', 'advanced', 'somatic', 'concentration', 'visualization', 
+        'devotional', 'zen', 'nondual', 'movement', 'insight'
+    ],
 
     init() {
         this.render();
@@ -43,36 +45,74 @@ const PresenceApp = {
                         <div class="button-group-label">1. choose your path</div>
                         <div class="button-row" id="path-buttons">
                             ${this.paths.map(p => `
-                                <button class="choice-btn" id="btn-${p}" onclick="PresenceApp.selectPath('${p}')">${p}</button>
+                                <button class="choice-btn" id="btn-${p}" onclick="SymphonyPresence.selectPath('${p}')">${p}</button>
                             `).join('')}
                         </div>
                     </div>
 
                     <div class="button-group">
                         <div class="button-group-label">2. choose breathing technique</div>
-                        <select id="techniqueSelect" onchange="PresenceApp.handleTechniqueChange()"></select>
+                        <select id="techniqueSelect" onchange="SymphonyPresence.handleTechniqueChange()"></select>
+                    </div>
+
+                    <div class="button-group">
+                        <div class="button-group-label">3. set duration (minutes)</div>
+                        <div class="preset-group">
+                            <button class="preset-btn" onclick="SymphonyPresence.setTimer(5)">5</button>
+                            <button class="preset-btn" onclick="SymphonyPresence.setTimer(10)">10</button>
+                            <button class="preset-btn" onclick="SymphonyPresence.setTimer(15)">15</button>
+                            <button class="preset-btn" onclick="SymphonyPresence.setTimer(30)">30</button>
+                            <button class="preset-btn" onclick="SymphonyPresence.setTimer(60)">60</button>
+                            <button class="preset-btn" onclick="SymphonyPresence.setTimer('random')">random</button>
+                            <button class="preset-btn" onclick="SymphonyPresence.setTimer(0)">open</button>
+                        </div>
                     </div>
                 </div>
 
-                <div class="breath-circle" id="breathCircle" onclick="PresenceApp.toggleBreathing()">
+                <div class="breath-circle" id="breathCircle" onclick="SymphonyPresence.toggleBreathing()">
                     <div id="breathLabel" class="breath-label">tap to begin</div>
                 </div>
 
-                <div id="bellNotification" class="bell-notification">
-                    <div class="bell-text">stop. breathe. notice. this moment is enough.</div>
-                </div>
+                <div class="timer-display" id="timerDisplay">—</div>
             </div>
         `;
     },
 
-    // RESTORED: Filters techniques by the selected path
+    setTimer(minutes) {
+        if (minutes === 'random') {
+            const options = [5, 10, 15, 30, 60];
+            this.state.sessionLength = options[Math.floor(Math.random() * options.length)];
+        } else {
+            this.state.sessionLength = minutes;
+        }
+        
+        this.state.timerRemaining = this.state.sessionLength * 60;
+        this.updateTimerUI();
+        
+        // Visual feedback for selected button
+        document.querySelectorAll('.preset-btn').forEach(btn => {
+            btn.classList.toggle('active', btn.innerText.toLowerCase() === minutes.toString().toLowerCase());
+        });
+    },
+
+    updateTimerUI() {
+        const el = document.getElementById('timerDisplay');
+        if (this.state.sessionLength === 0) {
+            el.innerText = "open session";
+        } else {
+            const mins = Math.floor(this.state.timerRemaining / 60);
+            const secs = this.state.timerRemaining % 60;
+            el.innerText = `${mins}:${secs.toString().padStart(2, '0')}`;
+        }
+    },
+
     selectPath(path) {
         this.state.currentPath = path;
         document.querySelectorAll('.choice-btn').forEach(btn => btn.classList.remove('active'));
         const activeBtn = document.getElementById(`btn-${path}`);
         if (activeBtn) activeBtn.classList.add('active');
 
-        // This links to your presence-content-manager.js logic
+        // Dynamically fetch techniques from the Content Manager
         if (window.ContentManager) {
             const techniques = window.ContentManager.getTechniquesByPath(path);
             const select = document.getElementById('techniqueSelect');
@@ -90,44 +130,40 @@ const PresenceApp = {
     },
 
     toggleBreathing() {
+        this.state.breathingActive = !this.state.breathingActive;
         const circle = document.getElementById('breathCircle');
         const label = document.getElementById('breathLabel');
-        this.state.breathingActive = !this.state.breathingActive;
 
         if (this.state.breathingActive) {
-            circle.classList.add('breathing', 'inhale');
+            circle.classList.add('breathing');
             label.innerText = "inhale";
-            this.playBell(440); // Original sine-wave frequency
+            this.startTimerInterval();
         } else {
-            circle.classList.remove('breathing', 'inhale');
+            circle.classList.remove('breathing');
             label.innerText = "tap to resume";
+            clearInterval(this.timerInterval);
         }
     },
 
-    resetBreathing() {
-        const circle = document.getElementById('breathCircle');
-        this.state.breathingActive = false;
-        circle.classList.remove('breathing', 'inhale');
-        document.getElementById('breathLabel').innerText = "tap to begin";
+    startTimerInterval() {
+        clearInterval(this.timerInterval);
+        this.timerInterval = setInterval(() => {
+            if (this.state.sessionLength > 0 && this.state.timerRemaining > 0) {
+                this.state.timerRemaining--;
+                this.updateTimerUI();
+                if (this.state.timerRemaining <= 0) {
+                    this.toggleBreathing();
+                    alert("Session complete.");
+                }
+            }
+        }, 1000);
     },
 
-    playBell(freq) {
-        if (!this.state.audioContext) this.state.audioContext = new (window.AudioContext || window.webkitAudioContext)();
-        const ctx = this.state.audioContext;
-        const osc = ctx.createOscillator();
-        const gain = ctx.createGain();
-        osc.connect(gain);
-        gain.connect(ctx.destination);
-        osc.type = 'sine';
-        osc.frequency.value = freq;
-        gain.gain.setValueAtTime(0.3, ctx.currentTime);
-        gain.gain.exponentialRampToValueAtTime(0.01, ctx.currentTime + 4);
-        osc.start();
-        osc.stop(ctx.currentTime + 4);
-
-        const bell = document.getElementById('bellNotification');
-        bell.classList.add('show');
-        setTimeout(() => bell.classList.remove('show'), 4000);
+    resetBreathing() {
+        this.state.breathingActive = false;
+        document.getElementById('breathCircle').classList.remove('breathing');
+        document.getElementById('breathLabel').innerText = "tap to begin";
+        clearInterval(this.timerInterval);
     },
 
     updateTotalHours() {
@@ -137,4 +173,4 @@ const PresenceApp = {
     }
 };
 
-PresenceApp.init();
+SymphonyPresence.init();
