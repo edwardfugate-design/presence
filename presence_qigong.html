@@ -1,0 +1,420 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="theme-color" content="#f8f9fa">
+    <title>presence • qigong</title>
+    <script src="presence-symphony-v2.js"></script>
+    <script src="presence-monitoring.js"></script>
+    <script src="qigong-library.js"></script>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@300;400;600&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --dawn-start: #f8f9fa; --dawn-mid: #e9ecef; --dawn-end: #dee2e6;
+            --text-whisper: #6c757d; --text-soft: #495057; --text-present: #212529;
+        }
+        * { -webkit-tap-highlight-color: transparent; }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: linear-gradient(180deg, var(--dawn-start) 0%, var(--dawn-mid) 50%, var(--dawn-end) 100%);
+            min-height: 100vh; color: var(--text-soft);
+            padding: env(safe-area-inset-top) env(safe-area-inset-right) env(safe-area-inset-bottom) env(safe-area-inset-left);
+        }
+        .font-serif { font-family: 'Cormorant Garamond', serif; }
+        .stat-label { font-size: 0.7rem; letter-spacing: 0.3em; text-transform: uppercase; color: var(--text-whisper); }
+        .practice-card {
+            background: rgba(255,255,255,0.5); border: 1px solid rgba(0,0,0,0.05);
+            backdrop-filter: blur(10px); transition: all 0.3s; cursor: pointer;
+        }
+        .practice-card:hover { background: rgba(255,255,255,0.8); transform: translateY(-2px); }
+        .tab-btn {
+            padding: 0.5rem 1rem; border-radius: 0.75rem; transition: all 0.3s;
+            background: rgba(255,255,255,0.3); border: 1px solid transparent;
+        }
+        .tab-btn.active { background: white; border-color: rgba(0,0,0,0.1); font-weight: 600; }
+        .element-card {
+            background: rgba(255,255,255,0.4); padding: 1rem; border-radius: 1rem;
+            border-left: 4px solid;
+        }
+        .element-wood { border-color: #22c55e; }
+        .element-fire { border-color: #ef4444; }
+        .element-earth { border-color: #eab308; }
+        .element-metal { border-color: #cbd5e1; }
+        .element-water { border-color: #3b82f6; }
+        .breathing-circle {
+            width: 200px; height: 200px; border-radius: 50%;
+            border: 3px solid rgba(99,102,241,0.3);
+            display: flex; align-items: center; justify-content: center;
+            transition: all 2s ease; position: relative;
+        }
+        .breathing-circle.inhale {
+            transform: scale(1.3); border-color: rgba(99,102,241,0.7);
+            box-shadow: 0 0 30px rgba(99,102,241,0.3);
+        }
+        .breathing-circle.exhale {
+            transform: scale(0.8); border-color: rgba(99,102,241,0.2);
+        }
+    </style>
+</head>
+<body class="p-4 sm:p-8 md:p-12">
+    <div class="max-w-5xl mx-auto">
+        <header class="mb-8 sm:mb-12">
+            <a href="index.html" class="stat-label text-indigo-400 mb-4 block">← Hub</a>
+            <h1 class="font-serif text-5xl sm:text-7xl tracking-tighter text-gray-900 mb-4">Qigong</h1>
+            <p class="text-base sm:text-lg text-gray-500 font-light">气功 • Energy cultivation, life nourishment</p>
+        </header>
+
+        <!-- Tabs -->
+        <div class="flex gap-2 mb-8 overflow-x-auto pb-2">
+            <button class="tab-btn active" onclick="showTab('foundations')" id="tab-foundations">Foundations</button>
+            <button class="tab-btn" onclick="showTab('classics')" id="tab-classics">Classic Sets</button>
+            <button class="tab-btn" onclick="showTab('breathing')" id="tab-breathing">Breathing</button>
+            <button class="tab-btn" onclick="showTab('healing')" id="tab-healing">Healing Sounds</button>
+            <button class="tab-btn" onclick="showTab('dantian')" id="tab-dantian">Dantian</button>
+            <button class="tab-btn" onclick="showTab('seasonal')" id="tab-seasonal">Seasonal</button>
+        </div>
+
+        <!-- Foundations Tab -->
+        <div id="content-foundations" class="tab-content">
+            <div class="space-y-6">
+                <div class="practice-card p-6 rounded-2xl" onclick="startStanding()">
+                    <div class="stat-label mb-2">Standing Meditation</div>
+                    <h3 class="font-serif text-2xl text-gray-900 mb-2">Zhan Zhuang • 站桩</h3>
+                    <p class="text-sm text-gray-600 mb-3">Foundation of all qigong practice</p>
+                    <div class="flex gap-4 text-xs text-gray-500">
+                        <span>⏱️ 5-60 min</span>
+                        <span>🌳 3 positions</span>
+                    </div>
+                </div>
+
+                <div id="standingDetails" class="hidden bg-white/40 p-6 rounded-2xl">
+                    <h4 class="font-serif text-xl text-gray-800 mb-4">Choose Your Position</h4>
+                    <div class="grid grid-cols-1 sm:grid-cols-3 gap-4" id="standingPositions"></div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Classic Sets Tab -->
+        <div id="content-classics" class="tab-content hidden">
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4" id="classicsGrid"></div>
+        </div>
+
+        <!-- Breathing Tab -->
+        <div id="content-breathing" class="tab-content hidden">
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-4" id="breathingGrid"></div>
+        </div>
+
+        <!-- Healing Sounds Tab -->
+        <div id="content-healing" class="tab-content hidden">
+            <div class="mb-6">
+                <h3 class="font-serif text-2xl text-gray-800 mb-2">Six Healing Sounds</h3>
+                <p class="text-sm text-gray-600">Liu Zi Jue • 六字诀 - Using sound vibrations to heal organs</p>
+            </div>
+            <div class="space-y-3" id="healingSounds"></div>
+        </div>
+
+        <!-- Dantian Tab -->
+        <div id="content-dantian" class="tab-content hidden">
+            <div class="space-y-6" id="dantianGrid"></div>
+        </div>
+
+        <!-- Seasonal Tab -->
+        <div id="content-seasonal" class="tab-content hidden">
+            <div class="mb-6">
+                <h3 class="font-serif text-2xl text-gray-800 mb-2">Seasonal Practices</h3>
+                <p class="text-sm text-gray-600">Practice in harmony with nature's cycles</p>
+            </div>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4" id="seasonalGrid"></div>
+        </div>
+
+        <!-- Practice View -->
+        <div id="practiceView" class="hidden">
+            <div class="bg-white/40 backdrop-blur-lg p-6 sm:p-8 rounded-[2rem] border border-gray-100">
+                <div class="text-center mb-8">
+                    <div class="stat-label mb-2">Now Practicing</div>
+                    <h2 class="font-serif text-3xl text-gray-900" id="practiceName">—</h2>
+                    <p class="text-sm text-gray-500 mt-1" id="practiceChinese">—</p>
+                </div>
+
+                <div class="flex justify-center mb-8">
+                    <div class="breathing-circle" id="breathCircle">
+                        <div class="text-center">
+                            <div class="stat-label" id="breathPhase">ready</div>
+                            <div class="text-3xl font-serif text-gray-800 mt-2" id="breathCount">—</div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="text-center mb-6">
+                    <p class="text-gray-600 mb-2" id="practiceInstruction">—</p>
+                    <div class="stat-label" id="sessionTime">0:00</div>
+                </div>
+
+                <div class="flex gap-3">
+                    <button onclick="togglePractice()" id="toggleBtn" class="flex-1 py-3 rounded-full bg-gray-900 text-white text-sm uppercase tracking-widest hover:bg-gray-800 transition-all">
+                        Pause
+                    </button>
+                    <button onclick="endPractice()" class="py-3 px-6 rounded-full border border-gray-300 text-gray-600 text-sm uppercase tracking-widest hover:border-gray-500 transition-all">
+                        End
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const LIBRARY = window.QIGONG_LIBRARY || { 
+            foundations: {}, classicSets: {}, seasonalPractices: {}, energyCultivation: {} 
+        };
+
+        let activeSession = null;
+        let sessionTimer = null;
+        let breathTimer = null;
+        let sessionSeconds = 0;
+        let isPaused = false;
+
+        // Render Classic Sets
+        function renderClassics() {
+            const grid = document.getElementById('classicsGrid');
+            const sets = LIBRARY.classicSets || {};
+            grid.innerHTML = Object.values(sets).map(set => `
+                <div class="practice-card p-6 rounded-2xl" onclick="startClassicSet('${set.id}')">
+                    <div class="stat-label mb-2">${set.level} • ${set.duration} min</div>
+                    <h3 class="font-serif text-2xl text-gray-900 mb-2">${set.name}</h3>
+                    <p class="text-sm text-gray-600 mb-3">${set.chinese}</p>
+                    <p class="text-xs text-gray-700">${set.description}</p>
+                </div>
+            `).join('');
+        }
+
+        // Render Breathing Methods
+        function renderBreathing() {
+            const grid = document.getElementById('breathingGrid');
+            const methods = LIBRARY.foundations?.breathingMethods || {};
+            grid.innerHTML = Object.values(methods).map(method => `
+                <div class="practice-card p-6 rounded-2xl">
+                    <h3 class="font-serif text-xl text-gray-900 mb-1">${method.name}</h3>
+                    <p class="text-sm text-gray-600 mb-3">${method.chinese}</p>
+                    <p class="text-sm text-gray-700 mb-3">${method.description}</p>
+                    ${method.pattern ? `<p class="text-xs text-gray-600 italic">${method.pattern}</p>` : ''}
+                </div>
+            `).join('');
+        }
+
+        // Render Healing Sounds
+        function renderHealingSounds() {
+            const container = document.getElementById('healingSounds');
+            const sounds = LIBRARY.classicSets?.liuzijue?.sounds || [];
+            const colors = { Wood: '#22c55e', Fire: '#ef4444', Earth: '#eab308', Metal: '#cbd5e1', Water: '#3b82f6' };
+            
+            container.innerHTML = sounds.map(sound => `
+                <div class="practice-card p-6 rounded-2xl border-l-4" style="border-left-color: ${colors[sound.element]}">
+                    <div class="grid grid-cols-2 gap-4">
+                        <div>
+                            <div class="stat-label mb-1">Sound</div>
+                            <div class="text-2xl font-serif text-gray-900">${sound.sound}</div>
+                            <div class="text-sm text-gray-600">(${sound.pronunciation})</div>
+                        </div>
+                        <div>
+                            <div class="stat-label mb-1">Organ</div>
+                            <div class="text-lg font-serif text-gray-800">${sound.organ}</div>
+                            <div class="text-xs text-gray-600">${sound.season}</div>
+                        </div>
+                    </div>
+                    <div class="mt-4">
+                        <div class="text-xs text-gray-600 mb-2"><strong>Emotion:</strong> ${sound.emotion}</div>
+                        <div class="text-xs text-gray-600"><strong>Benefits:</strong> ${sound.benefits.join(', ')}</div>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        // Render Dantian Cultivation
+        function renderDantian() {
+            const grid = document.getElementById('dantianGrid');
+            const cultivation = LIBRARY.energyCultivation || {};
+            const dantians = [
+                { key: 'lowerDantian', color: '#eab308' },
+                { key: 'middleDantian', color: '#22c55e' },
+                { key: 'upperDantian', color: '#3b82f6' }
+            ];
+
+            grid.innerHTML = dantians.map(d => {
+                const dantian = cultivation[d.key];
+                if (!dantian) return '';
+                return `
+                    <div class="practice-card p-6 rounded-2xl border-l-4" style="border-left-color: ${d.color}">
+                        <h3 class="font-serif text-2xl text-gray-900 mb-1">${dantian.name}</h3>
+                        <p class="text-sm text-gray-600 mb-3">${dantian.chinese}</p>
+                        <div class="space-y-2 text-sm text-gray-700">
+                            <p><strong>Location:</strong> ${dantian.location}</p>
+                            <p><strong>Element:</strong> ${dantian.element}</p>
+                            <p><strong>Method:</strong> ${dantian.practice.method}</p>
+                            <p><strong>Importance:</strong> ${dantian.practice.importance}</p>
+                        </div>
+                    </div>
+                `;
+            }).join('');
+        }
+
+        // Render Seasonal Practices
+        function renderSeasonal() {
+            const grid = document.getElementById('seasonalGrid');
+            const seasons = LIBRARY.seasonalPractices || {};
+            const colors = { Wood: '#22c55e', Fire: '#ef4444', Earth: '#eab308', Metal: '#cbd5e1', Water: '#3b82f6' };
+            
+            grid.innerHTML = Object.entries(seasons).map(([season, data]) => `
+                <div class="practice-card p-6 rounded-2xl border-l-4" style="border-left-color: ${colors[data.element]}">
+                    <div class="stat-label mb-2">${data.element}</div>
+                    <h3 class="font-serif text-2xl text-gray-900 mb-2 capitalize">${season}</h3>
+                    <p class="text-sm text-gray-700 mb-3"><strong>Organ:</strong> ${data.organ}</p>
+                    <p class="text-sm text-gray-700 mb-3"><strong>Focus:</strong> ${data.focus}</p>
+                    <div class="text-xs text-gray-600">
+                        <p class="mb-2"><strong>Practices:</strong> ${data.practices.join(', ')}</p>
+                        <p class="italic">${data.recommendations}</p>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        // Tab switching
+        function showTab(tab) {
+            document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('active'));
+            document.getElementById(`tab-${tab}`).classList.add('active');
+            document.querySelectorAll('.tab-content').forEach(content => content.classList.add('hidden'));
+            document.getElementById(`content-${tab}`).classList.remove('hidden');
+        }
+
+        // Start Standing Meditation
+        function startStanding() {
+            const details = document.getElementById('standingDetails');
+            if (details.classList.contains('hidden')) {
+                const positions = LIBRARY.foundations?.standingMeditation?.positions || {};
+                const grid = document.getElementById('standingPositions');
+                grid.innerHTML = Object.values(positions).map(pos => `
+                    <div class="practice-card p-4 rounded-xl text-center" onclick="startPractice('standing', '${pos.name}')">
+                        <div class="font-serif text-lg text-gray-800 mb-2">${pos.name}</div>
+                        <p class="text-xs text-gray-600">${pos.description}</p>
+                    </div>
+                `).join('');
+                details.classList.remove('hidden');
+            } else {
+                details.classList.add('hidden');
+            }
+        }
+
+        // Start Classic Set
+        function startClassicSet(setId) {
+            const set = Object.values(LIBRARY.classicSets).find(s => s.id === setId);
+            if (!set) return;
+            startPractice('set', set.name, set);
+        }
+
+        // Start Practice
+        function startPractice(type, name, data = {}) {
+            activeSession = { type, name, data, startTime: Date.now() };
+            sessionSeconds = 0;
+            isPaused = false;
+
+            document.querySelectorAll('.tab-content').forEach(el => el.classList.add('hidden'));
+            document.getElementById('practiceView').classList.remove('hidden');
+
+            document.getElementById('practiceName').textContent = name;
+            document.getElementById('practiceChinese').textContent = data.chinese || '';
+            document.getElementById('practiceInstruction').textContent = 
+                data.description || 'Breathe naturally and maintain your posture';
+
+            runSession();
+        }
+
+        function runSession() {
+            sessionTimer = setInterval(() => {
+                if (!isPaused) {
+                    sessionSeconds++;
+                    const m = Math.floor(sessionSeconds / 60);
+                    const s = sessionSeconds % 60;
+                    document.getElementById('sessionTime').textContent = 
+                        `${m}:${s.toString().padStart(2, '0')}`;
+                }
+            }, 1000);
+
+            runBreathing();
+        }
+
+        function runBreathing() {
+            let phase = 'inhale';
+            let count = 0;
+
+            function breathCycle() {
+                if (isPaused) return;
+
+                const circle = document.getElementById('breathCircle');
+                const phaseLabel = document.getElementById('breathPhase');
+                const countLabel = document.getElementById('breathCount');
+
+                if (phase === 'inhale') {
+                    circle.className = 'breathing-circle inhale';
+                    phaseLabel.textContent = 'inhale';
+                    count = 4;
+                } else {
+                    circle.className = 'breathing-circle exhale';
+                    phaseLabel.textContent = 'exhale';
+                    count = 4;
+                }
+
+                countLabel.textContent = count;
+
+                const interval = setInterval(() => {
+                    count--;
+                    countLabel.textContent = count;
+                    if (count <= 0) {
+                        clearInterval(interval);
+                        phase = phase === 'inhale' ? 'exhale' : 'inhale';
+                        setTimeout(breathCycle, 100);
+                    }
+                }, 1000);
+            }
+
+            breathCycle();
+        }
+
+        function togglePractice() {
+            isPaused = !isPaused;
+            document.getElementById('toggleBtn').textContent = isPaused ? 'Resume' : 'Pause';
+        }
+
+        function endPractice() {
+            clearInterval(sessionTimer);
+
+            if (activeSession) {
+                const durationMins = Math.ceil(sessionSeconds / 60);
+                if (window.PresenceMonitoring) {
+                    PresenceMonitoring.recordSession('qigong', durationMins, {
+                        practice: activeSession.name,
+                        type: activeSession.type
+                    });
+                } else {
+                    const stored = parseInt(localStorage.getItem('totalPracticeMinutes') || '0');
+                    localStorage.setItem('totalPracticeMinutes', stored + durationMins);
+                }
+            }
+
+            document.getElementById('practiceView').classList.add('hidden');
+            document.getElementById('content-foundations').classList.remove('hidden');
+            activeSession = null;
+        }
+
+        // Initialize
+        renderClassics();
+        renderBreathing();
+        renderHealingSounds();
+        renderDantian();
+        renderSeasonal();
+
+        console.log('🌊 Qigong: Library loaded successfully');
+    </script>
+</body>
+</html>

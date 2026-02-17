@@ -1,0 +1,353 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="theme-color" content="#f8f9fa">
+    <title>presence • tai chi</title>
+    <script src="presence-symphony-v2.js"></script>
+    <script src="presence-monitoring.js"></script>
+    <script src="taichi-library.js"></script>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@300;400;600&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --dawn-start: #f8f9fa; --dawn-mid: #e9ecef; --dawn-end: #dee2e6;
+            --text-whisper: #6c757d; --text-soft: #495057; --text-present: #212529;
+        }
+        * { -webkit-tap-highlight-color: transparent; }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: linear-gradient(180deg, var(--dawn-start) 0%, var(--dawn-mid) 50%, var(--dawn-end) 100%);
+            min-height: 100vh; color: var(--text-soft);
+            padding: env(safe-area-inset-top) env(safe-area-inset-right) env(safe-area-inset-bottom) env(safe-area-inset-left);
+        }
+        .font-serif { font-family: 'Cormorant Garamond', serif; }
+        .stat-label { font-size: 0.7rem; letter-spacing: 0.3em; text-transform: uppercase; color: var(--text-whisper); }
+        .form-card, .movement-card {
+            background: rgba(255,255,255,0.5); border: 1px solid rgba(0,0,0,0.05);
+            backdrop-filter: blur(10px); transition: all 0.3s; cursor: pointer;
+        }
+        .form-card:hover, .movement-card:hover { background: rgba(255,255,255,0.8); transform: translateY(-2px); }
+        .tab-btn {
+            padding: 0.5rem 1rem; border-radius: 0.75rem; transition: all 0.3s;
+            background: rgba(255,255,255,0.3); border: 1px solid transparent;
+        }
+        .tab-btn.active { background: white; border-color: rgba(0,0,0,0.1); font-weight: 600; }
+        .principle-item {
+            background: rgba(255,255,255,0.4); border-left: 3px solid rgba(99,102,241,0.4);
+            padding: 1rem; border-radius: 0.5rem; margin-bottom: 0.75rem;
+        }
+    </style>
+</head>
+<body class="p-4 sm:p-8 md:p-12">
+    <div class="max-w-5xl mx-auto">
+        <header class="mb-8 sm:mb-12">
+            <a href="index.html" class="stat-label text-indigo-400 mb-4 block">← Hub</a>
+            <h1 class="font-serif text-5xl sm:text-7xl tracking-tighter text-gray-900 mb-4">Tai Chi</h1>
+            <p class="text-base sm:text-lg text-gray-500 font-light">太极 • Moving meditation, flowing power</p>
+        </header>
+
+        <!-- Tabs -->
+        <div class="flex gap-2 mb-8 overflow-x-auto pb-2">
+            <button class="tab-btn active" onclick="showTab('forms')" id="tab-forms">Forms</button>
+            <button class="tab-btn" onclick="showTab('fundamentals')" id="tab-fundamentals">Fundamentals</button>
+            <button class="tab-btn" onclick="showTab('stances')" id="tab-stances">Stances</button>
+            <button class="tab-btn" onclick="showTab('sequences')" id="tab-sequences">Sequences</button>
+            <button class="tab-btn" onclick="showTab('principles')" id="tab-principles">Principles</button>
+        </div>
+
+        <!-- Forms Tab -->
+        <div id="content-forms" class="tab-content">
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4" id="formsGrid"></div>
+        </div>
+
+        <!-- Fundamentals Tab -->
+        <div id="content-fundamentals" class="tab-content hidden">
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4" id="fundamentalsGrid"></div>
+        </div>
+
+        <!-- Stances Tab -->
+        <div id="content-stances" class="tab-content hidden">
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-4" id="stancesGrid"></div>
+        </div>
+
+        <!-- Sequences Tab -->
+        <div id="content-sequences" class="tab-content hidden">
+            <div class="space-y-4" id="sequencesGrid"></div>
+        </div>
+
+        <!-- Principles Tab -->
+        <div id="content-principles" class="tab-content hidden">
+            <div class="mb-8">
+                <h2 class="font-serif text-3xl text-gray-800 mb-4">Ten Essential Points</h2>
+                <div id="principlesList"></div>
+            </div>
+            <div>
+                <h2 class="font-serif text-3xl text-gray-800 mb-4">Core Energetics</h2>
+                <div id="energeticsList"></div>
+            </div>
+        </div>
+
+        <!-- Practice View (shown during form practice) -->
+        <div id="practiceView" class="hidden">
+            <div class="bg-white/40 backdrop-blur-lg p-6 sm:p-8 rounded-[2rem] border border-gray-100">
+                <div class="mb-6">
+                    <div class="stat-label mb-1">Now Practicing</div>
+                    <h2 class="font-serif text-3xl sm:text-4xl text-gray-900" id="practiceFormName">—</h2>
+                    <p class="text-sm text-gray-500 mt-1" id="practiceFormStyle">—</p>
+                </div>
+
+                <div class="mb-6">
+                    <div class="stat-label mb-2">Current Movement</div>
+                    <div class="font-serif text-2xl text-gray-800" id="currentMovement">—</div>
+                    <div class="text-sm text-gray-500 mt-1" id="currentChinese">—</div>
+                </div>
+
+                <div class="mb-6">
+                    <div class="flex justify-between text-sm text-gray-600">
+                        <span id="progressText">Movement 1 of 24</span>
+                        <span id="timeRemaining">0:00</span>
+                    </div>
+                    <div class="w-full h-2 bg-gray-200 rounded-full mt-2">
+                        <div id="progressBar" class="h-full bg-indigo-500 rounded-full transition-all" style="width: 0%"></div>
+                    </div>
+                </div>
+
+                <div class="flex gap-3">
+                    <button onclick="nextMovement()" class="flex-1 py-3 rounded-full bg-gray-900 text-white text-sm uppercase tracking-widest hover:bg-gray-800 transition-all">
+                        Next →
+                    </button>
+                    <button onclick="endPractice()" class="py-3 px-6 rounded-full border border-gray-300 text-gray-600 text-sm uppercase tracking-widest hover:border-gray-500 transition-all">
+                        End
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const LIBRARY = window.TAICHI_LIBRARY || {
+            forms: {}, fundamentals: {}, stances: {}, sequences: {}, principles: { ten_essentials: [], energetics: {} }
+        };
+
+        let currentForm = null;
+        let currentMovementIndex = 0;
+        let practiceTimer = null;
+        let sessionStart = null;
+
+        // Render Forms
+        function renderForms() {
+            const grid = document.getElementById('formsGrid');
+            grid.innerHTML = Object.values(LIBRARY.forms).map(form => `
+                <div class="form-card p-6 rounded-2xl" onclick="startForm('${form.id}')">
+                    <div class="stat-label mb-2">${form.style} Style • ${form.level}</div>
+                    <h3 class="font-serif text-2xl text-gray-900 mb-2">${form.name}</h3>
+                    <p class="text-sm text-gray-600 mb-3">${form.chinese || ''}</p>
+                    <div class="flex gap-4 text-xs text-gray-500">
+                        <span>⏱️ ${form.duration} min</span>
+                        ${form.movements?.length ? `<span>🥋 ${form.movements.length} movements</span>` : `<span>🥋 ${form.movements} movements</span>`}
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        // Render Fundamentals (Eight Gates)
+        function renderFundamentals() {
+            const grid = document.getElementById('fundamentalsGrid');
+            grid.innerHTML = Object.values(LIBRARY.fundamentals).map(move => `
+                <div class="movement-card p-6 rounded-2xl">
+                    <div class="stat-label mb-2">${move.category}</div>
+                    <h3 class="font-serif text-2xl text-gray-900 mb-1">${move.name}</h3>
+                    <p class="text-sm text-gray-600 mb-3">${move.chinese}</p>
+                    <p class="text-xs text-gray-500 italic mb-3">${move.energy}</p>
+                    <p class="text-sm text-gray-700 mb-3">${move.description}</p>
+                    <div class="text-xs text-gray-600">
+                        <strong>Practice:</strong>
+                        <ul class="mt-1 ml-4 space-y-1">
+                            ${move.practice.map(p => `<li>• ${p}</li>`).join('')}
+                        </ul>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        // Render Stances
+        function renderStances() {
+            const grid = document.getElementById('stancesGrid');
+            grid.innerHTML = Object.values(LIBRARY.stances).map(stance => `
+                <div class="movement-card p-6 rounded-2xl">
+                    <h3 class="font-serif text-xl text-gray-900 mb-1">${stance.name}</h3>
+                    <p class="text-sm text-gray-600 mb-3">${stance.chinese}</p>
+                    <p class="text-sm text-gray-700 mb-3">${stance.description}</p>
+                    <div class="text-xs text-gray-600">
+                        <strong>Key Points:</strong>
+                        <ul class="mt-1 ml-4 space-y-1">
+                            ${stance.key_points.map(p => `<li>• ${p}</li>`).join('')}
+                        </ul>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        // Render Sequences
+        function renderSequences() {
+            const grid = document.getElementById('sequencesGrid');
+            grid.innerHTML = Object.values(LIBRARY.sequences).map(seq => `
+                <div class="movement-card p-6 rounded-2xl">
+                    <div class="stat-label mb-2">${seq.duration} minutes</div>
+                    <h3 class="font-serif text-2xl text-gray-900 mb-1">${seq.name}</h3>
+                    <p class="text-sm text-gray-600 mb-3">${seq.chinese}</p>
+                    <p class="text-sm text-gray-700 mb-4">${seq.description}</p>
+                    ${seq.exercises ? `
+                        <div class="text-xs text-gray-600">
+                            ${seq.exercises.map(ex => `
+                                <div class="py-2 border-t border-gray-200">
+                                    <strong>${ex.name}</strong> - ${ex.reps} reps
+                                </div>
+                            `).join('')}
+                        </div>
+                    ` : ''}
+                </div>
+            `).join('');
+        }
+
+        // Render Principles
+        function renderPrinciples() {
+            const list = document.getElementById('principlesList');
+            list.innerHTML = LIBRARY.principles.ten_essentials.map((p, i) => `
+                <div class="principle-item">
+                    <strong class="text-gray-800">${i + 1}.</strong> ${p}
+                </div>
+            `).join('');
+
+            const energetics = document.getElementById('energeticsList');
+            const e = LIBRARY.principles.energetics;
+            energetics.innerHTML = `
+                <div class="space-y-3">
+                    <div class="principle-item">
+                        <strong class="text-gray-800">Yin Yang:</strong> ${e.yin_yang}
+                    </div>
+                    <div class="principle-item">
+                        <strong class="text-gray-800">Root:</strong> ${e.root}
+                    </div>
+                    <div class="principle-item">
+                        <strong class="text-gray-800">Flow:</strong> ${e.flow}
+                    </div>
+                    <div class="principle-item">
+                        <strong class="text-gray-800">Intention:</strong> ${e.intention}
+                    </div>
+                    <div class="principle-item">
+                        <strong class="text-gray-800">Breath:</strong> ${e.breath}
+                    </div>
+                </div>
+            `;
+        }
+
+        // Tab switching
+        function showTab(tab) {
+            // Update tab buttons
+            document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('active'));
+            document.getElementById(`tab-${tab}`).classList.add('active');
+
+            // Show/hide content
+            document.querySelectorAll('.tab-content').forEach(content => content.classList.add('hidden'));
+            document.getElementById(`content-${tab}`).classList.remove('hidden');
+        }
+
+        // Start form practice
+        function startForm(formId) {
+            const form = Object.values(LIBRARY.forms).find(f => f.id === formId);
+            if (!form || !form.movements?.length) {
+                alert('This form is not yet available for practice');
+                return;
+            }
+
+            currentForm = form;
+            currentMovementIndex = 0;
+            sessionStart = Date.now();
+
+            document.querySelectorAll('.tab-content').forEach(el => el.classList.add('hidden'));
+            document.getElementById('practiceView').classList.remove('hidden');
+
+            showCurrentMovement();
+        }
+
+        function showCurrentMovement() {
+            const movement = currentForm.movements[currentMovementIndex];
+            if (!movement) { endPractice(); return; }
+
+            document.getElementById('practiceFormName').textContent = currentForm.name;
+            document.getElementById('practiceFormStyle').textContent = `${currentForm.style} Style • ${currentForm.level}`;
+            document.getElementById('currentMovement').textContent = movement.name;
+            document.getElementById('currentChinese').textContent = movement.chinese;
+            document.getElementById('progressText').textContent = 
+                `Movement ${currentMovementIndex + 1} of ${currentForm.movements.length}`;
+
+            const progress = ((currentMovementIndex + 1) / currentForm.movements.length) * 100;
+            document.getElementById('progressBar').style.width = `${progress}%`;
+
+            // Auto-advance timer (optional)
+            if (movement.duration) {
+                let timeLeft = movement.duration;
+                document.getElementById('timeRemaining').textContent = `0:${timeLeft.toString().padStart(2, '0')}`;
+
+                clearInterval(practiceTimer);
+                practiceTimer = setInterval(() => {
+                    timeLeft--;
+                    if (timeLeft <= 0) {
+                        clearInterval(practiceTimer);
+                        nextMovement();
+                    }
+                    const mins = Math.floor(timeLeft / 60);
+                    const secs = timeLeft % 60;
+                    document.getElementById('timeRemaining').textContent = 
+                        `${mins}:${secs.toString().padStart(2, '0')}`;
+                }, 1000);
+            }
+        }
+
+        function nextMovement() {
+            clearInterval(practiceTimer);
+            currentMovementIndex++;
+            if (currentMovementIndex >= currentForm.movements.length) {
+                endPractice();
+            } else {
+                showCurrentMovement();
+            }
+        }
+
+        function endPractice() {
+            clearInterval(practiceTimer);
+
+            if (sessionStart && currentForm) {
+                const durationMins = Math.ceil((Date.now() - sessionStart) / 60000);
+                if (window.PresenceMonitoring) {
+                    PresenceMonitoring.recordSession('taichi', durationMins, {
+                        form: currentForm.name,
+                        style: currentForm.style,
+                        movements: currentMovementIndex
+                    });
+                } else {
+                    const stored = parseInt(localStorage.getItem('totalPracticeMinutes') || '0');
+                    localStorage.setItem('totalPracticeMinutes', stored + durationMins);
+                }
+            }
+
+            document.getElementById('practiceView').classList.add('hidden');
+            document.getElementById('content-forms').classList.remove('hidden');
+            currentForm = null;
+        }
+
+        // Initialize
+        renderForms();
+        renderFundamentals();
+        renderStances();
+        renderSequences();
+        renderPrinciples();
+
+        console.log('🥋 Tai Chi: Library loaded successfully');
+    </script>
+</body>
+</html>

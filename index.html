@@ -6,7 +6,7 @@
     <title>presence</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script crossorigin src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
-    <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
+    <script crossorigin src="https://unpkg.com/react-dom@18/umd/react.production.min.js"></script>
     <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
     <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;1,400&family=Inter:wght@200;300;400;500&display=swap" rel="stylesheet">
     <style>
@@ -30,9 +30,11 @@
         const { useState } = React;
 
         const fileMap = {
-            meditation: 'presence_timer.html',
-            temple: 'monastery_best_in_class_1.html',
+            meditation: 'presence_meditation.html',
+            monastery: 'presence_monastery.html',
             yoga: 'presence_yoga_v3.html',
+            taichi: 'presence_taichi.html',
+            qigong: 'presence_qigong.html',
             guided: 'presence_guided.html',
             breathwork: 'presence_breathwork.html',
             bodyscan: 'presence_bodyscan.html',
@@ -41,10 +43,11 @@
             mudra: 'Mudra-Guide.html',
             sleep: 'presence_sleep.html',
             lab: 'presence_alignment.html',
-            ambient: 'presence-ambient-v2.html',
+            ambient: 'presence_ambient_v2.html',
             rituals: 'presence_rituals.html',
             journal: 'presence_journal.html',
-            insights: 'presence_insights.html'
+            insights: 'presence_insights.html',
+            settings: 'presence_settings.html'
         };
 
         function App() {
@@ -64,8 +67,10 @@
                     <h1 className="text-7xl font-serif italic mb-12 pt-10">presence</h1>
                     <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-5 gap-4">
                         <ZenCard cat="Meditation" title="Timer" onClick={() => setView('meditation')} />
-                        <ZenCard cat="Temple" title="Monastery" onClick={() => setView('temple')} />
+                        <ZenCard cat="Temple" title="Monastery" onClick={() => setView('monastery')} />
                         <ZenCard cat="Studio" title="Yoga" onClick={() => setView('yoga')} />
+                        <ZenCard cat="Flow" title="Tai Chi" onClick={() => setView('taichi')} />
+                        <ZenCard cat="Cultivation" title="Qigong" onClick={() => setView('qigong')} />
                         <ZenCard cat="Guided" title="Voice" onClick={() => setView('guided')} />
                         <ZenCard cat="Regulation" title="Breathwork" onClick={() => setView('breathwork')} />
                         <ZenCard cat="Body" title="Scan" onClick={() => setView('bodyscan')} />
@@ -74,10 +79,11 @@
                         <ZenCard cat="Encyclopedia" title="Mudra Guide" onClick={() => setView('mudra')} />
                         <ZenCard cat="Rest" title="Sleep" onClick={() => setView('sleep')} />
                         <ZenCard cat="Alignment" title="The Lab" onClick={() => setView('lab')} />
-                        <ZenCard cat="Atmosphere" title="Ambient V2" onClick={() => setView('ambient')} />
+                        <ZenCard cat="Atmosphere" title="Ambient" onClick={() => setView('ambient')} />
                         <ZenCard cat="Sequence" title="Rituals" onClick={() => setView('rituals')} />
                         <ZenCard cat="Mind" title="Journal" onClick={() => setView('journal')} />
                         <ZenCard cat="Data" title="Insights" onClick={() => setView('insights')} />
+                        <ZenCard cat="Options" title="Settings" onClick={() => setView('settings')} />
                     </div>
                 </div>
             );
