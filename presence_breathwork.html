@@ -2,260 +2,253 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>presence • stillness</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="theme-color" content="#f8f9fa">
+    <title>presence • breathwork</title>
+    <!-- 🎵 SYMPHONY INTEGRATION -->
+    <script src="presence-symphony-v2.js"></script>
+    <script src="presence-content-manager.js"></script>
+    <script src="presence-monitoring.js"></script>
+    <script src="presence-auto-integrate.js"></script>
+    <script src="breathwork-library.js"></script>
+    <script src="all-libraries-compact.js"></script>
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@300;400;600&display=swap" rel="stylesheet">
     <style>
-        :root { --accent: #6366f1; }
+        :root {
+            --dawn-start: #f8f9fa; --dawn-mid: #e9ecef; --dawn-end: #dee2e6;
+            --text-whisper: #6c757d; --text-soft: #495057; --text-present: #212529;
+        }
+        * { -webkit-tap-highlight-color: transparent; }
         body {
             font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-            background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
-            min-height: 100vh; color: #4a5568; overflow-x: hidden;
+            background: linear-gradient(180deg, var(--dawn-start) 0%, var(--dawn-mid) 50%, var(--dawn-end) 100%);
+            min-height: 100vh; color: var(--text-soft);
+            padding: env(safe-area-inset-top) env(safe-area-inset-right) env(safe-area-inset-bottom) env(safe-area-inset-left);
         }
         .font-serif { font-family: 'Cormorant Garamond', serif; }
-        .stat-label { font-size: 0.65rem; letter-spacing: 0.4em; text-transform: uppercase; color: #94a3b8; }
-        
-        .technique-card {
-            background: rgba(255,255,255,0.4); border: 1px solid rgba(255,255,255,0.2);
-            backdrop-filter: blur(12px); transition: all 0.4s ease; cursor: pointer;
+        .stat-label { font-size: 0.7rem; letter-spacing: 0.3em; text-transform: uppercase; color: var(--text-whisper); }
+        .breath-card {
+            background: rgba(255,255,255,0.4); border: 1px solid rgba(0,0,0,0.05);
+            backdrop-filter: blur(10px); transition: all 0.3s; cursor: pointer;
         }
-        .technique-card:hover { background: rgba(255,255,255,0.7); transform: translateY(-2px); border-color: var(--accent); }
-
-        .time-pill, .sound-pill {
-            padding: 10px 20px; border-radius: 999px; border: 1px solid rgba(0,0,0,0.05);
-            font-size: 0.75rem; transition: all 0.4s; background: rgba(255,255,255,0.4);
-        }
-        .time-pill.active, .sound-pill.active { background: #1e293b; color: white; border-color: #1e293b; }
-
+        .breath-card:hover { background: rgba(255,255,255,0.7); transform: translateY(-2px); }
         .breath-circle {
-            width: 260px; height: 260px; border-radius: 50%; background: white;
-            box-shadow: 0 0 50px rgba(255,255,255,0.5); transition: all 2s cubic-bezier(0.4, 0, 0.2, 1);
+            border-radius: 50%; border: 3px solid rgba(139,152,165,0.3);
             display: flex; align-items: center; justify-content: center;
+            transition: all 1s ease; position: relative;
         }
-        .breath-circle.inhale { transform: scale(1.35); box-shadow: 0 0 100px rgba(99, 102, 241, 0.2); }
-        .breath-circle.exhale { transform: scale(0.85); box-shadow: 0 0 30px rgba(0,0,0,0.05); }
-        .breath-circle.hold { border: 1px solid rgba(99, 102, 241, 0.3); }
-        
-        @keyframes softPulse {
-            0% { opacity: 0.2; }
-            50% { opacity: 0.5; }
-            100% { opacity: 0.2; }
+        .breath-circle.inhale {
+            transform: scale(1.25);
+            border-color: rgba(99,102,241,0.5);
+            background: rgba(99,102,241,0.08);
+            box-shadow: 0 0 40px rgba(99,102,241,0.2);
         }
-        .tap-prompt { animation: softPulse 3s infinite ease-in-out; position: absolute; bottom: 10%; }
+        .breath-circle.hold {
+            border-color: rgba(139,152,165,0.4);
+            background: rgba(139,152,165,0.05);
+        }
+        .breath-circle.exhale {
+            transform: scale(0.82);
+            border-color: rgba(139,152,165,0.2);
+            background: transparent;
+        }
+        .timer-ring { transform: rotate(-90deg); }
     </style>
 </head>
-<body>
-
-    <div id="selectionView" class="p-8 md:p-20 max-w-7xl mx-auto">
-        <header class="mb-16 text-center">
-            <h1 class="font-serif text-8xl tracking-tighter text-slate-900 mb-6">Presence</h1>
-            
-            <div class="stat-label mb-4">Atmosphere</div>
-            <div class="flex justify-center gap-3 mb-8" id="soundSelector">
-                <button class="sound-pill active" onclick="setSound('none', this)">Silence</button>
-                <button class="sound-pill" onclick="setSound('rain', this)">Rain</button>
-                <button class="sound-pill" onclick="setSound('white', this)">Mist</button>
-            </div>
-
-            <div class="stat-label mb-4">Duration</div>
-            <div class="flex flex-wrap justify-center gap-3 mb-12">
-                <button class="time-pill" onclick="setTime(5, this)">5m</button>
-                <button class="time-pill active" onclick="setTime(10, this)">10m</button>
-                <button class="time-pill" onclick="setTime(20, this)">20m</button>
-                <button class="time-pill" onclick="setRandomTime(this)">Random</button>
-                <button class="time-pill" onclick="setTime(null, this)">Infinite</button>
-            </div>
+<body class="p-4 sm:p-8 md:p-12">
+    <div id="menuView" class="max-w-4xl mx-auto">
+        <header class="mb-8 sm:mb-12">
+            <a href="index.html" class="stat-label text-indigo-400 mb-4 block">← Hub</a>
+            <h1 class="font-serif text-5xl sm:text-7xl tracking-tighter text-gray-900 mb-4">Breathwork</h1>
+            <p class="text-base sm:text-lg text-gray-500 font-light">Regulate, settle, arrive</p>
         </header>
-        <div id="libraryContainer" class="space-y-16"></div>
+
+        <div id="patternGrid" class="grid grid-cols-1 sm:grid-cols-2 gap-4"></div>
     </div>
 
     <div id="practiceView" class="hidden flex flex-col items-center justify-center min-h-screen p-8">
-        <div class="absolute top-12 left-12"><button onclick="endPractice()" class="stat-label cursor-pointer">← Exit</button></div>
-        <div class="absolute top-12 right-12"><div class="stat-label font-medium" id="timerDisplay">--:--</div></div>
-        <div class="breath-circle mb-20" id="breathCircle">
+        <button onclick="endSession()" class="stat-label text-indigo-400 mb-10 cursor-pointer self-start">← End Session</button>
+
+        <div class="text-center mb-10">
+            <div class="stat-label mb-2" id="patternLabel">Box Breathing</div>
+            <p class="text-sm text-gray-500 max-w-xs" id="patternDesc"></p>
+        </div>
+
+        <div class="breath-circle mx-auto mb-10" id="breathCircle" style="width: 200px; height: 200px;">
             <div class="text-center">
-                <div class="stat-label mb-2 opacity-60" id="phaseLabel">Ready</div>
-                <div class="text-5xl font-light text-slate-800" id="countDisplay">•</div>
+                <div class="font-serif text-4xl text-gray-800" id="countDisplay">—</div>
+                <div class="stat-label mt-1" id="phaseLabel">ready</div>
             </div>
         </div>
-        <div class="max-w-md text-center">
-            <h2 class="text-3xl font-serif text-slate-900 mb-4" id="activeName">Technique</h2>
-            <p class="text-slate-500 leading-relaxed text-sm italic" id="activeInstructions"></p>
-        </div>
-    </div>
 
-    <div id="reflectionView" class="hidden fixed inset-0 bg-slate-50 flex flex-col items-center justify-center p-12 text-center cursor-pointer" onclick="closeReflection()">
-        <div class="max-w-lg">
-            <div class="stat-label mb-8">Session Complete</div>
-            <p id="quoteDisplay" class="font-serif text-3xl text-slate-800 italic mb-4"></p>
+        <div class="text-center mb-10">
+            <div class="text-2xl font-serif text-gray-600" id="cycleCount">0 cycles</div>
+            <div class="stat-label mt-1" id="sessionTime">0:00</div>
         </div>
-        <div class="stat-label tap-prompt">Tap anywhere to return</div>
+
+        <div class="flex gap-4">
+            <button onclick="togglePause()" id="pauseBtn" class="px-8 py-4 rounded-full bg-gray-900 text-white text-xs uppercase tracking-widest hover:bg-gray-800 transition-all">
+                Pause
+            </button>
+        </div>
     </div>
 
     <script>
-        const QUOTES = [
-            "Breath is the bridge which connects life to consciousness.",
-            "The present moment is the only time over which we have dominion.",
-            "Nowhere can man find a quieter retreat than in his own soul.",
-            "Peace is the result of retraining your mind to process life as it is.",
-            "Feelings come and go like clouds in a windy sky. Conscious breathing is my anchor."
-        ];
+        // 🎵 SYMPHONY: Merge Symphony breathwork with local library
+        function buildPatternLibrary() {
+            const symphonyPatterns = (window.PRESENCE?.BREATHWORK || []).map(b => ({
+                id: b.id,
+                name: b.name,
+                description: b.description || '',
+                category: b.category || 'General',
+                pattern: {
+                    inhale: b.pattern?.[0] || 4,
+                    hold1: b.pattern?.[1] || 0,
+                    exhale: b.pattern?.[2] || 4,
+                    hold2: b.pattern?.[3] || 0
+                },
+                source: 'symphony'
+            }));
 
-        const MEDITATION_LIBRARY = {
-            relax: { title: "Relaxation", items: [
-                { name: '4-7-8 Sleep', timing: {inhale: 4, hold1: 7, exhale: 8, hold2: 0}, desc: 'Natural nervous system tranquilizer.' },
-                { name: 'Physiological Sigh', timing: {inhale: 3, hold1: 1, exhale: 6, hold2: 0}, desc: 'Fastest way to lower heart rate.' },
-                { name: 'Belly Breathing', timing: {inhale: 5, hold1: 0, exhale: 5, hold2: 0}, desc: 'Deep rest and digest rhythm.' }
-            ]},
-            focus: { title: "Focus", items: [
-                { name: 'Box Breathing', timing: {inhale: 4, hold1: 4, exhale: 4, hold2: 4}, desc: 'Navy SEAL method for steady focus.' },
-                { name: 'Coherent Breath', timing: {inhale: 6, hold1: 0, exhale: 6, hold2: 0}, desc: 'Balance the heart and brain.' },
-                { name: 'Triangle Breath', timing: {inhale: 4, hold1: 4, exhale: 4, hold2: 0}, desc: 'Stable rhythm for mental clarity.' }
-            ]}
-        };
+            // Local fallback patterns if Symphony not loaded or library empty
+            const fallbackPatterns = [
+                { id: 'box', name: 'Box Breathing', description: 'Equal rhythm for calm focus', category: 'Calming', pattern: { inhale: 4, hold1: 4, exhale: 4, hold2: 4 } },
+                { id: '478', name: '4-7-8 Breathing', description: 'Rapid relaxation technique', category: 'Calming', pattern: { inhale: 4, hold1: 7, exhale: 8, hold2: 0 } },
+                { id: 'ujjayi', name: 'Ujjayi Breath', description: 'Ocean breath for yoga practice', category: 'Energising', pattern: { inhale: 4, hold1: 0, exhale: 6, hold2: 0 } },
+                { id: 'equal', name: 'Equal Breathing', description: 'Sama Vritti — balanced and steady', category: 'Balancing', pattern: { inhale: 5, hold1: 0, exhale: 5, hold2: 0 } },
+                { id: 'natural', name: 'Natural Breath', description: 'Observe without controlling', category: 'Awareness', pattern: { inhale: 4, hold1: 0, exhale: 4, hold2: 0 } },
+                { id: 'deep', name: 'Deep Breathing', description: 'Full diaphragmatic breath', category: 'Energising', pattern: { inhale: 6, hold1: 2, exhale: 6, hold2: 0 } }
+            ];
 
-        let sessionMinutes = 10;
-        let timeRemaining = 0;
-        let timerInterval = null, breathInterval = null, backgroundSource = null;
-        let currentTech = null, selectedSound = 'none';
-
-        const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
-
-        function setSound(type, btn) {
-            selectedSound = type;
-            document.querySelectorAll('.sound-pill').forEach(p => p.classList.remove('active'));
-            btn.classList.add('active');
+            // Prefer Symphony patterns; fall back if empty
+            return symphonyPatterns.length > 0 ? symphonyPatterns : fallbackPatterns;
         }
 
-        function createNoise() {
-            if (selectedSound === 'none') return;
-            const bufferSize = 2 * audioCtx.sampleRate,
-                  buffer = audioCtx.createBuffer(1, bufferSize, audioCtx.sampleRate),
-                  output = buffer.getChannelData(0);
-            for (let i = 0; i < bufferSize; i++) { output[i] = Math.random() * 2 - 1; }
-            
-            backgroundSource = audioCtx.createBufferSource();
-            backgroundSource.buffer = buffer;
-            backgroundSource.loop = true;
-            
-            const filter = audioCtx.createBiquadFilter();
-            filter.type = selectedSound === 'rain' ? 'lowpass' : 'bandpass';
-            filter.frequency.value = selectedSound === 'rain' ? 400 : 1000;
-            
-            const gain = audioCtx.createGain();
-            gain.gain.value = 0.04;
+        const PATTERNS = buildPatternLibrary();
+        let activePattern = null;
+        let breathInterval = null;
+        let sessionInterval = null;
+        let cycleCount = 0;
+        let sessionSeconds = 0;
+        let isPaused = false;
+        let currentPhase = 'inhale';
+        let phaseSeconds = 0;
+        let sessionStart = null;
 
-            backgroundSource.connect(filter);
-            filter.connect(gain);
-            gain.connect(audioCtx.destination);
-            backgroundSource.start();
+        console.log(`%c🎵 Breathwork: ${PATTERNS.length} patterns loaded${window.PRESENCE ? ' from Symphony' : ' (fallback)'}`, 'color: #6366f1; font-weight: bold');
+
+        function renderGrid() {
+            const grid = document.getElementById('patternGrid');
+            grid.innerHTML = PATTERNS.map(p => `
+                <div class="breath-card p-6 sm:p-8 rounded-[1.5rem]" onclick="startSession('${p.id}')">
+                    <div class="stat-label mb-2">${p.category}</div>
+                    <div class="font-serif text-2xl text-gray-900 mb-2">${p.name}</div>
+                    <p class="text-sm text-gray-500 mb-4">${p.description}</p>
+                    <div class="flex gap-3 text-xs text-gray-400">
+                        <span>In: ${p.pattern.inhale}s</span>
+                        ${p.pattern.hold1 ? `<span>Hold: ${p.pattern.hold1}s</span>` : ''}
+                        <span>Out: ${p.pattern.exhale}s</span>
+                        ${p.pattern.hold2 ? `<span>Hold: ${p.pattern.hold2}s</span>` : ''}
+                    </div>
+                </div>
+            `).join('');
         }
 
-        function playBell() {
-            const osc = audioCtx.createOscillator();
-            const gain = audioCtx.createGain();
-            osc.frequency.setValueAtTime(440, audioCtx.currentTime);
-            osc.frequency.exponentialRampToValueAtTime(110, audioCtx.currentTime + 3);
-            gain.gain.setValueAtTime(0.3, audioCtx.currentTime);
-            gain.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 3);
-            osc.connect(gain); gain.connect(audioCtx.destination);
-            osc.start(); osc.stop(audioCtx.currentTime + 3);
-        }
+        function startSession(patternId) {
+            activePattern = PATTERNS.find(p => p.id === patternId);
+            if (!activePattern) return;
 
-        function setTime(mins, btn) {
-            sessionMinutes = mins;
-            document.querySelectorAll('.time-pill').forEach(p => p.classList.remove('active'));
-            btn.classList.add('active');
-        }
+            cycleCount = 0;
+            sessionSeconds = 0;
+            isPaused = false;
+            currentPhase = 'inhale';
+            phaseSeconds = 0;
+            sessionStart = Date.now();
 
-        function renderLibrary() {
-            const container = document.getElementById('libraryContainer');
-            container.innerHTML = '';
-            for (const [key, cat] of Object.entries(MEDITATION_LIBRARY)) {
-                container.innerHTML += `<div class="stat-label mb-8 text-indigo-500 text-center">${cat.title}</div>
-                    <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-12">
-                        ${cat.items.map(item => `
-                            <div class="technique-card p-8 rounded-[2rem]" onclick='startPractice(${JSON.stringify(item)})'>
-                                <div class="stat-label mb-3 opacity-60">${cat.title}</div>
-                                <div class="flex items-baseline gap-3 mb-2">
-                                    <span class="text-2xl font-light tracking-tight">${item.timing.inhale}-${item.timing.hold1}-${item.timing.exhale}</span>
-                                    <span class="text-xs uppercase tracking-widest font-medium">${item.name}</span>
-                                </div>
-                                <p class="text-sm text-slate-400">${item.desc}</p>
-                            </div>
-                        `).join('')}
-                    </div>`;
-            }
-        }
-
-        function startPractice(tech) {
-            currentTech = tech;
-            if (audioCtx.state === 'suspended') audioCtx.resume();
-            playBell();
-            createNoise();
-            document.getElementById('selectionView').classList.add('hidden');
+            document.getElementById('menuView').classList.add('hidden');
             document.getElementById('practiceView').classList.remove('hidden');
-            document.getElementById('activeName').textContent = tech.name;
-            document.getElementById('activeInstructions').textContent = tech.desc;
-            
-            if (sessionMinutes) {
-                timeRemaining = sessionMinutes * 60;
-                timerInterval = setInterval(() => {
-                    timeRemaining--;
-                    let m = Math.floor(timeRemaining / 60), s = timeRemaining % 60;
-                    document.getElementById('timerDisplay').textContent = `${m}:${s < 10 ? '0' + s : s}`;
-                    if (timeRemaining <= 0) finishSession();
-                }, 1000);
-            } else { document.getElementById('timerDisplay').textContent = "∞"; }
-            runPhase('inhale', tech.timing.inhale);
-        }
+            document.getElementById('patternLabel').textContent = activePattern.name;
+            document.getElementById('patternDesc').textContent = activePattern.description;
 
-        function runPhase(phase, duration) {
-            if (duration === 0) return nextPhase(phase);
-            if ("vibrate" in navigator) navigator.vibrate(25);
-            
-            const circle = document.getElementById('breathCircle');
-            circle.className = 'breath-circle ' + phase;
-            document.getElementById('phaseLabel').textContent = phase.includes('hold') ? 'Hold' : (phase === 'inhale' ? 'In' : 'Out');
-            
-            let count = duration;
-            document.getElementById('countDisplay').textContent = count;
-            breathInterval = setInterval(() => {
-                count--;
-                document.getElementById('countDisplay').textContent = count > 0 ? count : '•';
-                if (count <= 0) { clearInterval(breathInterval); nextPhase(phase); }
+            runBreath();
+            sessionInterval = setInterval(() => {
+                if (!isPaused) {
+                    sessionSeconds++;
+                    const m = Math.floor(sessionSeconds / 60);
+                    const s = sessionSeconds % 60;
+                    document.getElementById('sessionTime').textContent = `${m}:${s.toString().padStart(2,'0')}`;
+                }
             }, 1000);
         }
 
-        function nextPhase(current) {
-            const sequence = ['inhale', 'hold1', 'exhale', 'hold2'];
-            const nextIdx = (sequence.indexOf(current) + 1) % 4;
-            runPhase(sequence[nextIdx], [currentTech.timing.inhale, currentTech.timing.hold1, currentTech.timing.exhale, currentTech.timing.hold2][nextIdx]);
+        function runBreath() {
+            clearInterval(breathInterval);
+            const phases = buildPhases();
+            let phaseIdx = 0;
+            let phaseTick = 0;
+
+            function tick() {
+                if (isPaused) return;
+                const { name, duration } = phases[phaseIdx];
+
+                document.getElementById('breathCircle').className = `breath-circle mx-auto mb-10 ${name}`;
+                document.getElementById('phaseLabel').textContent = name;
+                document.getElementById('countDisplay').textContent = duration - phaseTick;
+
+                phaseTick++;
+                if (phaseTick >= duration) {
+                    phaseTick = 0;
+                    phaseIdx++;
+                    if (phaseIdx >= phases.length) {
+                        phaseIdx = 0;
+                        cycleCount++;
+                        document.getElementById('cycleCount').textContent = `${cycleCount} cycle${cycleCount !== 1 ? 's' : ''}`;
+                    }
+                }
+            }
+
+            tick();
+            breathInterval = setInterval(tick, 1000);
         }
 
-        function finishSession() {
-            clearInterval(timerInterval); clearInterval(breathInterval);
-            if (backgroundSource) { backgroundSource.stop(); backgroundSource = null; }
-            playBell();
+        function buildPhases() {
+            const p = activePattern.pattern;
+            const phases = [{ name: 'inhale', duration: p.inhale }];
+            if (p.hold1 > 0) phases.push({ name: 'hold', duration: p.hold1 });
+            phases.push({ name: 'exhale', duration: p.exhale });
+            if (p.hold2 > 0) phases.push({ name: 'hold', duration: p.hold2 });
+            return phases;
+        }
+
+        function togglePause() {
+            isPaused = !isPaused;
+            document.getElementById('pauseBtn').textContent = isPaused ? 'Resume' : 'Pause';
+        }
+
+        function endSession() {
+            clearInterval(breathInterval);
+            clearInterval(sessionInterval);
+
+            // 🎵 SYMPHONY: Record session with monitoring
+            const durationMins = Math.ceil(sessionSeconds / 60);
+            if (window.PresenceMonitoring) {
+                PresenceMonitoring.recordSession('breathwork', durationMins, {
+                    pattern: activePattern?.name,
+                    cycles: cycleCount
+                });
+            } else {
+                const stored = parseInt(localStorage.getItem('totalPracticeMinutes') || '0');
+                localStorage.setItem('totalPracticeMinutes', stored + durationMins);
+            }
+
             document.getElementById('practiceView').classList.add('hidden');
-            document.getElementById('reflectionView').classList.remove('hidden');
-            document.getElementById('quoteDisplay').textContent = QUOTES[Math.floor(Math.random() * QUOTES.length)];
+            document.getElementById('menuView').classList.remove('hidden');
+            activePattern = null;
         }
 
-        function closeReflection() {
-            document.getElementById('reflectionView').classList.add('hidden');
-            document.getElementById('selectionView').classList.remove('hidden');
-        }
-
-        function endPractice() {
-            clearInterval(timerInterval); clearInterval(breathInterval);
-            if (backgroundSource) { backgroundSource.stop(); backgroundSource = null; }
-            document.getElementById('practiceView').classList.add('hidden');
-            document.getElementById('selectionView').classList.remove('hidden');
-        }
-
-        renderLibrary();
+        renderGrid();
     </script>
 </body>
 </html>

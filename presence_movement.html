@@ -4,6 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>presence • movement breaks</title>
+    <script src="presence-symphony-v2.js"></script>
     <script src="presence-content-manager.js"></script>
     <script src="presence-monitoring.js"></script>
     <script src="presence-auto-integrate.js"></script>
@@ -31,9 +32,7 @@
             background: rgba(255,255,255,0.3); border: 2px solid rgba(139, 152, 165, 0.2);
             backdrop-filter: blur(10px); transition: all 0.5s;
         }
-        .progress-ring {
-            transform: rotate(-90deg);
-        }
+        .progress-ring { transform: rotate(-90deg); }
         .progress-ring-circle {
             transition: stroke-dashoffset 1s linear;
             stroke: rgba(139, 152, 165, 0.5);
@@ -55,31 +54,26 @@
                 <div class="text-3xl font-light text-gray-900 mb-2">2 minutes</div>
                 <p class="text-sm text-gray-600">Instant relief for desk fatigue</p>
             </div>
-
             <div class="break-card p-8 rounded-[2rem]" onclick="startBreak('neck')">
                 <div class="stat-label mb-3">Neck & Shoulders</div>
                 <div class="text-3xl font-light text-gray-900 mb-2">3 minutes</div>
                 <p class="text-sm text-gray-600">Release upper body tension</p>
             </div>
-
             <div class="break-card p-8 rounded-[2rem]" onclick="startBreak('posture')">
                 <div class="stat-label mb-3">Posture Correction</div>
                 <div class="text-3xl font-light text-gray-900 mb-2">4 minutes</div>
                 <p class="text-sm text-gray-600">Counter forward slouching</p>
             </div>
-
             <div class="break-card p-8 rounded-[2rem]" onclick="startBreak('eyes')">
                 <div class="stat-label mb-3">Eye Rest</div>
                 <div class="text-3xl font-light text-gray-900 mb-2">2 minutes</div>
                 <p class="text-sm text-gray-600">Reduce screen strain</p>
             </div>
-
             <div class="break-card p-8 rounded-[2rem]" onclick="startBreak('wrists')">
                 <div class="stat-label mb-3">Wrist & Hands</div>
                 <div class="text-3xl font-light text-gray-900 mb-2">3 minutes</div>
                 <p class="text-sm text-gray-600">Prevent repetitive strain</p>
             </div>
-
             <div class="break-card p-8 rounded-[2rem]" onclick="startBreak('standing')">
                 <div class="stat-label mb-3">Standing Flow</div>
                 <div class="text-3xl font-light text-gray-900 mb-2">5 minutes</div>
@@ -103,7 +97,6 @@
 
     <div id="breakView" class="hidden flex flex-col items-center justify-center min-h-screen p-8">
         <button onclick="endBreak()" class="stat-label text-indigo-400 mb-8 cursor-pointer">← End Break</button>
-        
         <div class="pose-display p-12 rounded-[3rem] mb-8 max-w-lg w-full text-center">
             <div class="mb-8">
                 <svg class="progress-ring mx-auto" width="120" height="120">
@@ -111,12 +104,10 @@
                     <circle id="progressCircle" class="progress-ring-circle" stroke-width="4" fill="transparent" r="52" cx="60" cy="60"/>
                 </svg>
             </div>
-
             <div class="text-5xl mb-4" id="poseEmoji">🧘</div>
             <h2 class="font-serif text-4xl text-gray-900 mb-4" id="poseName">Get Ready</h2>
             <p class="text-gray-600 leading-relaxed" id="poseInstruction">Preparing your break...</p>
         </div>
-
         <div class="text-center">
             <div class="stat-label mb-2" id="sequenceProgress">Step 1 of 5</div>
             <div class="text-sm text-gray-500" id="timeRemaining">0:00</div>
@@ -183,6 +174,15 @@
             }
         };
 
+        // 🎵 SYMPHONY: Enhance standing flow with real pose data if available
+        if (window.PRESENCE?.POSES) {
+            const mountainPose = window.PRESENCE.POSES.find(p => p.name === 'Mountain Pose');
+            if (mountainPose) {
+                BREAKS.standing.poses[0].instruction = mountainPose.cues?.[0] || BREAKS.standing.poses[0].instruction;
+                console.log('🎵 Symphony: Enhanced standing flow with pose data');
+            }
+        }
+
         let currentBreak = null;
         let currentPoseIndex = 0;
         let timeRemaining = 0;
@@ -191,10 +191,8 @@
         function startBreak(type) {
             currentBreak = BREAKS[type];
             currentPoseIndex = 0;
-            
             document.getElementById('menuView').classList.add('hidden');
             document.getElementById('breakView').classList.remove('hidden');
-            
             setTimeout(() => showPose(), 1000);
         }
 
@@ -203,30 +201,23 @@
                 completeBreak();
                 return;
             }
-
             const pose = currentBreak.poses[currentPoseIndex];
-            
             document.getElementById('poseEmoji').textContent = pose.emoji;
             document.getElementById('poseName').textContent = pose.name;
             document.getElementById('poseInstruction').textContent = pose.instruction;
-            document.getElementById('sequenceProgress').textContent = 
+            document.getElementById('sequenceProgress').textContent =
                 `Step ${currentPoseIndex + 1} of ${currentBreak.poses.length}`;
-            
             timeRemaining = pose.duration;
             updateTimer();
-            
             const circle = document.getElementById('progressCircle');
             const circumference = 2 * Math.PI * 52;
             circle.style.strokeDasharray = `${circumference} ${circumference}`;
             circle.style.strokeDashoffset = circumference;
-            
             breakInterval = setInterval(() => {
                 timeRemaining--;
                 updateTimer();
-                
                 const offset = circumference - (timeRemaining / pose.duration) * circumference;
                 circle.style.strokeDashoffset = offset;
-                
                 if (timeRemaining <= 0) {
                     clearInterval(breakInterval);
                     currentPoseIndex++;
@@ -238,7 +229,7 @@
         function updateTimer() {
             const mins = Math.floor(timeRemaining / 60);
             const secs = timeRemaining % 60;
-            document.getElementById('timeRemaining').textContent = 
+            document.getElementById('timeRemaining').textContent =
                 `${mins}:${secs.toString().padStart(2, '0')}`;
         }
 
@@ -246,11 +237,21 @@
             document.getElementById('poseEmoji').textContent = '✨';
             document.getElementById('poseName').textContent = 'Complete!';
             document.getElementById('poseInstruction').textContent = 'Well done. Return to your work refreshed.';
-            
+
             const totalDuration = currentBreak.poses.reduce((sum, p) => sum + p.duration, 0);
-            const totalMins = parseInt(localStorage.getItem('totalPracticeMinutes') || '0');
-            localStorage.setItem('totalPracticeMinutes', totalMins + Math.ceil(totalDuration / 60));
-            
+            const totalMins = Math.ceil(totalDuration / 60);
+
+            // 🎵 SYMPHONY: Use monitoring utility for consistent tracking
+            if (window.PresenceMonitoring) {
+                PresenceMonitoring.recordSession('movement', totalMins, {
+                    breakType: currentBreak.name,
+                    poses: currentBreak.poses.length
+                });
+            } else {
+                const stored = parseInt(localStorage.getItem('totalPracticeMinutes') || '0');
+                localStorage.setItem('totalPracticeMinutes', stored + totalMins);
+            }
+
             setTimeout(() => endBreak(), 3000);
         }
 
@@ -264,13 +265,11 @@
         function toggleReminders() {
             const enabled = document.getElementById('reminderToggle').checked;
             localStorage.setItem('movement_reminders', enabled);
-            
             if (enabled) {
                 alert('Reminders enabled! You\'ll get a gentle nudge every hour to take a movement break.');
             }
         }
 
-        // Initialize reminder toggle
         const remindersEnabled = localStorage.getItem('movement_reminders') === 'true';
         document.getElementById('reminderToggle').checked = remindersEnabled;
     </script>

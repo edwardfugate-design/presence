@@ -7,6 +7,7 @@
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <meta name="theme-color" content="#f8f9fa">
     <title>presence • journal</title>
+    <script src="presence-symphony-v2.js"></script>
     <script src="presence-content-manager.js"></script>
     <script src="presence-monitoring.js"></script>
     <script src="presence-auto-integrate.js"></script>
@@ -18,20 +19,12 @@
             --dawn-start: #f8f9fa; --dawn-mid: #e9ecef; --dawn-end: #dee2e6;
             --text-whisper: #6c757d; --text-soft: #495057; --text-present: #212529;
         }
-        * {
-            -webkit-tap-highlight-color: transparent;
-            -webkit-touch-callout: none;
-        }
-        input, textarea {
-            -webkit-user-select: text;
-            user-select: text;
-        }
+        * { -webkit-tap-highlight-color: transparent; -webkit-touch-callout: none; }
+        input, textarea { -webkit-user-select: text; user-select: text; }
         body {
             font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
             background: linear-gradient(180deg, var(--dawn-start) 0%, var(--dawn-mid) 50%, var(--dawn-end) 100%);
-            min-height: 100vh;
-            min-height: -webkit-fill-available;
-            color: var(--text-soft);
+            min-height: 100vh; min-height: -webkit-fill-available; color: var(--text-soft);
             padding: env(safe-area-inset-top) env(safe-area-inset-right) env(safe-area-inset-bottom) env(safe-area-inset-left);
         }
         html { height: -webkit-fill-available; }
@@ -44,8 +37,8 @@
         @media (hover: hover) {
             .entry-card:hover { background: rgba(255,255,255,0.8); transform: translateY(-2px); }
         }
-        .mood-dot { 
-            width: 44px; height: 44px; border-radius: 50%; 
+        .mood-dot {
+            width: 44px; height: 44px; border-radius: 50%;
             transition: all 0.3s; cursor: pointer;
             display: flex; align-items: center; justify-content: center;
         }
@@ -54,25 +47,16 @@
             -webkit-appearance: none; appearance: none; width: 100%; height: 44px;
             background: transparent; outline: none;
         }
-        .presence-slider::-webkit-slider-track {
-            height: 4px; background: rgba(0,0,0,0.1); border-radius: 10px;
-        }
+        .presence-slider::-webkit-slider-track { height: 4px; background: rgba(0,0,0,0.1); border-radius: 10px; }
         .presence-slider::-webkit-slider-thumb {
             -webkit-appearance: none; appearance: none; width: 28px; height: 28px;
-            background: var(--text-present); cursor: pointer; border-radius: 50%;
-            margin-top: -12px;
+            background: var(--text-present); cursor: pointer; border-radius: 50%; margin-top: -12px;
         }
         .presence-slider::-moz-range-thumb {
-            width: 28px; height: 28px;
-            background: var(--text-present); cursor: pointer; border-radius: 50%;
-            border: none;
+            width: 28px; height: 28px; background: var(--text-present); cursor: pointer; border-radius: 50%; border: none;
         }
-        textarea, input {
-            font-size: 16px !important; /* Prevents iOS zoom */
-        }
-        @media (max-width: 640px) {
-            .mobile-title { font-size: 3rem !important; }
-        }
+        textarea, input { font-size: 16px !important; }
+        @media (max-width: 640px) { .mobile-title { font-size: 3rem !important; } }
     </style>
 </head>
 <body class="p-4 sm:p-8 md:p-16">
@@ -83,11 +67,8 @@
             <p class="text-base sm:text-lg text-gray-500 font-light">Capture the residue of practice</p>
         </header>
 
-        <!-- New Entry Form -->
         <div class="entry-card p-6 sm:p-8 md:p-12 rounded-[2rem] sm:rounded-[2.5rem] mb-8 sm:mb-12">
             <div class="stat-label mb-6">New Entry</div>
-            
-            <!-- Mood -->
             <div class="mb-8">
                 <label class="block text-sm mb-3 text-gray-600">How do you feel?</label>
                 <div class="flex gap-2 sm:gap-4 justify-between">
@@ -98,8 +79,6 @@
                     <div class="mood-dot" style="background: #22c55e;" onclick="setMood(5)" data-mood="5"></div>
                 </div>
             </div>
-
-            <!-- Presence Level -->
             <div class="mb-8">
                 <label class="block text-sm mb-3 text-gray-600">How present were you?</label>
                 <input type="range" min="1" max="10" value="5" class="presence-slider" id="presenceSlider">
@@ -109,22 +88,18 @@
                     <span>Fully Present</span>
                 </div>
             </div>
-
-            <!-- Notes -->
             <div class="mb-8">
                 <label class="block text-sm mb-3 text-gray-600">What arose?</label>
-                <textarea id="notes" rows="6" 
+                <textarea id="notes" rows="6"
                     class="w-full p-4 sm:p-6 rounded-2xl sm:rounded-3xl border border-gray-200 focus:border-gray-400 focus:outline-none resize-none bg-white/50 font-serif text-base sm:text-lg"
                     placeholder="Thoughts, sensations, insights..."></textarea>
             </div>
-
-            <button onclick="saveEntry()" 
+            <button onclick="saveEntry()"
                 class="w-full py-4 rounded-full bg-gray-900 text-white text-xs sm:text-sm uppercase tracking-widest hover:bg-gray-800 transition-all min-h-[48px] active:scale-98">
                 Preserve
             </button>
         </div>
 
-        <!-- Timeline -->
         <div class="stat-label mb-6">Timeline</div>
         <div id="timeline" class="space-y-3 sm:space-y-4"></div>
     </div>
@@ -150,37 +125,28 @@
             });
         }
 
-        function saveEntry() {
-            const notes = document.getElementById('notes').value;
-            if (!notes.trim()) {
-                alert('Please write something first');
-                return;
+        // 🎵 SYMPHONY: Detect practice source with intent/sequence awareness
+        function detectSource() {
+            // Check for active Symphony intent
+            const intent = localStorage.getItem('presence_current_intent');
+            if (intent) {
+                const intentNames = {
+                    'unwind': 'Unwinding', 'arrive': 'Arrival',
+                    'sustain': 'Sustaining', 'recover': 'Recovery', 'mark': 'Completion'
+                };
+                return intentNames[intent] || 'Practice';
             }
 
-            if ('vibrate' in navigator) navigator.vibrate(20);
+            // Check for active sequence
+            const sequenceData = localStorage.getItem('presence_current_sequence');
+            if (sequenceData) {
+                try {
+                    const sequence = JSON.parse(sequenceData);
+                    return sequence.name || 'Sequence';
+                } catch (e) {}
+            }
 
-            const entry = {
-                id: Date.now(),
-                timestamp: new Date().toISOString(),
-                mood: currentMood,
-                presence: currentPresence,
-                notes: notes,
-                source: detectSource()
-            };
-
-            const entries = JSON.parse(localStorage.getItem('presence_journal') || '[]');
-            entries.unshift(entry);
-            localStorage.setItem('presence_journal', JSON.stringify(entries));
-
-            document.getElementById('notes').value = '';
-            setMood(3);
-            presenceSlider.value = 5;
-            presenceValue.textContent = 5;
-
-            renderTimeline();
-        }
-
-        function detectSource() {
+            // Legacy signals
             const signals = {
                 still: localStorage.getItem('presence_still') === 'true',
                 flow: localStorage.getItem('presence_flow') === 'true',
@@ -192,10 +158,51 @@
             return 'Reflection';
         }
 
+        function saveEntry() {
+            const notes = document.getElementById('notes').value;
+            if (!notes.trim()) { alert('Please write something first'); return; }
+            if ('vibrate' in navigator) navigator.vibrate(20);
+
+            // 🎵 SYMPHONY: Capture practice context
+            let practiceDetails = null;
+            const sequenceData = localStorage.getItem('presence_current_sequence');
+            if (sequenceData) {
+                try {
+                    const sequence = JSON.parse(sequenceData);
+                    practiceDetails = {
+                        sequence: sequence.name,
+                        poses: sequence.poses,
+                        breathwork: sequence.breathwork,
+                        duration: Math.floor((sequence.duration || 0) / 60)
+                    };
+                } catch (e) {}
+            }
+
+            const entry = {
+                id: Date.now(),
+                timestamp: new Date().toISOString(),
+                mood: currentMood,
+                presence: currentPresence,
+                notes: notes,
+                source: detectSource(),
+                practice: practiceDetails  // 🎵 Full practice context
+            };
+
+            const entries = JSON.parse(localStorage.getItem('presence_journal') || '[]');
+            entries.unshift(entry);
+            localStorage.setItem('presence_journal', JSON.stringify(entries));
+
+            document.getElementById('notes').value = '';
+            setMood(3);
+            presenceSlider.value = 5;
+            presenceValue.textContent = 5;
+            renderTimeline();
+        }
+
         function renderTimeline() {
             const entries = JSON.parse(localStorage.getItem('presence_journal') || '[]');
             const timeline = document.getElementById('timeline');
-            
+
             if (entries.length === 0) {
                 timeline.innerHTML = '<p class="text-center text-gray-400 py-12 font-serif text-base sm:text-lg">No entries yet. Begin your journey.</p>';
                 return;
@@ -208,12 +215,21 @@
                 const dateStr = date.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
                 const timeStr = date.toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit' });
 
+                // 🎵 Show practice context if available
+                let practiceInfo = `${entry.source} • Presence: ${entry.presence}/10`;
+                if (entry.practice?.duration) practiceInfo += ` • ${entry.practice.duration} min`;
+
+                const practiceRow = entry.practice
+                    ? `<div class="text-xs text-gray-400 mt-1">${entry.practice.sequence || ''}</div>`
+                    : '';
+
                 return `
                     <div class="entry-card p-4 sm:p-6 rounded-2xl sm:rounded-3xl">
                         <div class="flex items-start justify-between mb-3 sm:mb-4">
                             <div>
                                 <div class="stat-label mb-1">${dateStr} • ${timeStr}</div>
-                                <div class="text-xs text-gray-500">${entry.source} • Presence: ${entry.presence}/10</div>
+                                <div class="text-xs text-gray-500">${practiceInfo}</div>
+                                ${practiceRow}
                             </div>
                             <div class="mood-dot" style="background: ${moodColors[entry.mood - 1]}; width: 24px; height: 24px; flex-shrink: 0;"></div>
                         </div>
@@ -223,7 +239,6 @@
             }).join('');
         }
 
-        // Mobile optimizations
         function setVH() {
             let vh = window.innerHeight * 0.01;
             document.documentElement.style.setProperty('--vh', `${vh}px`);
@@ -232,7 +247,6 @@
         window.addEventListener('resize', setVH);
         window.addEventListener('orientationchange', setVH);
 
-        // Initialize
         setMood(3);
         renderTimeline();
     </script>

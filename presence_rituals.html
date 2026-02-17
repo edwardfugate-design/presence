@@ -1,16 +1,78 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8"><title>Rituals</title>
+    <meta charset="UTF-8">
+    <title>Presence • Intents</title>
+    <script src="presence-symphony-v2.js"></script>
+    <script src="presence-content-manager.js"></script>
+    <script src="presence-monitoring.js"></script>
+    <script src="presence-auto-integrate.js"></script>
+    <script src="all-libraries-compact.js"></script>
     <script src="https://cdn.tailwindcss.com"></script>
-    <style>body{font-family:'Inter',sans-serif;background:transparent;color:#1a1a1a;padding:40px;}.font-serif{font-family:'Cormorant Garamond',serif;}.row{border-bottom:1px solid rgba(0,0,0,0.05);padding:1.5rem 0;display:flex;justify-content:space-between;align-items:center;}</style>
+    <script crossorigin src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
+    <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
+    <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@300;400;600&display=swap" rel="stylesheet">
+    <style>
+        body { background: #fdfcfb; font-family: 'Cormorant Garamond', serif; }
+        .intent-card { transition: all 0.4s ease; border: 1px solid #f1f1f1; }
+        .intent-card:hover { border-color: #6366f1; transform: translateX(10px); background: white; }
+    </style>
 </head>
-<body>
-    <div class="max-w-4xl mx-auto py-12">
-        <header class="mb-16"><p class="text-[8px] tracking-[0.4em] uppercase opacity-40 mb-2">Sequence</p><h1 class="text-6xl font-serif italic">Rituals</h1></header>
-        <div class="row"><div><p class="text-[10px] uppercase tracking-widest opacity-40">AM</p><p class="font-serif text-xl italic">The First Hour</p></div><p class="text-[10px] opacity-30">No Digital • Sunlight • Breath</p></div>
-        <div class="row"><div><p class="text-[10px] uppercase tracking-widest opacity-40">Work</p><p class="font-serif text-xl italic">Deep Focus</p></div><p class="text-[10px] opacity-30">90m Intervals • Single Task</p></div>
-        <div class="row"><div><p class="text-[10px] uppercase tracking-widest opacity-40">PM</p><p class="font-serif text-xl italic">The Sunset Close</p></div><p class="text-[10px] opacity-30">Reflection • Dim Light • Body Scan</p></div>
-    </div>
+<body class="p-12">
+    <div id="root"></div>
+    <script type="text/babel">
+        const App = () => {
+            const INTENTS = [
+                { id: 'unwind', label: 'Unwind', note: 'Let the system soften.' },
+                { id: 'arrive', label: 'Arrive', note: 'Be here without effort.' },
+                { id: 'sustain', label: 'Sustain', note: 'Hold attention gently.' },
+                { id: 'recover', label: 'Recover', note: 'Return to safety.' },
+                { id: 'mark', label: 'Mark', note: 'Close something with care.' }
+            ];
+
+            const launch = (id) => {
+                // 🎵 SYMPHONY INTEGRATION: Get sequence for this intent
+                const sequence = window.PRESENCE?.getSequenceByIntent(id);
+                
+                if (sequence) {
+                    // Log for debugging
+                    console.log(`%c🎵 Symphony: Loading "${sequence.name}" for intent: ${id}`, 
+                        'color: #6366f1; font-size: 14px; font-weight: bold');
+                    console.log(`   Poses: ${sequence.poses.join(', ')}`);
+                    console.log(`   Breath: ${sequence.breathwork}`);
+                    console.log(`   Duration: ${Math.floor(sequence.duration / 60)} minutes`);
+                    
+                    // Store the complete sequence with full data
+                    localStorage.setItem('presence_current_sequence', JSON.stringify(sequence));
+                    localStorage.setItem('presence_current_intent', id);
+                    
+                    // Navigate to yoga app (which will auto-load the sequence)
+                    window.location.href = 'presence_yoga_v3.html';
+                } else {
+                    // Fallback if Symphony not loaded
+                    console.warn('⚠️ Symphony not available - loading yoga app without preset sequence');
+                    localStorage.setItem('presence_current_intent', id);
+                    window.location.href = 'presence_yoga_v3.html';
+                }
+            };
+
+            return (
+                <div className="max-w-2xl mx-auto py-20">
+                    <a href="index.html" className="text-[10px] uppercase tracking-[0.4em] text-indigo-400 font-bold mb-12 block tracking-widest">← Return to Hub</a>
+                    <h1 className="text-8xl mb-16 tracking-tighter text-gray-900">Intents</h1>
+                    <div className="space-y-4">
+                        {INTENTS.map(i => (
+                            <button key={i.id} onClick={() => launch(i.id)} className="intent-card w-full p-8 rounded-[2.5rem] text-left">
+                                <h2 className="text-4xl mb-1 text-gray-800">{i.label}</h2>
+                                <p className="text-sm italic text-gray-400">{i.note}</p>
+                            </button>
+                        ))}
+                    </div>
+                </div>
+            );
+        };
+        ReactDOM.createRoot(document.getElementById('root')).render(<App />);
+    </script>
 </body>
 </html>
