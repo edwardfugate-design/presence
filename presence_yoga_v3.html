@@ -4,6 +4,8 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Presence • Yoga Studio v3.1</title>
+    <script src="presence-symphony-v2.js"></script>
+    <script src="presence-monitoring.js"></script>
     <script src="https://cdn.tailwindcss.com"></script>
     <script crossorigin src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
     <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
@@ -22,10 +24,11 @@
 <body>
     <div id="root"></div>
     <script type="text/babel">
-        const { useState } = React;
+        const { useState, useEffect } = React;
 
         // MASTER LIBRARY: Combined from your previous JS files
-        const POSE_LIBRARY = [
+        // 🎵 SYMPHONY: Merge with shared pose library if available
+        const BUILT_IN_POSES = [
     // --- 1. STANDING & BALANCE (The Foundation) ---
     { 
         id: 'p1', name: 'Mountain (Tadasana) Family', category: 'Standing', level: 'Beginner', 
@@ -131,6 +134,17 @@
     }
 ];
 
+        // 🎵 SYMPHONY: Use shared poses if available, otherwise use built-in library
+        const POSE_LIBRARY = (window.PRESENCE?.POSES?.length > 0)
+            ? window.PRESENCE.POSES.map(p => ({
+                id: p.id,
+                name: p.name + (p.sanskrit ? ` (${p.sanskrit})` : ''),
+                category: p.category || 'Standing',
+                level: p.level || 'Beginner',
+                variations: (p.variations || []).map((v, i) => ({ id: `${p.id}_v${i}`, name: v.name || v }))
+              }))
+            : BUILT_IN_POSES;
+
         function App() {
             const [search, setSearch] = useState('');
             const [seq, setSeq] = useState({ flow: [] });
@@ -139,6 +153,23 @@
             const [globalHoldType, setGlobalHoldType] = useState('breath');
             const [globalHoldVal, setGlobalHoldVal] = useState(5);
             const [classLimit, setClassLimit] = useState(60);
+
+            // 🎵 SYMPHONY: Load sequence from Intents app if available
+            useEffect(() => {
+                const sequenceData = localStorage.getItem('presence_current_sequence');
+                if (sequenceData) {
+                    try {
+                        const sequence = JSON.parse(sequenceData);
+                        if (sequence.poses?.length > 0) {
+                            const loaded = sequence.poses
+                                .map(id => POSE_LIBRARY.find(p => p.id === id))
+                                .filter(Boolean)
+                                .map(p => ({ ...p, holdType: 'breath', holdVal: 5, tempId: Date.now() + Math.random() }));
+                            if (loaded.length > 0) setSeq({ flow: loaded });
+                        }
+                    } catch(e) {}
+                }
+            }, []);
 
             const addPose = (pose) => {
                 setSeq(s => ({
